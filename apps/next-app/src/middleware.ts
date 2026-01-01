@@ -69,6 +69,7 @@ const publicRoutes = [
   '/contact',
   '/signup',
   '/login',
+  '/admin-login', // Route publique pour le login Super Admin
   '/forgot-password',
   '/onboarding-error',
   '/testimonials', // Route publique pour les témoignages
@@ -86,6 +87,14 @@ export async function middleware(request: NextRequest) {
   // Routes admin : pas de vérification de subdomain
   if (pathname.startsWith('/admin')) {
     // La vérification du rôle SUPER_ADMIN se fait dans le layout
+    // Ajouter le pathname dans les headers pour le layout
+    const response = NextResponse.next();
+    response.headers.set('x-pathname', pathname);
+    return response;
+  }
+
+  // Route admin-login : toujours accessible, même avec subdomain
+  if (pathname === '/admin-login' || pathname.startsWith('/admin-login')) {
     return NextResponse.next();
   }
 

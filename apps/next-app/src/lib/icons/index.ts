@@ -84,10 +84,24 @@ import {
   RefreshCw,
   Check,
   LogOut,
+  LogIn,
   User,
+  UserPlus,
   Mail,
   Phone,
   Bell,
+  
+  // Icônes supplémentaires pour landing page
+  Wifi,
+  ShieldCheck,
+  Tag,
+  Building2,
+  FileSpreadsheet,
+  Network,
+  Globe,
+  Sparkles,
+  ArrowRight,
+  Play,
   
   // Type from lucide-react
   LucideIcon,
@@ -160,11 +174,25 @@ export const IconMapping = {
   refresh: RefreshCw,
   check: Check,
   logout: LogOut,
+  login: LogIn,
   user: User,
+  userPlus: UserPlus,
   mail: Mail,
   phone: Phone,
   bell: Bell,
   shield: Shield,
+  
+  // Icônes supplémentaires pour landing page
+  wifiOff: Wifi,
+  shieldCheck: ShieldCheck,
+  tag: Tag,
+  building: Building2,
+  spreadsheet: FileSpreadsheet,
+  network: Network,
+  globe: Globe,
+  sparkles: Sparkles,
+  arrowRight: ArrowRight,
+  playCircle: Play,
 } as const;
 
 /**

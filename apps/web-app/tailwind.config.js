@@ -1,15 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 /**
- * ACADEMIA HUB — DESIGN SYSTEM OFFICIEL
+ * ACADEMIA HUB — DESIGN SYSTEM OFFICIEL V2
  * 
- * Palette de couleurs institutionnelle :
- * - Midnight Navy (#0B1F3B) : Couleur principale (autorité)
- * - Pure White (#FFFFFF) : Structure et respiration
- * - Slate Gray (#6B7280) : Texte secondaire et structure
- * - Soft Gold (#C9A24D) : Accent premium (usage limité)
- * - Deep Crimson (#8B1E1E) : CTA et alertes critiques
+ * PALETTE ALIGNÉE AVEC LE LOGO OFFICIEL
+ * (Bouclier + monogramme AH bleu lumineux + point gold central)
  * 
- * Voir DESIGN-SYSTEM.md pour les règles d'utilisation complètes
+ * CHARTE COULEURS PREMIUM — VERSION 2.0 VERROUILLÉE
+ * 
+ * RÈGLE D'OR (À GRAVER) :
+ * La couleur n'est jamais décorative.
+ * Elle est hiérarchique, fonctionnelle et rare.
+ * 
+ * DISTRIBUTION STRICTE :
+ * - 60% : Royal Institutional Blue
+ * - 25% : White / Cloud / Mist
+ * - 10% : Professional Graphite
+ * - ≤5% : Living Gold / Crimson
+ * 
+ * Voir DESIGN-SYSTEM.md et docs/ICON-SYSTEM.md pour les règles complètes
  */
 export default {
   content: [
@@ -19,61 +27,81 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Couleur principale — Midnight Navy (autorité & structure)
-        navy: {
-          900: '#0B1F3B', // Base — Usage principal (60-70%)
-          800: '#0F2A4F', // Hover states
-          700: '#133563', // Active states
-          600: '#174077', // Borders
+        // BLEU PRINCIPAL — Royal Institutional Blue (60% de l'UI)
+        blue: {
+          900: '#0A2A5E', // Base — Autorité, structure principale
+          800: '#0D3B85', // Header, sidebar, fonds structurants
+          700: '#114FC4', // Hover, focus, highlights contrôlés
+          600: '#1C6FE8', // Éléments actifs, liens importants (bleu lumineux du logo)
         },
-        // Couleur secondaire — Pure White (structure & respiration)
+        
+        // GOLD PREMIUM — Living Gold (usage ≤ 5%)
+        gold: {
+          600: '#CFA63A', // Accent principal (ORION, badges premium)
+          500: '#F2C94C', // Badges premium, focus, points d'accent (point gold du logo)
+          400: '#FFE08A', // Hover très subtil (rare)
+        },
+        
+        // NEUTRES — Structure & respiration (25% de l'UI)
         white: {
           DEFAULT: '#FFFFFF',
         },
-        // Gris institutionnel — Slate Gray (texte secondaire)
-        slate: {
-          700: '#4B5563', // Foncé
-          600: '#6B7280', // Base
-          500: '#9CA3AF', // Léger
-          400: '#CBD5E1', // Très léger
+        cloud: '#F7F9FC',  // Fond application, zones de respiration
+        mist: '#EEF2F8',    // Fond secondaire, séparateurs subtils
+        
+        // TEXTE — Professional Graphite (10% de l'UI)
+        graphite: {
+          900: '#0F172A', // Texte principal
+          700: '#334155', // Texte secondaire
+          500: '#64748B', // Labels, méta, texte atténué
         },
-        // Accent premium — Soft Gold (usage très limité < 5%)
-        gold: {
-          600: '#B8913A', // Foncé
-          500: '#C9A24D', // Base — ACCENT UNIQUEMENT
-          400: '#D4B366', // Hover léger
-        },
-        // Accent critique — Deep Crimson (CTA & alertes critiques)
+        
+        // ALERTES / CTA CRITIQUES
         crimson: {
-          700: '#721818', // Active/Pressed
-          600: '#8B1E1E', // Base — CTA principaux uniquement
-          500: '#A02828', // Hover
+          600: '#B91C1C', // CTA principal, alertes critiques
+          500: '#DC2626', // Hover CTA
         },
-        // Palette gris complémentaire (pour besoins interface)
+        
+        // Alias pour compatibilité (déprécié — utiliser blue)
+        navy: {
+          900: '#0A2A5E', // Alias pour blue-900
+          800: '#0D3B85', // Alias pour blue-800
+          700: '#114FC4', // Alias pour blue-700
+          600: '#1C6FE8', // Alias pour blue-600
+        },
+        
+        // Gris institutionnel — Slate Gray (déprécié — utiliser graphite)
+        slate: {
+          700: '#334155', // Alias pour graphite-700
+          600: '#475569', // Texte secondaire foncé
+          500: '#64748B', // Alias pour graphite-500
+          400: '#CBD5E1', // Bordures légères
+        },
+        // Palette gris complémentaire (pour compatibilité technique)
         gray: {
-          50: '#F9FAFB',  // Fond très léger
-          100: '#F3F4F6', // Fond léger
-          200: '#E5E7EB', // Bordures très légères
-          300: '#D1D5DB', // Bordures légères
-          400: '#9CA3AF', // Texte secondaire léger
-          500: '#6B7280', // Slate Gray base (alias)
-          600: '#4B5563', // Texte secondaire foncé
-          700: '#374151', // Texte tertiaire
-          800: '#1F2937', // Texte sur fond clair
-          900: '#111827', // Texte principal
+          50: '#F7F9FC',  // Cloud (alias)
+          100: '#EEF2F8', // Mist (alias)
+          200: '#E2E8F0', // Bordures très légères
+          300: '#CBD5E1', // Bordures légères
+          400: '#94A3B8', // Texte secondaire léger
+          500: '#64748B', // Graphite-500 (alias)
+          600: '#475569', // Texte secondaire foncé
+          700: '#334155', // Graphite-700 (alias)
+          800: '#1E293B', // Texte sur fond clair
+          900: '#0F172A', // Graphite-900 (alias)
         },
-        // Alias pour compatibilité (déprécié — utiliser navy)
+        // Alias pour compatibilité (déprécié — utiliser blue)
         primary: {
-          50: '#F9FAFB',
-          100: '#F3F4F6',
-          200: '#E5E7EB',
-          300: '#D1D5DB',
-          400: '#9CA3AF',
-          500: '#6B7280',
-          600: '#4B5563',
-          700: '#374151',
-          800: '#1F2937',
-          900: '#0B1F3B', // Midnight Navy
+          50: '#F7F9FC',  // Cloud
+          100: '#EEF2F8', // Mist
+          200: '#E2E8F0', // Bordures très légères
+          300: '#CBD5E1', // Bordures légères
+          400: '#94A3B8', // Texte secondaire léger
+          500: '#64748B', // Graphite-500
+          600: '#475569', // Texte secondaire foncé
+          700: '#334155', // Graphite-700
+          800: '#1E293B', // Texte sur fond clair
+          900: '#0A2A5E', // Blue-900 (Royal Institutional Blue)
         },
       },
       fontFamily: {

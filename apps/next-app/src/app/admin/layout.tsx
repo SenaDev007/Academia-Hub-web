@@ -17,7 +17,7 @@ export default async function AdminLayout({
   const session = await getServerSession();
 
   if (!session) {
-    redirect('/login');
+    redirect('/admin-login');
   }
 
   // Vérification stricte du rôle SUPER_ADMIN

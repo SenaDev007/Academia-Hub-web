@@ -45,7 +45,7 @@ export default function PremiumLandingPage() {
           </h2>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center bg-crimson-600 text-white px-10 py-5 rounded-md text-lg font-semibold hover:bg-crimson-500 transition-colors"
+            className="inline-flex items-center justify-center bg-blue-600 text-white px-10 py-5 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors"
           >
             Activer Academia Hub maintenant
           </Link>

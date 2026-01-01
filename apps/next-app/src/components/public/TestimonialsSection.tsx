@@ -57,21 +57,9 @@ export default function TestimonialsSection({ limit = 3, featured = true }: Test
   }
 
   return (
-    <section className={`py-16 ${bgColor('app')} px-4 sm:px-6 lg:px-8`}>
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className={`${typo('h2')} ${textColor('primary')} mb-4`}>
-            Ce que disent les directeurs d'établissements
-          </h2>
-          <p className={`${typo('body-large')} ${textColor('secondary')} max-w-2xl mx-auto`}>
-            Des témoignages authentiques d'établissements qui utilisent Academia Hub
-            pour gérer leur direction scolaire avec rigueur et efficacité.
-          </p>
-        </div>
-
+    <div className="w-full">
         {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
@@ -79,57 +67,69 @@ export default function TestimonialsSection({ limit = 3, featured = true }: Test
                 bgColor('card'),
                 radius.card,
                 shadow.card,
-                'border border-gray-200 p-6 hover:shadow-card-hover transition-shadow'
+                'border-2 border-gray-200 p-8 hover:shadow-2xl hover:border-gold-500/30 transition-all duration-300 relative overflow-hidden group'
               )}
             >
-              {/* Quote Icon */}
-              <div className="mb-4">
-                <AppIcon name="communication" size="menu" className="text-gold-500" />
-              </div>
-
-              {/* Rating */}
-              <div className="flex items-center mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <AppIcon
-                    key={i}
-                    name={i < testimonial.rating ? "success" : "info"}
-                    size="submenu"
-                    className={i < testimonial.rating ? "text-gold-500" : "text-gray-300"}
-                  />
-                ))}
-              </div>
-
-              {/* Content */}
-              <p className={`${typo('body')} ${textColor('secondary')} leading-relaxed mb-6 italic`}>
-                "{testimonial.content}"
-              </p>
-
-              {/* Author */}
-              <div className="flex items-center space-x-4 pt-4 border-t border-gray-100">
-                {testimonial.authorPhotoUrl ? (
-                  <img
-                    src={testimonial.authorPhotoUrl}
-                    alt={testimonial.authorName}
-                    className="w-12 h-12 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className={`w-12 h-12 rounded-full ${bgColor('sidebar')} flex items-center justify-center`}>
-                    <span className={`${typo('body-small')} text-white font-semibold`}>
-                      {testimonial.authorName.charAt(0).toUpperCase()}
-                    </span>
+              {/* Decorative corner accent */}
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gold-500/5 rounded-bl-full"></div>
+              
+              <div className="relative z-10">
+                {/* Quote Icon */}
+                <div className="mb-6">
+                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-gold-500/20 to-gold-600/20 rounded-xl border border-gold-500/30">
+                    <AppIcon name="communication" size="menu" className="text-gold-500" />
                   </div>
-                )}
-                <div>
-                  <p className={`${typo('body')} ${textColor('primary')} font-semibold`}>
-                    {testimonial.authorName}
-                  </p>
-                  <p className={`${typo('body-small')} ${textColor('secondary')}`}>
-                    {testimonial.authorFunction}
-                  </p>
-                  <p className={`${typo('caption')} ${textColor('muted')}`}>
-                    {testimonial.schoolName}
-                    {testimonial.schoolCity && `, ${testimonial.schoolCity}`}
-                  </p>
+                </div>
+
+                {/* Rating */}
+                <div className="flex items-center mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <AppIcon
+                      key={i}
+                      name="success"
+                      size="submenu"
+                      className={cn(
+                        "transition-all duration-300",
+                        i < testimonial.rating 
+                          ? "text-gold-500 scale-110" 
+                          : "text-gray-300"
+                      )}
+                    />
+                  ))}
+                </div>
+
+                {/* Content */}
+                <p className={`${typo('base')} ${textColor('secondary')} leading-relaxed mb-8 italic text-base`}>
+                  "{testimonial.content}"
+                </p>
+
+                {/* Author */}
+                <div className="flex items-center space-x-4 pt-6 border-t-2 border-gray-100">
+                  {testimonial.authorPhotoUrl ? (
+                    <img
+                      src={testimonial.authorPhotoUrl}
+                      alt={testimonial.authorName}
+                      className="w-14 h-14 rounded-full object-cover border-2 border-gold-500/20 shadow-md"
+                    />
+                  ) : (
+                    <div className={`w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg border-2 border-gold-500/20`}>
+                      <span className={`${typo('base')} text-white font-bold text-lg`}>
+                        {testimonial.authorName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className={`${typo('base')} ${textColor('primary')} font-bold mb-1`}>
+                      {testimonial.authorName}
+                    </p>
+                    <p className={`${typo('small')} ${textColor('secondary')} font-semibold mb-1`}>
+                      {testimonial.authorFunction}
+                    </p>
+                    <p className={`${typo('small')} ${textColor('muted')}`}>
+                      {testimonial.schoolName}
+                      {testimonial.schoolCity && `, ${testimonial.schoolCity}`}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,17 +141,15 @@ export default function TestimonialsSection({ limit = 3, featured = true }: Test
           <Link
             href="/testimonials"
             className={cn(
-              'inline-flex items-center font-semibold transition-colors',
-              textColor('primary'),
-              'hover:text-blue-700'
+              'inline-flex items-center font-semibold transition-all duration-300 px-6 py-3 rounded-lg',
+              'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl hover:scale-105'
             )}
           >
             Voir tous les témoignages
-            <AppIcon name="trends" size="action" className="ml-2" />
+            <AppIcon name="trends" size="action" className="ml-2 text-white" />
           </Link>
         </div>
-      </div>
-    </section>
+    </div>
   );
 }
 

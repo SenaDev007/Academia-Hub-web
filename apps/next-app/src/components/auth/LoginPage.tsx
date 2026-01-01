@@ -48,7 +48,7 @@ export default function LoginPage() {
         throw new Error(data.message || 'Erreur lors de la connexion');
       }
 
-      // Rediriger vers le dashboard
+      // Rediriger vers le dashboard normal pour les utilisateurs (tenants)
       // Le middleware gérera la redirection vers le bon sous-domaine
       window.location.href = '/app';
     } catch (err: any) {
@@ -113,7 +113,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-900 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-800 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>

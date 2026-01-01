@@ -12,13 +12,14 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import AppIcon from '@/components/ui/AppIcon';
-import { bgColor, textColor, typo } from '@/lib/design-tokens';
+import { bgColor, textColor } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
 
 export default function PremiumHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
+  const ariaExpanded = isMenuOpen ? 'true' : 'false';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -50,35 +51,31 @@ export default function PremiumHeader() {
           : 'bg-white border-b border-gray-200 shadow-sm'
       )}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between h-20 flex-nowrap px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link 
-            href="/" 
-            className="flex items-center space-x-3 group transition-transform duration-200 hover:scale-105"
+            href="/admin-login" 
+            className="flex items-center space-x-1 group transition-transform duration-200 hover:scale-105 flex-shrink-0"
           >
             <div className="relative">
               <Image
                 src="/images/logo-Academia Hub.png"
                 alt="Academia Hub"
-                width={44}
-                height={44}
-                className="h-11 w-auto transition-opacity duration-200 group-hover:opacity-90"
+                width={52}
+                height={52}
+                className="h-14 w-auto transition-opacity duration-200 group-hover:opacity-90"
                 priority
               />
             </div>
-            <div className="flex flex-col">
-              <span className={`${typo('h3')} ${textColor('primary')} font-bold leading-tight`}>
-                Academia Hub
-              </span>
-              <span className={`${typo('caption')} ${textColor('muted')} hidden sm:block`}>
-                Gestion scolaire institutionnelle
-              </span>
+            <div className={`${textColor('primary')} font-bold leading-none`}>
+              <span className="text-xl md:text-2xl block">Academia</span>
+              <span className="text-xs md:text-sm block -mt-2">Hub</span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center space-x-3 flex-nowrap flex-shrink-0">
             {menuItems.map((item) => (
               <Link
                 key={item.path}
@@ -96,18 +93,18 @@ export default function PremiumHeader() {
                 )}
               </Link>
             ))}
-            <div className="ml-4 pl-4 border-l border-gray-200">
+            <div className="ml-8 pl-8 border-l border-gray-200 flex-shrink-0">
               <Link
-                href="/signup"
+                href="/login"
                 className={cn(
-                  'bg-blue-900 text-white px-6 py-2.5 rounded-md',
-                  'font-semibold hover:bg-blue-800 transition-all duration-200',
+                  'bg-blue-600 text-white px-6 py-2.5 rounded-md',
+                  'font-semibold hover:bg-blue-700 transition-all duration-200',
                   'shadow-sm hover:shadow-md transform hover:-translate-y-0.5',
                   'inline-flex items-center space-x-2'
                 )}
               >
-                <span>Activer Academia Hub</span>
-                <AppIcon name="trends" size="submenu" className="text-white" />
+                <span>Se Connecter</span>
+                <AppIcon name="login" size="submenu" className="text-white" />
               </Link>
             </div>
           </nav>
@@ -123,7 +120,7 @@ export default function PremiumHeader() {
                 'focus:outline-none focus:ring-2 focus:ring-blue-900 focus:ring-offset-2'
               )}
               aria-label="Toggle menu"
-              aria-expanded={isMenuOpen}
+              aria-expanded={ariaExpanded}
             >
               {isMenuOpen ? (
                 <AppIcon name="close" size="menu" className="text-blue-900" />
@@ -161,17 +158,17 @@ export default function PremiumHeader() {
             ))}
             <div className="pt-4 mt-4 border-t border-gray-200">
               <Link
-                href="/signup"
+                href="/login"
                 onClick={() => setIsMenuOpen(false)}
                 className={cn(
-                  'bg-blue-900 text-white w-full py-3 rounded-md',
-                  'font-semibold hover:bg-blue-800 transition-all duration-200',
+                  'bg-blue-600 text-white w-full py-3 rounded-md',
+                  'font-semibold hover:bg-blue-700 transition-all duration-200',
                   'shadow-sm hover:shadow-md',
                   'inline-flex items-center justify-center space-x-2'
                 )}
               >
-                <span>Activer Academia Hub</span>
-                <AppIcon name="trends" size="submenu" className="text-white" />
+                <span>Se Connecter</span>
+                <AppIcon name="login" size="submenu" className="text-white" />
               </Link>
             </div>
           </nav>
