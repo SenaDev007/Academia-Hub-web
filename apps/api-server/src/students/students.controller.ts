@@ -1,0 +1,118 @@
+/**
+ * ============================================================================
+ * STUDENTS CONTROLLER - EXEMPLE MODULE SCOLARITE
+ * ============================================================================
+ * 
+ * Exemple de controller avec protection par module et niveau scolaire
+ * 
+ * ============================================================================
+ */
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  UseInterceptors,
+  Query,
+} from '@nestjs/common';
+import { StudentsService } from './students.service';
+import { CreateStudentDto } from './dto/create-student.dto';
+import { UpdateStudentDto } from './dto/update-student.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { ModuleAccessGuard } from '../common/guards/module-access.guard';
+import { TenantValidationGuard } from '../common/guards/tenant-validation.guard';
+import { TenantIsolationGuard } from '../common/guards/tenant-isolation.guard';
+import { ModuleIsolationInterceptor } from '../common/interceptors/module-isolation.interceptor';
+import { AuditLogInterceptor } from '../common/interceptors/audit-log.interceptor';
+import { TenantId } from '../common/decorators/tenant-id.decorator';
+import { SchoolLevelId } from '../common/decorators/school-level-id.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Permissions } from '../auth/decorators/permissions.decorator';
+import { ModuleTypeRequired, ModuleTypeParam } from '../common/decorators/module-type.decorator';
+import { ModuleType } from '../modules/entities/module.entity';
+
+@Controller('students')
+@UseGuards(
+  JwtAuthGuard,
+  TenantValidationGuard,
+  TenantIsolationGuard,
+  RolesGuard,
+  PermissionsGuard,
+  ModuleAccessGuard, // Protection par module
+)
+@UseInterceptors(
+  AuditLogInterceptor,
+  ModuleIsolationInterceptor, // Isolation par niveau
+)
+@ModuleTypeRequired(ModuleType.SCOLARITE) // Module SCOLARITE requis
+export class StudentsController {
+  constructor(private readonly studentsService: StudentsService) {}
+
+  @Post()
+  @Roles('admin', 'director', 'teacher')
+  @Permissions('students.create', 'students.manage')
+  create(
+    @Body() createStudentDto: CreateStudentDto,
+    @TenantId() tenantId: string,
+    @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement par ContextInterceptor
+    @ModuleTypeParam() moduleType: ModuleType, // Résolu automatiquement
+    @CurrentUser() user: any,
+  ) {
+    // Le contexte (tenantId, schoolLevelId, moduleType) est automatiquement résolu et validé
+    return this.studentsService.create(createStudentDto, tenantId, schoolLevelId, user.id);
+  }
+
+  @Get()
+  @Permissions('students.read', 'students.manage')
+  findAll(
+    @TenantId() tenantId: string,
+    @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement
+    @ModuleTypeParam() moduleType: ModuleType, // Résolu automatiquement
+  ) {
+    // Isolation garantie : seuls les étudiants du niveau spécifié
+    // Le contexte est automatiquement validé par ContextValidationGuard
+    return this.studentsService.findAll(tenantId, schoolLevelId);
+  }
+
+  @Get(':id')
+  @Permissions('students.read', 'students.manage')
+  findOne(
+    @Param('id') id: string,
+    @TenantId() tenantId: string,
+    @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement
+  ) {
+    return this.studentsService.findOne(id, tenantId, schoolLevelId);
+  }
+
+  @Patch(':id')
+  @Roles('admin', 'director', 'teacher')
+  @Permissions('students.update', 'students.manage')
+  update(
+    @Param('id') id: string,
+    @Body() updateStudentDto: UpdateStudentDto,
+    @TenantId() tenantId: string,
+    @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement
+    @CurrentUser() user: any,
+  ) {
+    return this.studentsService.update(id, updateStudentDto, tenantId, schoolLevelId);
+  }
+
+  @Delete(':id')
+  @Roles('admin', 'director')
+  @Permissions('students.delete', 'students.manage')
+  remove(
+    @Param('id') id: string,
+    @TenantId() tenantId: string,
+    @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement
+  ) {
+    return this.studentsService.delete(id, tenantId, schoolLevelId);
+  }
+}

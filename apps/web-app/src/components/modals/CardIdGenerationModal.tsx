@@ -1,0 +1,640 @@
+import React, { useState, useEffect } from 'react';
+import { X, Camera, Download, Printer, Eye } from 'lucide-react';
+import CardIdPDFModal from './CardIdPDFModal';
+import { useSchoolSettings } from '../../hooks/useSchoolSettings';
+import { api } from '../../lib/api/client';
+
+interface CardIdGenerationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onGenerate: (data: any) => void;
+  students?: any[];
+  classes?: any[];
+}
+
+const CardIdGenerationModal: React.FC<CardIdGenerationModalProps> = ({
+  isOpen,
+  onClose,
+  onGenerate,
+  students = [],
+  classes = []
+}) => {
+  // Générer les années scolaires dynamiquement
+  const getCurrentAcademicYear = () => {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    
+    // Si on est entre septembre et décembre, on est dans l'année scolaire en cours
+    if (currentMonth >= 9) {
+      return `${currentYear}-${currentYear + 1}`;
+    } else {
+      // Si on est entre janvier et août, on est dans l'année scolaire précédente
+      return `${currentYear - 1}-${currentYear}`;
+    }
+  };
+
+  const generateAcademicYears = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    
+    // Générer 5 années : 2 précédentes, actuelle, 2 suivantes
+    for (let i = -2; i <= 2; i++) {
+      const year = currentYear + i;
+      years.push(`${year}-${year + 1}`);
+    }
+    
+    return years;
+  };
+
+  const [formData, setFormData] = useState({
+    academicYear: getCurrentAcademicYear(),
+    classId: '',
+    studentId: '',
+    forEntireClass: false,
+    cardType: 'student',
+    includePhoto: true,
+    includeQRCode: true,
+    includeBarcode: false,
+    format: 'pdf'
+  });
+
+  const [filteredClasses, setFilteredClasses] = useState<any[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
+  const [isPDFModalOpen, setIsPDFModalOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [cardStudents, setCardStudents] = useState<any[]>([]);
+  
+  // Récupérer les paramètres de l'école
+  const { schoolSettings } = useSchoolSettings();
+
+  const cardTypes = [
+    { value: 'student', label: 'Carte d\'élève' },
+    { value: 'library', label: 'Carte de bibliothèque' },
+    { value: 'canteen', label: 'Carte de cantine' },
+    { value: 'transport', label: 'Carte de transport' }
+  ];
+
+  const formatOptions = [
+    { value: 'pdf', label: 'PDF' },
+    { value: 'image', label: 'Image' },
+    { value: 'print', label: 'Impression directe' }
+  ];
+
+  // Filtrer les classes selon l'année scolaire
+  useEffect(() => {
+    if (classes && formData.academicYear) {
+      // Récupérer l'ID de l'année scolaire depuis la base de données
+      const filterClassesByAcademicYear = async () => {
+        try {
+          // TODO: Utiliser un endpoint API spécifique pour récupérer l'année scolaire
+          // Les requêtes SQL directes ne sont pas recommandées dans le Web SaaS
+          try {
+            // Utiliser un endpoint API dédié à la place
+            throw new Error('Direct SQL queries are not allowed. Use specific API endpoints instead.');
+            // const yearResult = await api.academicYears.getByName(formData.academicYear);
+            
+            console.log('🔍 Requête année scolaire:', {
+              query: yearQuery,
+              academicYear: formData.academicYear,
+              result: yearResult
+            });
+            
+            if (yearResult && yearResult.results && yearResult.results.length > 0) {
+              const academicYearId = yearResult.results[0].id;
+              console.log('🔍 Academic Year ID trouvé:', academicYearId, 'pour l\'année:', formData.academicYear);
+              
+              // TODO: Utiliser un endpoint API spécifique pour récupérer les classes par année scolaire
+              // Les requêtes SQL directes ne sont pas recommandées dans le Web SaaS
+              throw new Error('Direct SQL queries are not allowed. Use specific API endpoints instead.');
+              // const classesByAcademicYearResult = await api.classes.getByAcademicYear(academicYearId);
+              
+              console.log('🔍 Classes par academicYearId:', {
+                academicYearId,
+                classesFound: classesByAcademicYearResult?.results?.length || 0,
+                classes: classesByAcademicYearResult?.results
+              });
+              
+              if (classesByAcademicYearResult && classesByAcademicYearResult.results && classesByAcademicYearResult.results.length > 0) {
+                // Mapper les résultats de la requête vers le format attendu
+                const filteredClasses = classesByAcademicYearResult.results.map((cls: any) => ({
+                  id: cls.id,
+                  name: cls.name,
+                  level: cls.level,
+                  academicYearId: cls.academicYearId,
+                  schoolId: cls.schoolId
+                }));
+                
+                console.log('🔍 Classes filtrées par academicYearId:', filteredClasses.length);
+                setFilteredClasses(filteredClasses);
+              } else {
+                console.log('⚠️ Aucune classe trouvée avec academicYearId, vérification des classes disponibles...');
+                
+                // TODO: Utiliser un endpoint API spécifique pour récupérer toutes les classes
+                // Les requêtes SQL directes ne sont pas recommandées dans le Web SaaS
+                throw new Error('Direct SQL queries are not allowed. Use specific API endpoints instead.');
+                // const allClassesResult = await api.classes.getAll();
+                console.log('🔍 Toutes les classes disponibles:', {
+                  total: allClassesResult?.results?.length || 0,
+                  classes: allClassesResult?.results?.map((cls: any) => ({
+                    name: cls.name,
+                    academicYearId: cls.academicYearId
+                  }))
+                });
+                
+                // Si aucune classe trouvée pour cette année, vérifier si toutes les classes appartiennent à une autre année
+                const uniqueAcademicYearIds = [...new Set(allClassesResult?.results?.map((cls: any) => cls.academicYearId))];
+                console.log('🔍 AcademicYearIds uniques dans les classes:', uniqueAcademicYearIds);
+                
+                if (uniqueAcademicYearIds.length === 1) {
+                  const existingAcademicYearId = uniqueAcademicYearIds[0];
+                  console.log('⚠️ Toutes les classes appartiennent à l\'année:', existingAcademicYearId);
+                  console.log('⚠️ Année demandée:', academicYearId);
+                  
+                  if (existingAcademicYearId === academicYearId) {
+                    console.log('✅ Les classes correspondent à l\'année demandée - affichage de toutes les classes');
+                    // Afficher toutes les classes car elles correspondent à l'année demandée
+                    const allClasses = allClassesResult.results.map((cls: any) => ({
+                      id: cls.id,
+                      name: cls.name,
+                      level: cls.level,
+                      academicYearId: cls.academicYearId,
+                      schoolId: cls.schoolId || 'school-1'
+                    }));
+                    setFilteredClasses(allClasses);
+                    return;
+                  } else {
+                    console.log('⚠️ Aucune classe pour cette année scolaire - liste vide');
+                    setFilteredClasses([]);
+                    return;
+                  }
+                }
+                
+                console.log('⚠️ Essai avec les élèves...');
+                
+                // Fallback: essayer avec les élèves
+                const classesWithStudentsQuery = `
+                  SELECT DISTINCT c.id, c.name, c.level, c.academicYearId, c.schoolId
+                  FROM classes c
+                  INNER JOIN students s ON c.id = s.classId
+                  WHERE s.academicYearId = ?
+                  ORDER BY c.name
+                `;
+                
+                const classesWithStudentsResult = await api.database.executeQuery(classesWithStudentsQuery, [academicYearId]);
+                
+                console.log('🔍 Classes avec élèves pour cette année:', {
+                  academicYearId,
+                  classesFound: classesWithStudentsResult?.results?.length || 0,
+                  classes: classesWithStudentsResult?.results
+                });
+                
+                if (classesWithStudentsResult && classesWithStudentsResult.results && classesWithStudentsResult.results.length > 0) {
+                  const filteredClasses = classesWithStudentsResult.results.map((cls: any) => ({
+                    id: cls.id,
+                    name: cls.name,
+                    level: cls.level,
+                    academicYearId: cls.academicYearId,
+                    schoolId: cls.schoolId
+                  }));
+                  
+                  console.log('🔍 Classes filtrées par élèves:', filteredClasses.length);
+                  setFilteredClasses(filteredClasses);
+                } else {
+                  console.log('⚠️ Aucune classe trouvée avec des élèves pour cette année scolaire');
+                  
+                  // Vérifier s'il y a des élèves pour cette année
+                  const allStudentsForYearQuery = `SELECT COUNT(*) as count FROM students WHERE academicYearId = ?`;
+                  const allStudentsForYearResult = await api.database.executeQuery(allStudentsForYearQuery, [academicYearId]);
+                  
+                  console.log('🔍 Vérification des élèves:', {
+                    academicYearId,
+                    studentsCount: allStudentsForYearResult?.results?.[0]?.count || 0
+                  });
+                  
+                  if (allStudentsForYearResult?.results?.[0]?.count > 0) {
+                    console.log('⚠️ Il y a des élèves pour cette année mais pas de classes trouvées - problème de jointure');
+                    setFilteredClasses(classes);
+                  } else {
+                    console.log('⚠️ Aucun élève trouvé pour cette année scolaire');
+                    setFilteredClasses(classes);
+                  }
+                }
+              }
+            } else {
+              console.log('⚠️ Aucune année scolaire trouvée pour:', formData.academicYear);
+              const allYearsQuery = 'SELECT id, name FROM academic_years ORDER BY name';
+              const allYearsResult = await api.database.executeQuery(allYearsQuery, []);
+              console.log('🔍 Toutes les années scolaires disponibles:', allYearsResult);
+              setFilteredClasses(classes);
+            }
+          } else {
+            console.log('⚠️ ElectronAPI non disponible, utilisation des classes par défaut');
+            setFilteredClasses(classes);
+          }
+        } catch (error) {
+          console.error('Erreur lors du filtrage des classes:', error);
+          setFilteredClasses(classes);
+        }
+      };
+
+      filterClassesByAcademicYear();
+    } else {
+      setFilteredClasses(classes);
+    }
+  }, [formData.academicYear, classes]);
+
+  // Filtrer les élèves selon la classe sélectionnée
+  useEffect(() => {
+    const fetchAndFilterStudents = async () => {
+      if (formData.classId) {
+        try {
+          console.log('🔍 Récupération des élèves pour la classe:', formData.classId);
+          
+          // Récupérer tous les élèves depuis la base de données
+          const result = await api.students.getStudents('school-1');
+          
+          if (result && result.success && Array.isArray(result.data)) {
+            console.log('🔍 Tous les élèves récupérés:', result.data.length);
+            
+            // Filtrer les élèves par classe
+            const filtered = result.data.filter((student: any) => student.classId === formData.classId);
+            
+            console.log('🔍 Élèves filtrés pour la classe:', {
+              classId: formData.classId,
+              totalStudents: result.data.length,
+              filteredStudents: filtered.length,
+              students: filtered.map(s => ({ id: s.id, name: `${s.firstName} ${s.lastName}`, classId: s.classId }))
+            });
+            
+            setFilteredStudents(filtered);
+          } else {
+            console.log('⚠️ Aucun élève récupéré depuis la base de données');
+            setFilteredStudents([]);
+          }
+        } catch (error) {
+          console.error('Erreur lors de la récupération des élèves:', error);
+          setFilteredStudents([]);
+        }
+      } else if (students && formData.classId) {
+        // Fallback: utiliser les élèves passés en props
+        const filtered = students.filter(student => student.classId === formData.classId);
+        setFilteredStudents(filtered);
+      } else {
+        setFilteredStudents([]);
+      }
+    };
+
+    fetchAndFilterStudents();
+  }, [formData.classId, students]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData(prev => {
+      const newData = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      };
+
+      // Réinitialiser la classe quand l'année change
+      if (name === 'academicYear') {
+        newData.classId = '';
+        newData.studentId = '';
+      }
+
+      // Réinitialiser l'élève quand la classe change
+      if (name === 'classId') {
+        newData.studentId = '';
+      }
+
+      return newData;
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsGenerating(true);
+    
+    try {
+      console.log('🔍 Début de la génération des cartes:', formData);
+      
+      // Récupérer les données des élèves selon les paramètres
+      let studentsData = [];
+      
+      // Utiliser l'API HTTP
+      try {
+        const result = await api.students.getAll();
+        
+        if (result && result.success && Array.isArray(result.data)) {
+          let filteredStudents = result.data;
+          
+          // Filtrer selon les paramètres
+          if (formData.forEntireClass && formData.classId) {
+            // Générer pour toute la classe
+            filteredStudents = result.data.filter((student: any) => student.classId === formData.classId);
+            console.log('🔍 Génération pour toute la classe:', {
+              classId: formData.classId,
+              totalStudents: filteredStudents.length
+            });
+          } else if (formData.studentId) {
+            // Générer pour un élève spécifique
+            filteredStudents = result.data.filter((student: any) => student.id === formData.studentId);
+            console.log('🔍 Génération pour un élève spécifique:', {
+              studentId: formData.studentId,
+              student: filteredStudents[0]?.firstName + ' ' + filteredStudents[0]?.lastName
+            });
+          }
+          
+          // Transformer les données pour les cartes
+          studentsData = filteredStudents.map((student: any) => ({
+            id: student.id,
+            firstName: student.firstName,
+            lastName: student.lastName,
+            gender: student.gender || 'M',
+            birthDate: student.dateOfBirth ? new Date(student.dateOfBirth).toLocaleDateString('fr-FR') : 'Non spécifié',
+            birthPlace: student.placeOfBirth || 'Non spécifié',
+            className: student.className || student.class || 'Classe non spécifiée',
+            academicYear: formData.academicYear,
+            photo: student.photo || student.avatar || ''
+          }));
+          
+          console.log('🔍 Données des cartes préparées:', {
+            totalCards: studentsData.length,
+            cardType: formData.cardType,
+            includePhoto: formData.includePhoto,
+            includeQRCode: formData.includeQRCode,
+            includeBarcode: formData.includeBarcode
+          });
+          
+          // Préparer les données pour le modal PDF
+          const cardData = {
+            students: studentsData,
+            cardType: formData.cardType,
+            includePhoto: formData.includePhoto,
+            includeQRCode: formData.includeQRCode,
+            includeBarcode: formData.includeBarcode
+          };
+          
+          setCardStudents(studentsData);
+          setIsPDFModalOpen(true);
+          
+        } else {
+          console.log('⚠️ Aucun élève récupéré depuis la base de données');
+        }
+      }
+      
+    } catch (error) {
+      console.error('Erreur lors de la génération des cartes:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-3xl max-h-[95vh] flex flex-col border border-gray-200/20 dark:border-gray-700/50">
+        {/* Header avec gradient */}
+        <div className="relative bg-gradient-to-r from-pink-600 via-rose-600 to-red-600 p-8 text-white rounded-t-3xl">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg">
+                  <Camera className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold mb-1">Génération de Carte ID</h2>
+                  <p className="text-pink-100 text-lg">Créez une carte d'identité scolaire personnalisée</p>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-3 hover:bg-white/20 rounded-xl transition-all duration-200 backdrop-blur-sm"
+              >
+                <X className="w-6 h-6 text-white" />
+              </button>
+            </div>
+          </div>
+          {/* Décoration */}
+          <div className="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
+          <div className="absolute -bottom-8 -left-8 w-32 h-32 bg-white/5 rounded-full"></div>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Année scolaire - Premier champ */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Année scolaire *
+            </label>
+            <select
+              name="academicYear"
+              value={formData.academicYear}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            >
+              <option value="">Sélectionner une année</option>
+              {generateAcademicYears().map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Classe - Filtrée par année scolaire */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Classe *
+            </label>
+            <select
+              name="classId"
+              value={formData.classId}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            >
+              <option value="">Sélectionner une classe</option>
+              {filteredClasses.map(cls => (
+                <option key={cls.id} value={cls.id}>
+                  {cls.name} - {cls.level}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Case à cocher "Pour toute la classe" */}
+          <div className="flex items-center space-x-3">
+            <input
+              type="checkbox"
+              name="forEntireClass"
+              checked={formData.forEntireClass}
+              onChange={handleInputChange}
+              className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Pour toute la classe
+            </label>
+          </div>
+
+          {/* Sélection de l'élève - Conditionnelle */}
+          {!formData.forEntireClass && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Élève concerné *
+              </label>
+              <select
+                name="studentId"
+                value={formData.studentId}
+                onChange={handleInputChange}
+                required={!formData.forEntireClass}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+              >
+                <option value="">Sélectionner un élève</option>
+                {filteredStudents.map(student => (
+                  <option key={student.id} value={student.id}>
+                    {student.firstName} {student.lastName} - {student.className || student.class || 'Classe non spécifiée'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Type de carte */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Type de carte *
+            </label>
+            <select
+              name="cardType"
+              value={formData.cardType}
+              onChange={handleInputChange}
+              required
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            >
+              {cardTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Format */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Format de sortie
+            </label>
+            <select
+              name="format"
+              value={formData.format}
+              onChange={handleInputChange}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+            >
+              {formatOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Options */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Options</h3>
+            
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                name="includePhoto"
+                checked={formData.includePhoto}
+                onChange={handleInputChange}
+                className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label className="text-sm text-gray-700 dark:text-gray-300">
+                Inclure la photo de l'élève
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                name="includeQRCode"
+                checked={formData.includeQRCode}
+                onChange={handleInputChange}
+                className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label className="text-sm text-gray-700 dark:text-gray-300">
+                Inclure un code QR
+              </label>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input
+                type="checkbox"
+                name="includeBarcode"
+                checked={formData.includeBarcode}
+                onChange={handleInputChange}
+                className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              />
+              <label className="text-sm text-gray-700 dark:text-gray-300">
+                Inclure un code-barres
+              </label>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-3 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              disabled={isGenerating}
+              className="px-6 py-3 bg-gradient-to-r from-pink-600 to-rose-600 text-white rounded-xl hover:from-pink-700 hover:to-rose-700 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <span>Génération...</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="w-4 h-4" />
+                  <span>Générer la carte ID</span>
+                </>
+              )}
+            </button>
+          </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      {/* Modal PDF pour les cartes */}
+      <CardIdPDFModal
+        isOpen={isPDFModalOpen}
+        onClose={() => setIsPDFModalOpen(false)}
+        cardData={{
+          students: cardStudents,
+          cardType: formData.cardType,
+          includePhoto: formData.includePhoto,
+          includeQRCode: formData.includeQRCode,
+          includeBarcode: formData.includeBarcode
+        }}
+        schoolSettings={schoolSettings}
+      />
+    </div>
+  );
+};
+
+export default CardIdGenerationModal;

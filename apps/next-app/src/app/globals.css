@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --royal-blue-900: #0A2A5E;
+  --royal-blue-800: #0D3B85;
+  --royal-blue-700: #114FC4;
+  --royal-blue-600: #1C6FE8;
+  --living-gold-600: #CFA63A;
+  --living-gold-500: #F2C94C;
+  --living-gold-400: #FFE08A;
+  --graphite-900: #0F172A;
+  --graphite-700: #334155;
+  --graphite-500: #64748B;
+  --cloud: #F7F9FC;
+  --mist: #EEF2F8;
+  --crimson-600: #B91C1C;
+  --crimson-500: #DC2626;
+}
+
+body {
+  @apply bg-white text-blue-900;
+}
+
+/* Utilities */
+@layer utilities {
+  .btn-primary-crimson {
+    @apply bg-crimson-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-crimson-500 transition-colors;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 text-gray-900 px-6 py-3 rounded-md font-semibold hover:bg-gray-300 transition-colors;
+  }
+  
+  .card-institutional {
+    @apply bg-white rounded-lg p-6 border border-gray-200 shadow-sm;
+  }
+  
+  .icon-card-primary {
+    @apply w-8 h-8 text-blue-900 mb-4;
+  }
+}
+
+@keyframes shake-interval {
+  0%, 95%, 100% { transform: translateX(0) rotate(0deg); }
+  1% { transform: translateX(-8px) rotate(-2deg); }
+  2% { transform: translateX(8px) rotate(2deg); }
+  3% { transform: translateX(-8px) rotate(-2deg); }
+  4% { transform: translateX(8px) rotate(2deg); }
+  5% { transform: translateX(-6px) rotate(-1.5deg); }
+  6% { transform: translateX(6px) rotate(1.5deg); }
+  7% { transform: translateX(-6px) rotate(-1.5deg); }
+  8% { transform: translateX(6px) rotate(1.5deg); }
+  9% { transform: translateX(-4px) rotate(-1deg); }
+  10% { transform: translateX(4px) rotate(1deg); }
+  11% { transform: translateX(-4px) rotate(-1deg); }
+  12% { transform: translateX(4px) rotate(1deg); }
+  13% { transform: translateX(-2px) rotate(-0.5deg); }
+  14% { transform: translateX(2px) rotate(0.5deg); }
+  15% { transform: translateX(-2px) rotate(-0.5deg); }
+  16% { transform: translateX(2px) rotate(0.5deg); }
+  17% { transform: translateX(0) rotate(0deg); }
+}
+

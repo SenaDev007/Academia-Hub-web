@@ -1,0 +1,31 @@
+/**
+ * ============================================================================
+ * SYNTHESIS MODULE - MODULE GÉNÉRAL DE SYNTHÈSE
+ * ============================================================================
+ * 
+ * Module en lecture seule qui fournit une vue globale sans jamais
+ * modifier les données brutes. Toutes les agrégations sont explicites
+ * et traçables.
+ * 
+ * ============================================================================
+ */
+
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { SynthesisController } from './synthesis.controller';
+import { SynthesisService } from './synthesis.service';
+import { SchoolLevelsModule } from '../../school-levels/school-levels.module';
+import { TenantsModule } from '../../tenants/tenants.module';
+
+@Module({
+  imports: [
+    TypeOrmModule.forFeature([]), // Pas d'entités, seulement des vues
+    SchoolLevelsModule,
+    TenantsModule,
+  ],
+  controllers: [SynthesisController],
+  providers: [SynthesisService],
+  exports: [SynthesisService],
+})
+export class SynthesisModule {}
+
