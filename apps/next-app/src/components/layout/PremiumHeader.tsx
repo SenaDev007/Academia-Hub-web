@@ -37,7 +37,7 @@ export default function PremiumHeader() {
     { path: '/', label: 'Accueil' },
     { path: '/plateforme', label: 'Plateforme' },
     { path: '/modules', label: 'Modules' },
-    { path: '/tarification', label: 'Tarification' },
+    { path: '/#tarification', label: 'Tarification' },
     { path: '/securite', label: 'Sécurité & Méthode' },
     { path: '/contact', label: 'Contact' },
   ];
@@ -55,7 +55,8 @@ export default function PremiumHeader() {
         <div className="flex items-center justify-between h-20 flex-nowrap px-4 sm:px-6 lg:px-8">
           {/* Logo */}
           <Link 
-            href="/admin-login" 
+            href="/admin-login"
+            prefetch={true}
             className="flex items-center space-x-1 group transition-transform duration-200 hover:scale-105 flex-shrink-0"
           >
             <div className="relative">
@@ -80,6 +81,7 @@ export default function PremiumHeader() {
               <Link
                 key={item.path}
                 href={item.path}
+                prefetch={true}
                 className={cn(
                   'relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
                   isActive(item.path)
@@ -96,6 +98,7 @@ export default function PremiumHeader() {
             <div className="ml-8 pl-8 border-l border-gray-200 flex-shrink-0">
               <Link
                 href="/login"
+                prefetch={true}
                 className={cn(
                   'bg-blue-600 text-white px-6 py-2.5 rounded-md',
                   'font-semibold hover:bg-blue-700 transition-all duration-200',

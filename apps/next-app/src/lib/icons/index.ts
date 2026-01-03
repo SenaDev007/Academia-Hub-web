@@ -102,6 +102,14 @@ import {
   Sparkles,
   ArrowRight,
   Play,
+  MessageCircle,
+  Send,
+  Star,
+  
+  // Social Media Icons
+  Facebook,
+  Linkedin,
+  Youtube,
   
   // Type from lucide-react
   LucideIcon,
@@ -193,6 +201,16 @@ export const IconMapping = {
   sparkles: Sparkles,
   arrowRight: ArrowRight,
   playCircle: Play,
+  messageCircle: MessageCircle,
+  send: Send,
+  star: Star,
+  x: X, // Utilisé pour fermer et pour le réseau social X
+  
+  // Social Media Icons
+  facebook: Facebook,
+  linkedin: Linkedin,
+  twitter: X, // X (anciennement Twitter) - utilise l'icône X de Lucide
+  youtube: Youtube,
 } as const;
 
 /**

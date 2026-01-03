@@ -1,0 +1,15 @@
+/**
+ * SARA Closing Responses - Réponses de closing stratégiques
+ * 
+ * Chaque réponse doit se terminer par une action claire
+ */
+
+export const closingResponses = {
+  trial_close: "🧪 Le plus simple est de commencer par le free trial de 3 jours. Vous découvrirez Academia Hub sans engagement, avec un accompagnement guidé. Souhaitez-vous démarrer maintenant ?",
+  activation_close: "🚀 Vous pouvez activer votre établissement dès maintenant. La souscription est payée une seule fois, et vous bénéficiez ensuite de 30 jours d'exploitation réelle sans abonnement. Voulez-vous que je vous guide ?",
+  pricing_reassurance: "💡 Academia Hub est un système complet, tout est inclus. Il n'y a aucun module caché ni frais surprise. Vous investissez dans une plateforme durable, pas dans une simple application.",
+  annual_push: "📅 Beaucoup de promoteurs choisissent l'abonnement annuel : il offre 2 mois gratuits et une tranquillité totale. Souhaitez-vous voir cette option ?",
+  enterprise_close: "📄 À partir de 3 écoles, nous proposons une offre personnalisée. Cela vous garantit un tarif adapté à votre structure. Voulez-vous demander un devis maintenant ?",
+  human_handoff: "📞 Si vous le souhaitez, je peux vous mettre en relation avec un conseiller pour en discuter directement. Préférez-vous WhatsApp ou email ?"
+};
+

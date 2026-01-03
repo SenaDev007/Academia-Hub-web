@@ -4,55 +4,55 @@ import { useMemo } from 'react';
 
 export default function OrionParticles() {
   const { eyeMouthParticles, backgroundParticles } = useMemo(() => {
-    // Particules pour les yeux (2 yeux) - plus grosses et visibles
-    const eyeParticles = Array.from({ length: 16 }).map((_, i) => {
-      const eyeIndex = i < 8 ? 0 : 1; // 0 = œil gauche, 1 = œil droit
-      const particleIndex = i % 8;
+    // Particules pour les yeux (2 yeux) - plus nombreuses, plus petites
+    const eyeParticles = Array.from({ length: 24 }).map((_, i) => {
+      const eyeIndex = i < 12 ? 0 : 1; // 0 = œil gauche, 1 = œil droit
+      const particleIndex = i % 12;
       const baseX = eyeIndex === 0 ? 42 : 58; // Position X approximative des yeux (en %)
       const baseY = 35; // Position Y approximative des yeux (en %)
-      const angle = (particleIndex / 8) * 360;
-      const radius = 2.5 + (particleIndex % 2) * 2;
+      const angle = (particleIndex / 12) * 360;
+      const radius = 2 + (particleIndex % 2) * 1.5;
       
       return {
         id: `eye-${i}`,
         x: baseX + Math.cos((angle * Math.PI) / 180) * radius,
         y: baseY + Math.sin((angle * Math.PI) / 180) * radius,
-        delay: particleIndex * 0.12,
-        size: 6 + Math.random() * 4, // 6-10px (plus grosses)
+        delay: particleIndex * 0.08,
+        size: 3 + Math.random() * 2, // 3-5px (plus petites)
         duration: 2 + Math.random() * 1, // 2-3s
       };
     });
 
-    // Particules pour la bouche (centre) - plus grosses et visibles
-    const mouthParticles = Array.from({ length: 12 }).map((_, i) => {
+    // Particules pour la bouche (centre) - plus nombreuses, plus petites
+    const mouthParticles = Array.from({ length: 18 }).map((_, i) => {
       const baseX = 50; // Centre
       const baseY = 60; // Position Y approximative de la bouche (en %)
-      const angle = (i / 12) * 360; // Répartition circulaire
-      const radius = 3 + (i % 3) * 2;
+      const angle = (i / 18) * 360; // Répartition circulaire
+      const radius = 2.5 + (i % 3) * 1.5;
       
       return {
         id: `mouth-${i}`,
         x: baseX + Math.cos((angle * Math.PI) / 180) * radius,
         y: baseY + Math.sin((angle * Math.PI) / 180) * radius,
-        delay: i * 0.1,
-        size: 5 + Math.random() * 4, // 5-9px (plus grosses)
+        delay: i * 0.07,
+        size: 2.5 + Math.random() * 2, // 2.5-4.5px (plus petites)
         duration: 1.8 + Math.random() * 1.2, // 1.8-3s
       };
     });
 
-    // Particules de fond qui remontent de bas en haut - plus nombreuses, plus grosses et plus visibles
-    const backgroundParticles = Array.from({ length: 50 }).map((_, i) => {
-      // Position X aléatoire entre 15% et 85% pour être derrière le robot
-      const startX = 15 + Math.random() * 70;
+    // Particules de fond qui remontent de bas en haut - beaucoup plus nombreuses, plus petites
+    const backgroundParticles = Array.from({ length: 80 }).map((_, i) => {
+      // Position X aléatoire entre 10% et 90% pour être derrière le robot
+      const startX = 10 + Math.random() * 80;
       // Dérive horizontale aléatoire
-      const driftX = (Math.random() - 0.5) * 40; // -20px à +20px
+      const driftX = (Math.random() - 0.5) * 30; // -15px à +15px
       
       return {
         id: `bg-${i}`,
         x: startX,
         driftX: driftX,
-        delay: (i / 50) * 12, // Répartir sur 12 secondes
-        size: 8 + Math.random() * 10, // 8-18px (beaucoup plus grosses)
+        delay: (i / 80) * 15, // Répartir sur 15 secondes
+        size: 4 + Math.random() * 4, // 4-8px (plus petites)
         duration: 5 + Math.random() * 5, // 5-10s
       };
     });

@@ -63,3 +63,30 @@ export async function getTenantTestimonials(): Promise<Testimonial[]> {
   return response.data;
 }
 
+/**
+ * Récupère les statistiques des témoignages validés
+ * (pour affichage sur le landing page)
+ */
+export async function getTestimonialStats(): Promise<{
+  totalSchools: number;
+  satisfactionRate: number;
+  averageRating: number;
+}> {
+  try {
+    const response = await apiClient.get<{
+      totalSchools: number;
+      satisfactionRate: number;
+      averageRating: number;
+    }>('/testimonials/stats');
+    return response.data;
+  } catch (error) {
+    // Fallback en cas d'erreur
+    console.error('Error loading testimonial stats:', error);
+    return {
+      totalSchools: 0,
+      satisfactionRate: 0,
+      averageRating: 0,
+    };
+  }
+}
+

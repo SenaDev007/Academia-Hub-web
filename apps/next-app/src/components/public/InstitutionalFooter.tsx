@@ -18,26 +18,26 @@ export default function InstitutionalFooter() {
     {
       name: 'Facebook',
       href: 'https://facebook.com/academiahub',
-      icon: 'communication' as const,
-      color: 'hover:bg-blue-600',
+      icon: 'facebook' as const,
+      brandColor: '#1877F2', // Couleur officielle Facebook
     },
     {
       name: 'LinkedIn',
       href: 'https://linkedin.com/company/academiahub',
-      icon: 'communication' as const,
-      color: 'hover:bg-blue-700',
+      icon: 'linkedin' as const,
+      brandColor: '#0077B5', // Couleur officielle LinkedIn
     },
     {
-      name: 'Twitter',
+      name: 'X',
       href: 'https://twitter.com/academiahub',
-      icon: 'communication' as const,
-      color: 'hover:bg-sky-500',
+      icon: 'twitter' as const,
+      brandColor: '#000000', // Couleur officielle X
     },
     {
       name: 'YouTube',
       href: 'https://youtube.com/@academiahub',
-      icon: 'communication' as const,
-      color: 'hover:bg-red-600',
+      icon: 'youtube' as const,
+      brandColor: '#FF0000', // Couleur officielle YouTube
     },
   ];
 
@@ -49,27 +49,27 @@ export default function InstitutionalFooter() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Brand & Description */}
             <div className="lg:col-span-1">
-              <div className="flex items-center space-x-3 mb-6">
+              <div className="flex items-center space-x-1 mb-6">
                 <Image
                   src="/images/logo-Academia Hub.png"
                   alt="Academia Hub"
-                  width={48}
-                  height={48}
-                  className="h-12 w-auto"
+                  width={52}
+                  height={52}
+                  className="h-14 w-auto"
                 />
-                <div>
-                  <span className={`${typo('h4')} text-white font-bold block`}>Academia Hub</span>
-                  <span className={`${typo('caption')} text-graphite-500`}>SaaS Institutionnel</span>
+                <div className={`font-bold leading-none`}>
+                  <span className="text-xl md:text-2xl text-white block">Academia</span>
+                  <span className="text-xs md:text-sm text-white block -mt-2">Hub</span>
                 </div>
               </div>
-              <p className={`${typo('body-small')} text-graphite-500 mb-6 leading-relaxed`}>
+              <p className={`${typo('body-small')} text-white mb-6 leading-relaxed`}>
                 La plateforme de gestion scolaire qui structure, contrôle et sécurise vos établissements.
                 Conçue pour les directeurs et promoteurs exigeants.
               </p>
               
               {/* Social Media Links */}
               <div className="flex items-center space-x-3">
-                <span className={`${typo('caption')} text-graphite-500 mr-2`}>Suivez-nous :</span>
+                <span className={`${typo('caption')} text-white mr-2 whitespace-nowrap`}>Suivez-nous :</span>
                 {socialLinks.map((social) => (
                   <a
                     key={social.name}
@@ -78,19 +78,18 @@ export default function InstitutionalFooter() {
                     rel="noopener noreferrer"
                     className={cn(
                       'w-10 h-10 rounded-lg',
-                      'bg-blue-800',
-                      social.color,
                       'flex items-center justify-center',
                       'transition-all duration-200',
                       'hover:scale-110 hover:shadow-lg',
-                      'group border border-navy-700 hover:border-transparent'
+                      'group'
                     )}
+                    style={{ backgroundColor: social.brandColor }}
                     aria-label={`Suivez-nous sur ${social.name}`}
                   >
                     <AppIcon 
                       name={social.icon} 
                       size="submenu" 
-                      className="text-graphite-500 group-hover:text-white transition-colors" 
+                      className="text-white transition-colors" 
                     />
                   </a>
                 ))}
@@ -99,26 +98,27 @@ export default function InstitutionalFooter() {
 
             {/* Produit */}
             <div>
-              <h3 className={`${typo('h4')} text-white mb-6 font-semibold`}>Produit</h3>
+              <h3 className={`text-xl md:text-2xl text-white mb-6 font-semibold`}>Produit</h3>
               <ul className="space-y-3">
                 {[
-                  { label: 'Fonctionnalités', href: '#modules' },
-                  { label: 'Tarification', href: '#tarification' },
-                  { label: 'Sécurité', href: '#offline' },
-                  { label: 'Mode offline', href: '#offline' },
-                  { label: 'ORION (IA)', href: '#orion' },
+                  { label: 'Fonctionnalités', href: '/modules' },
+                  { label: 'Tarification', href: '/#tarification' },
+                  { label: 'Sécurité', href: '/securite' },
+                  { label: 'Mode offline', href: '/#offline' },
+                  { label: 'ORION (IA)', href: '/orion' },
                 ].map((item) => (
                   <li key={item.label}>
                     <Link
                       href={item.href}
+                      prefetch={true}
                       className={cn(
                         typo('body'),
-                        'text-graphite-500 hover:text-white',
+                        'text-white/70 hover:text-white',
                         'transition-colors duration-200',
                         'flex items-center space-x-2 group'
                       )}
                     >
-                      <span className="w-1.5 h-1.5 bg-slate-600 rounded-full group-hover:bg-gold-500 transition-colors" />
+                      <span className="w-1.5 h-1.5 bg-white/50 rounded-full group-hover:bg-gold-500 transition-colors" />
                       <span>{item.label}</span>
                     </Link>
                   </li>
@@ -128,7 +128,7 @@ export default function InstitutionalFooter() {
 
             {/* Légal */}
             <div>
-              <h3 className={`${typo('h4')} text-white mb-6 font-semibold`}>Légal</h3>
+              <h3 className={`text-xl md:text-2xl text-white mb-6 font-semibold`}>Légal</h3>
               <ul className="space-y-3">
                 {[
                   { label: 'Conditions générales', href: '/legal/cgu' },
@@ -139,14 +139,15 @@ export default function InstitutionalFooter() {
                   <li key={item.label}>
                     <Link
                       href={item.href}
+                      prefetch={true}
                       className={cn(
                         typo('body'),
-                        'text-graphite-500 hover:text-white',
+                        'text-white/70 hover:text-white',
                         'transition-colors duration-200',
                         'flex items-center space-x-2 group'
                       )}
                     >
-                      <span className="w-1.5 h-1.5 bg-slate-600 rounded-full group-hover:bg-gold-500 transition-colors" />
+                      <span className="w-1.5 h-1.5 bg-white/50 rounded-full group-hover:bg-gold-500 transition-colors" />
                       <span>{item.label}</span>
                     </Link>
                   </li>
@@ -156,7 +157,7 @@ export default function InstitutionalFooter() {
 
             {/* Contact & Éditeur */}
             <div>
-              <h3 className={`${typo('h4')} text-white mb-6 font-semibold`}>Contact</h3>
+              <h3 className={`text-xl md:text-2xl text-white mb-6 font-semibold`}>Contact</h3>
               <ul className="space-y-4 mb-6">
                 <li className="flex items-start space-x-3">
                   <div className="w-10 h-10 bg-blue-800 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -168,7 +169,7 @@ export default function InstitutionalFooter() {
                       href="mailto:support@academiahub.com"
                       className={cn(
                         typo('body-small'),
-                        'text-graphite-500 hover:text-gold-500 transition-colors'
+                        'text-white/70 hover:text-gold-500 transition-colors'
                       )}
                     >
                       support@academiahub.com
@@ -181,7 +182,7 @@ export default function InstitutionalFooter() {
                   </div>
                   <div>
                     <p className={`${typo('body')} text-white font-medium mb-1`}>Zone d'opération</p>
-                    <p className={cn(typo('body-small'), 'text-graphite-500')}>
+                    <p className={cn(typo('body-small'), 'text-white/70')}>
                       Afrique de l'Ouest
                     </p>
                   </div>
@@ -190,9 +191,9 @@ export default function InstitutionalFooter() {
 
               {/* Éditeur */}
               <div className="pt-6 border-t border-blue-800">
-                <p className={cn(typo('caption'), 'text-slate-500 mb-2')}>Édité par</p>
+                <p className={cn(typo('caption'), 'text-white mb-2')}>Édité par</p>
                 <div className="flex items-center space-x-2">
-                  <div className="relative w-8 h-8 rounded overflow-hidden bg-white/10 flex items-center justify-center">
+                  <div className="relative w-8 h-8 flex items-center justify-center">
                     <Image
                       src="/images/Logo YEHI OR Tech.jpg"
                       alt="YEHI OR Tech"
@@ -220,22 +221,22 @@ export default function InstitutionalFooter() {
           'flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0'
         )}>
           <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6">
-            <p className={cn(typo('caption'), 'text-graphite-500 text-center md:text-left')}>
-              © {currentYear} Academia Hub — Plateforme SaaS de gestion scolaire institutionnelle.
+            <p className={cn(typo('caption'), 'text-white text-center md:text-left')}>
+              © 2021-{currentYear} Academia Hub — Plateforme SaaS de gestion scolaire institutionnelle.
             </p>
             <div className="flex items-center space-x-4">
-              <span className={cn(typo('caption'), 'text-graphite-500')}>Conforme</span>
+              <span className={cn(typo('caption'), 'text-white')}>Conforme</span>
               <div className="flex items-center space-x-2">
-                <span className={cn(typo('caption'), 'text-graphite-500')}>RGPD</span>
-                <span className="w-1 h-1 bg-graphite-500 rounded-full" />
-                <span className={cn(typo('caption'), 'text-graphite-500')}>Standards internationaux</span>
+                <span className={cn(typo('caption'), 'text-white')}>RGPD</span>
+                <span className="w-1 h-1 bg-white/60 rounded-full" />
+                <span className={cn(typo('caption'), 'text-white')}>Standards internationaux</span>
               </div>
             </div>
           </div>
           
           <div className="flex items-center space-x-2">
             <AppIcon name="success" size="submenu" className="text-green-400" />
-            <span className={cn(typo('caption'), 'text-graphite-500')}>
+            <span className={cn(typo('caption'), 'text-white')}>
               Service certifié et sécurisé
             </span>
           </div>

@@ -74,61 +74,54 @@ export default function TestimonialsSection({ limit = 3, featured = true }: Test
               <div className="absolute top-0 right-0 w-24 h-24 bg-gold-500/5 rounded-bl-full"></div>
               
               <div className="relative z-10">
-                {/* Quote Icon */}
-                <div className="mb-6">
-                  <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-br from-gold-500/20 to-gold-600/20 rounded-xl border border-gold-500/30">
-                    <AppIcon name="communication" size="menu" className="text-gold-500" />
-                  </div>
-                </div>
-
-                {/* Rating */}
-                <div className="flex items-center mb-6">
-                  {[...Array(5)].map((_, i) => (
-                    <AppIcon
-                      key={i}
-                      name="success"
-                      size="submenu"
+                {/* Rating - Étoiles dorées dynamiques */}
+                <div className="flex items-center mb-6 gap-1.5">
+                {[...Array(5)].map((_, i) => (
+                  <AppIcon
+                    key={i}
+                      name="star"
+                    size="submenu"
                       className={cn(
                         "transition-all duration-300",
                         i < testimonial.rating 
-                          ? "text-gold-500 scale-110" 
-                          : "text-gray-300"
+                          ? "text-gold-500 fill-gold-500 scale-110 drop-shadow-sm" 
+                          : "text-gray-300 fill-transparent"
                       )}
-                    />
-                  ))}
-                </div>
+                  />
+                ))}
+              </div>
 
-                {/* Content */}
+              {/* Content */}
                 <p className={`${typo('base')} ${textColor('secondary')} leading-relaxed mb-8 italic text-base`}>
-                  "{testimonial.content}"
-                </p>
+                "{testimonial.content}"
+              </p>
 
-                {/* Author */}
+              {/* Author */}
                 <div className="flex items-center space-x-4 pt-6 border-t-2 border-gray-100">
-                  {testimonial.authorPhotoUrl ? (
-                    <img
-                      src={testimonial.authorPhotoUrl}
-                      alt={testimonial.authorName}
+                {testimonial.authorPhotoUrl ? (
+                  <img
+                    src={testimonial.authorPhotoUrl}
+                    alt={testimonial.authorName}
                       className="w-14 h-14 rounded-full object-cover border-2 border-gold-500/20 shadow-md"
-                    />
-                  ) : (
+                  />
+                ) : (
                     <div className={`w-14 h-14 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg border-2 border-gold-500/20`}>
                       <span className={`${typo('base')} text-white font-bold text-lg`}>
-                        {testimonial.authorName.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
+                      {testimonial.authorName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                )}
                   <div className="flex-1">
                     <p className={`${typo('base')} ${textColor('primary')} font-bold mb-1`}>
-                      {testimonial.authorName}
-                    </p>
+                    {testimonial.authorName}
+                  </p>
                     <p className={`${typo('small')} ${textColor('secondary')} font-semibold mb-1`}>
-                      {testimonial.authorFunction}
-                    </p>
+                    {testimonial.authorFunction}
+                  </p>
                     <p className={`${typo('small')} ${textColor('muted')}`}>
-                      {testimonial.schoolName}
-                      {testimonial.schoolCity && `, ${testimonial.schoolCity}`}
-                    </p>
+                    {testimonial.schoolName}
+                    {testimonial.schoolCity && `, ${testimonial.schoolCity}`}
+                  </p>
                   </div>
                 </div>
               </div>
@@ -149,7 +142,7 @@ export default function TestimonialsSection({ limit = 3, featured = true }: Test
             <AppIcon name="trends" size="action" className="ml-2 text-white" />
           </Link>
         </div>
-    </div>
+      </div>
   );
 }
 
