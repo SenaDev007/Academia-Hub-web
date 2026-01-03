@@ -60,14 +60,15 @@ export default function PremiumHeader() {
             className="flex items-center space-x-1 group transition-transform duration-200 hover:scale-105 flex-shrink-0"
           >
             <div className="relative">
-              <Image
-                src="/images/logo-Academia Hub.png"
-                alt="Academia Hub"
-                width={52}
-                height={52}
-                className="h-14 w-auto transition-opacity duration-200 group-hover:opacity-90"
-                priority
-              />
+                    <Image
+                      src="/images/logo-Academia Hub.png"
+                      alt="Academia Hub"
+                      width={52}
+                      height={52}
+                      className="h-14 w-auto transition-opacity duration-200 group-hover:opacity-90"
+                      priority
+                      sizes="(max-width: 768px) 40px, 52px"
+                    />
             </div>
             <div className={`${textColor('primary')} font-bold leading-none`}>
               <span className="text-xl md:text-2xl block">Academia</span>

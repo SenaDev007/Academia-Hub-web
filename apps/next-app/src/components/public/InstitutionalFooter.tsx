@@ -56,6 +56,8 @@ export default function InstitutionalFooter() {
                   width={52}
                   height={52}
                   className="h-14 w-auto"
+                  loading="lazy"
+                  sizes="(max-width: 768px) 40px, 52px"
                 />
                 <div className={`font-bold leading-none`}>
                   <span className="text-xl md:text-2xl text-white block">Academia</span>
@@ -200,6 +202,8 @@ export default function InstitutionalFooter() {
                       width={32}
                       height={32}
                       className="h-full w-auto object-contain"
+                      loading="lazy"
+                      sizes="32px"
                       onError={(e) => {
                         // Fallback si l'image n'existe pas
                         e.currentTarget.style.display = 'none';

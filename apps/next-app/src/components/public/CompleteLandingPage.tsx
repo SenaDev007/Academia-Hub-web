@@ -10,6 +10,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import PremiumHeader from '../layout/PremiumHeader';
@@ -18,14 +19,31 @@ import TestimonialsSection from './TestimonialsSection';
 import EducationalParticles from './EducationalParticles';
 import AnimatedTestimonials from './AnimatedTestimonials';
 import { getTestimonialStats } from '@/services/testimonial.service';
-import VideoPlayerModal from './VideoPlayerModal';
-import OrionParticles from './OrionParticles';
-import SecurityParticles from './SecurityParticles';
-import SupportChatWidget from './SupportChatWidget';
 import AppIcon from '@/components/ui/AppIcon';
 import TypingAnimation from '@/components/ui/TypingAnimation';
 import { bgColor, textColor, typo, radius, shadow } from '@/lib/design-tokens';
 import { cn } from '@/lib/utils';
+
+// Chargement dynamique des composants lourds
+const VideoPlayerModal = dynamic(() => import('./VideoPlayerModal'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const OrionParticles = dynamic(() => import('./OrionParticles'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const SecurityParticles = dynamic(() => import('./SecurityParticles'), {
+  ssr: false,
+  loading: () => null,
+});
+
+const SupportChatWidget = dynamic(() => import('./SupportChatWidget'), {
+  ssr: false,
+  loading: () => null,
+});
 
 // Component for Module Card with Read More functionality
 function ModuleCard({ 
@@ -191,7 +209,8 @@ export default function CompleteLandingPage() {
             fill
             className="object-cover"
             priority
-            quality={90}
+            quality={85}
+            sizes="100vw"
           />
           {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-blue-900/50 backdrop-blur-[1px]" />
@@ -315,6 +334,7 @@ export default function CompleteLandingPage() {
               height={120}
               className="w-30 h-30 object-contain"
               priority
+              sizes="(max-width: 768px) 80px, 120px"
             />
           </div>
           <h2 className={`text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-8 leading-tight`}>
@@ -436,9 +456,11 @@ export default function CompleteLandingPage() {
                 <Image
                   src="/images/ORION-Academia-Hub.png"
                   alt="ORION"
-                    width={224}
-                    height={224}
-                    className="w-56 h-56 object-contain absolute top-0 left-0 z-10 drop-shadow-2xl"
+                  width={224}
+                  height={224}
+                  className="w-56 h-56 object-contain absolute top-0 left-0 z-10 drop-shadow-2xl"
+                  loading="lazy"
+                  sizes="(max-width: 768px) 200px, 224px"
                 />
               </div>
                 <div className="w-56 flex items-center justify-center px-5 py-2 bg-gradient-to-r from-gold-500/20 to-gold-600/20 rounded-full border border-gold-500/30 shadow-lg -mt-0 relative z-10">
@@ -478,9 +500,11 @@ export default function CompleteLandingPage() {
                     <Image
                       src="/images/ORION-Academia-Hub.png"
                       alt="ORION"
-                          width={24}
-                          height={24}
-                          className="w-6 h-6 object-contain"
+                      width={24}
+                      height={24}
+                      className="w-6 h-6 object-contain"
+                      loading="lazy"
+                      sizes="24px"
                     />
                   </div>
                       <span className={`${typo('base')} text-white font-bold text-lg`}>ORION</span>
@@ -1011,6 +1035,8 @@ export default function CompleteLandingPage() {
                   width={120}
                   height={48}
                   className="h-10 w-auto object-contain"
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100px, 120px"
                 />
               </div>
             </div>
@@ -1122,6 +1148,8 @@ export default function CompleteLandingPage() {
                 width={128}
                 height={128}
                 className="w-full h-full object-contain drop-shadow-2xl"
+                loading="lazy"
+                sizes="(max-width: 768px) 100px, 128px"
                 style={{ filter: 'brightness(1.2) drop-shadow(0 0 20px rgba(37, 99, 235, 0.8))' }}
               />
           </div>
