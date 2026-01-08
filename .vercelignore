@@ -1,0 +1,12 @@
+# Ignorer les dossiers qui ne sont pas nécessaires pour le déploiement
+apps/desktop-app/
+apps/api-server/
+apps/mobile-app/
+apps/migration-tools/
+apps/next-app/
+node_modules/
+.git/
+*.log
+.env.local
+.env*.local
+
