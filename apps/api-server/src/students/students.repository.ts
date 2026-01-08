@@ -21,9 +21,13 @@ export class StudentsRepository {
     });
   }
 
-  async findAll(tenantId: string, schoolLevelId: string): Promise<Student[]> {
+  async findAll(tenantId: string, schoolLevelId: string, academicYearId?: string): Promise<Student[]> {
+    const where: any = { tenantId, schoolLevelId };
+    if (academicYearId) {
+      where.academicYearId = academicYearId;
+    }
     return this.repository.find({
-      where: { tenantId, schoolLevelId },
+      where,
       order: { createdAt: 'DESC' },
     });
   }

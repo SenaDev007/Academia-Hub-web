@@ -1,96 +1,71 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useAcademicYearsData } from './useAcademicYearsData';
-
 /**
- * Hook React pour utiliser les années scolaires (comme Students)
+ * ============================================================================
+ * USE ACADEMIC YEAR HOOK
+ * ============================================================================
+ * 
+ * Hook pour gérer l'année scolaire courante
+ * Persiste dans localStorage
+ * ============================================================================
  */
-export const useAcademicYear = () => {
-  const { 
-    academicYears, 
-    loading: academicYearsLoading,
-    error: academicYearsError 
-  } = useAcademicYearsData();
-  
-  const [currentAcademicYear, setCurrentAcademicYear] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
 
-  // Trouver l'année académique actuelle
+import { useState, useEffect } from 'react';
+
+interface AcademicYear {
+  id: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isCurrent: boolean;
+}
+
+export function useAcademicYear() {
+  const [currentYear, setCurrentYearState] = useState<AcademicYear | null>(null);
+  const [availableYears, setAvailableYears] = useState<AcademicYear[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    if (academicYears.length > 0) {
-      const current = academicYears.find(year => year.isActive) || academicYears[0];
-      setCurrentAcademicYear(current);
-      setLoading(false);
+    const loadAcademicYears = async () => {
+      try {
+        const response = await fetch('/api/academic-years');
+        if (response.ok) {
+          const years: AcademicYear[] = await response.json();
+          setAvailableYears(years);
+
+          // Récupérer l'année sauvegardée ou utiliser l'année active
+          const savedYearId = localStorage.getItem('currentAcademicYearId');
+          const activeYear = years.find(y => y.isCurrent);
+          const selectedYear = savedYearId
+            ? years.find(y => y.id === savedYearId) || activeYear
+            : activeYear;
+
+          if (selectedYear) {
+            setCurrentYearState(selectedYear);
+            localStorage.setItem('currentAcademicYearId', selectedYear.id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load academic years:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAcademicYears();
+  }, []);
+
+  const setCurrentYear = (yearId: string) => {
+    const year = availableYears.find(y => y.id === yearId);
+    if (year) {
+      setCurrentYearState(year);
+      localStorage.setItem('currentAcademicYearId', yearId);
     }
-  }, [academicYears]);
-
-  // Méthodes utilitaires
-  const getAcademicYearById = useCallback((id: string) => {
-    return academicYears.find(year => year.id === id) || null;
-  }, [academicYears]);
-
-  const getActiveAcademicYears = useCallback(() => {
-    return academicYears.filter(year => year.isActive);
-  }, [academicYears]);
-
-  const getPastAcademicYears = useCallback(() => {
-    const currentDate = new Date();
-    return academicYears.filter(year => new Date(year.endDate) < currentDate);
-  }, [academicYears]);
-
-  const getFutureAcademicYears = useCallback(() => {
-    const currentDate = new Date();
-    return academicYears.filter(year => new Date(year.startDate) > currentDate);
-  }, [academicYears]);
-
-  const isDateInAcademicYear = useCallback((date: Date, yearId: string) => {
-    const year = getAcademicYearById(yearId);
-    if (!year) return false;
-    
-    const checkDate = new Date(date);
-    const startDate = new Date(year.startDate);
-    const endDate = new Date(year.endDate);
-    
-    return checkDate >= startDate && checkDate <= endDate;
-  }, [getAcademicYearById]);
-
-  const getAcademicYearForDate = useCallback((date: Date) => {
-    return academicYears.find(year => isDateInAcademicYear(date, year.id)) || null;
-  }, [academicYears, isDateInAcademicYear]);
-
-  const getAcademicYearOptions = useCallback(() => {
-    return academicYears.map(year => ({
-      value: year.id,
-      label: year.name,
-      isCurrent: year.isActive
-    }));
-  }, [academicYears]);
-
-  const getCurrentAcademicYearId = useCallback(() => {
-    return currentAcademicYear?.id || '';
-  }, [currentAcademicYear]);
-
-  const getCurrentAcademicYearLabel = useCallback(() => {
-    return currentAcademicYear?.name || '';
-  }, [currentAcademicYear]);
-
-  const refreshAcademicYears = async () => {
-    // Le rafraîchissement est géré par useAcademicYearsData
-    setLoading(false);
   };
 
   return {
-    academicYears,
-    currentAcademicYear,
-    loading: loading || academicYearsLoading,
-    refreshAcademicYears,
-    getAcademicYearById,
-    getActiveAcademicYears,
-    getPastAcademicYears,
-    getFutureAcademicYears,
-    isDateInAcademicYear,
-    getAcademicYearForDate,
-    getAcademicYearOptions,
-    getCurrentAcademicYearId,
-    getCurrentAcademicYearLabel
+    currentYear,
+    setCurrentYear,
+    availableYears,
+    isLoading,
   };
-};
+}
+

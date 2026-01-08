@@ -3,21 +3,42 @@ import { ExamsRepository } from './exams.repository';
 import { Exam } from './entities/exam.entity';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { AcademicTracksService } from '../academic-tracks/academic-tracks.service';
 
 @Injectable()
 export class ExamsService {
-  constructor(private readonly examsRepository: ExamsRepository) {}
+  constructor(
+    private readonly examsRepository: ExamsRepository,
+    private readonly academicTracksService: AcademicTracksService,
+  ) {}
 
   async create(createExamDto: CreateExamDto, tenantId: string, createdBy?: string): Promise<Exam> {
+    // Si academicTrackId n'est pas fourni, utiliser le track par défaut (FR)
+    let academicTrackId = createExamDto.academicTrackId;
+    if (!academicTrackId) {
+      const defaultTrack = await this.academicTracksService.getDefaultTrack(tenantId);
+      academicTrackId = defaultTrack.id;
+    } else {
+      // Valider que le track existe et appartient au tenant
+      await this.academicTracksService.findOne(academicTrackId, tenantId);
+    }
+
     return this.examsRepository.create({
       ...createExamDto,
+      academicTrackId,
       tenantId,
       createdBy,
     });
   }
 
-  async findAll(tenantId: string, classId?: string, subjectId?: string, academicYearId?: string): Promise<Exam[]> {
-    return this.examsRepository.findAll(tenantId, classId, subjectId, academicYearId);
+  async findAll(
+    tenantId: string, 
+    classId?: string, 
+    subjectId?: string, 
+    academicYearId?: string,
+    academicTrackId?: string | null,
+  ): Promise<Exam[]> {
+    return this.examsRepository.findAll(tenantId, classId, subjectId, academicYearId, academicTrackId);
   }
 
   async findOne(id: string, tenantId: string): Promise<Exam> {

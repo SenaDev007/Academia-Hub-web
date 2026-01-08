@@ -1,46 +1,112 @@
-# 🌐 Academia Hub Web SaaS
+# Academia Hub - Next.js App
 
-Application Web SaaS pour Academia Hub - Gestion scolaire multi-tenant.
-
-## 🎯 Caractéristiques
-
-- ✅ **Online-First** : Fonctionne uniquement avec connexion internet
-- ✅ **Multi-tenant** : Support multi-écoles natif
-- ✅ **API REST** : Communication via backend NestJS
-- ✅ **Aucun Electron** : Application Web pure
-- ✅ **Aucun accès DB direct** : Tout passe par l'API
+Application Next.js App Router pour Academia Hub SaaS multi-tenant.
 
 ## 🏗️ Architecture
+
+### Structure du Projet
 
 ```
 apps/web-app/
 ├── src/
-│   ├── app/                    # Application principale
-│   │   ├── App.tsx            # Point d'entrée
-│   │   └── main.tsx           # Bootstrap
+│   ├── app/                    # App Router (Next.js 14+)
+│   │   ├── layout.tsx         # Layout racine
+│   │   ├── page.tsx           # Page d'accueil (landing)
+│   │   ├── (public)/          # Routes publiques
+│   │   │   ├── plateforme/
+│   │   │   ├── modules/
+│   │   │   ├── tarification/
+│   │   │   ├── securite/
+│   │   │   ├── contact/
+│   │   │   └── signup/
+│   │   ├── (auth)/            # Routes d'authentification
+│   │   │   ├── login/
+│   │   │   └── forgot-password/
+│   │   └── app/               # Routes protégées (dashboard)
+│   │       ├── layout.tsx     # Layout dashboard
+│   │       ├── page.tsx       # Dashboard principal
+│   │       └── [module]/      # Modules métier
 │   │
 │   ├── components/            # Composants React
-│   │   ├── auth/              # Authentification
-│   │   ├── dashboard/         # Modules dashboard
-│   │   ├── common/            # Composants communs
-│   │   └── modals/            # Modales
+│   │   ├── public/           # Composants pages publiques
+│   │   ├── auth/             # Composants authentification
+│   │   ├── dashboard/        # Composants dashboard
+│   │   └── layout/           # Composants layout
 │   │
-│   ├── lib/                   # Bibliothèques
-│   │   ├── api/               # Client API HTTP
-│   │   │   └── client.ts      # Axios instance
-│   │   └── auth/              # Gestion authentification
+│   ├── lib/                   # Bibliothèques utilitaires
+│   │   ├── tenant/           # Résolution multi-tenant
+│   │   ├── auth/             # Gestion sessions
+│   │   └── api/              # Client API
 │   │
-│   ├── hooks/                 # Hooks React personnalisés
-│   ├── contexts/              # Contextes React
-│   ├── services/              # Services frontend (API calls)
+│   ├── services/             # Services métier
+│   │   ├── auth.service.ts
+│   │   └── tenant.service.ts
+│   │
+│   ├── hooks/                 # React Hooks
+│   │   ├── useAuth.ts
+│   │   └── useTenant.ts
+│   │
 │   ├── types/                 # Types TypeScript
-│   └── utils/                 # Utilitaires
+│   │   └── index.ts
+│   │
+│   └── middleware.ts          # Next.js Middleware (multi-tenant)
 │
 ├── public/                    # Assets statiques
-├── package.json              # Dépendances Web uniquement
-├── vite.config.ts            # Configuration Vite
-└── tsconfig.json             # Configuration TypeScript
+├── next.config.js            # Configuration Next.js
+├── tsconfig.json             # Configuration TypeScript
+└── package.json
 ```
+
+## 🔐 Multi-Tenant par Sous-Domaine
+
+### Fonctionnement
+
+1. **Résolution du Tenant** :
+   - Le middleware extrait le sous-domaine depuis `host` header
+   - Ex: `ecole1.academiahub.com` → subdomain = `ecole1`
+   - Le tenant est résolu via l'API backend
+
+2. **Routes Protégées** :
+   - `/app/*` : Nécessite un tenant valide
+   - Si pas de tenant → redirection vers `/tenant-not-found`
+   - Si tenant inactif → redirection vers `/tenant-not-found`
+
+3. **Routes Publiques** :
+   - Accessibles uniquement sur le domaine principal
+   - Si sous-domaine → redirection vers domaine principal
+
+### Développement Local
+
+Pour tester avec un sous-domaine en local :
+
+```bash
+# Option 1: Utiliser le header X-Tenant-Subdomain
+# (configuré automatiquement par le middleware)
+
+# Option 2: Modifier /etc/hosts
+127.0.0.1 ecole1.localhost
+127.0.0.1 ecole2.localhost
+
+# Puis accéder à http://ecole1.localhost:3001/app
+```
+
+## 🔒 Authentification
+
+### Flow d'Authentification
+
+1. **Login** :
+   - POST `/api/auth/login` avec email/password
+   - Retourne : user, tenant, token, expiresAt
+   - Token stocké dans cookie httpOnly
+
+2. **Session** :
+   - Session stockée dans cookie `academia_session`
+   - Token JWT dans cookie `academia_token`
+   - Vérification automatique dans middleware
+
+3. **Protection des Routes** :
+   - Routes `/app/*` : nécessitent authentification
+   - Redirection automatique vers `/login` si non authentifié
 
 ## 🚀 Démarrage
 
@@ -57,107 +123,42 @@ npm install
 npm run dev
 ```
 
-L'application sera disponible sur `http://localhost:5173`
+L'application sera accessible sur `http://localhost:3001`
 
 ### Build Production
 
 ```bash
 npm run build
+npm start
 ```
 
-Le build sera dans `dist/`
+## 📝 Variables d'Environnement
 
-## 📦 Dépendances
+Créer un fichier `.env.local` :
 
-### Core
-- **React 18** : UI library
-- **TypeScript** : Type safety
-- **Vite** : Build tool
-- **React Router** : Routing
+```env
+# API Backend
+API_URL=http://localhost:3000/api
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
 
-### UI
-- **Tailwind CSS** : Styling
-- **Headless UI** : Composants UI
-- **Heroicons** : Icônes
-- **Lucide React** : Icônes supplémentaires
+# Application
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 
-### State & Data
-- **Zustand** : State management
-- **React Query** : Data fetching & caching
-- **Axios** : HTTP client
-
-### Utilitaires
-- **date-fns** : Manipulation dates
-- **uuid** : Génération UUID
-- **jspdf** : Génération PDF
-- **xlsx** : Manipulation Excel
-
-## 🔐 Authentification
-
-L'application utilise JWT pour l'authentification :
-
-1. Login via `/api/auth/login`
-2. Token stocké dans httpOnly cookie (sécurisé)
-3. Token inclus automatiquement dans les requêtes API
-4. Refresh automatique avant expiration
-
-## 🌍 Multi-tenant
-
-Résolution du tenant :
-- Par sous-domaine : `ecole-a.academiahub.com`
-- Par header : `X-Tenant-ID`
-- Par JWT : `tenant_id` dans le token
-
-## 📡 API
-
-Toutes les données proviennent de l'API backend :
-
-- Base URL : `process.env.VITE_API_URL` ou `http://localhost:3000`
-- Endpoints : `/api/*`
-- Format : REST JSON
-- Authentification : JWT Bearer token
-
-## 🧪 Tests
-
-```bash
-# Lint
-npm run lint
-
-# Type check
-npm run type-check
-
-# Format
-npm run format
+# Production
+# NEXT_PUBLIC_APP_URL=https://academiahub.com
 ```
 
-## 📚 Structure des Modules
+## 🛡️ Sécurité
 
-Chaque module suit cette structure :
+- ✅ Cookies httpOnly pour les tokens
+- ✅ HTTPS en production
+- ✅ Validation TypeScript strict
+- ✅ Protection CSRF
+- ✅ Isolation multi-tenant stricte
 
-```
-modules/students/
-├── components/        # Composants spécifiques
-├── hooks/            # Hooks spécifiques
-├── services/         # Services API
-└── types/            # Types TypeScript
-```
+## 📚 Documentation
 
-## ⚠️ Règles Importantes
+- [Next.js App Router](https://nextjs.org/docs/app)
+- [TypeScript Strict Mode](https://www.typescriptlang.org/tsconfig#strict)
+- [Multi-Tenant Architecture](./docs/MULTI-TENANT.md)
 
-1. **Aucun Electron** : Pas de `window.electronAPI`
-2. **Aucun accès DB** : Tout passe par l'API
-3. **Online-First** : Pas de mode offline
-4. **API uniquement** : Pas de logique métier dans le frontend
-
-## 🔄 Migration depuis Desktop
-
-Pour migrer du code Desktop vers Web :
-
-1. Remplacer `electronBridge` par `apiClient`
-2. Remplacer `window.electronAPI` par appels HTTP
-3. Adapter les types Electron → API
-4. Supprimer toute logique offline
-
----
-
-*Application Web SaaS - Online-First*

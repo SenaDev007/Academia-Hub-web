@@ -11,6 +11,7 @@ import { Tenant } from '../../tenants/entities/tenant.entity';
 import { User } from '../../users/entities/user.entity';
 import { AcademicYear } from '../../academic-years/entities/academic-year.entity';
 import { SchoolLevel } from '../../school-levels/entities/school-level.entity';
+import { AcademicTrack } from '../../academic-tracks/entities/academic-track.entity';
 
 @Entity('subjects')
 export class Subject {
@@ -50,6 +51,17 @@ export class Subject {
   @ManyToOne(() => AcademicYear, { nullable: true })
   @JoinColumn({ name: 'academicYearId' })
   academicYear: AcademicYear;
+
+  /**
+   * Academic Track (FR/EN) - NULLABLE pour compatibilité
+   * NULL = track par défaut (FR)
+   */
+  @Column({ type: 'uuid', nullable: true })
+  academicTrackId: string | null;
+
+  @ManyToOne(() => AcademicTrack, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'academic_track_id' })
+  academicTrack: AcademicTrack | null;
 
   @Column({ nullable: true })
   createdBy: string;

@@ -64,6 +64,12 @@ export class Payment {
   @Column({ default: 'completed' })
   status: string;
 
+  /**
+   * Lien avec le flux de paiement (si paiement en ligne)
+   */
+  @Column({ type: 'uuid', nullable: true })
+  paymentFlowId: string | null;
+
   @Column({ nullable: true, type: 'text' })
   notes: string;
 

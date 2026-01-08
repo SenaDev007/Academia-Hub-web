@@ -14,6 +14,7 @@ import { Class } from '../../classes/entities/class.entity';
 import { AcademicYear } from '../../academic-years/entities/academic-year.entity';
 import { Quarter } from '../../quarters/entities/quarter.entity';
 import { SchoolLevel } from '../../school-levels/entities/school-level.entity';
+import { AcademicTrack } from '../../academic-tracks/entities/academic-track.entity';
 
 @Entity('exams')
 export class Exam {
@@ -73,6 +74,18 @@ export class Exam {
 
   @Column({ nullable: true, type: 'decimal', precision: 5, scale: 2 })
   maxScore: number;
+
+  /**
+   * Academic Track (FR/EN) - NULLABLE pour compatibilité
+   * NULL = track par défaut (FR)
+   * OBLIGATOIRE pour les nouveaux examens dans un contexte bilingue
+   */
+  @Column({ type: 'uuid', nullable: true })
+  academicTrackId: string | null;
+
+  @ManyToOne(() => AcademicTrack, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'academic_track_id' })
+  academicTrack: AcademicTrack | null;
 
   @Column({ nullable: true })
   createdBy: string;

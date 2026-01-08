@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min, IsUUID } from 'class-validator';
 
 export class CreateGradeDto {
   @IsString()
@@ -40,5 +40,9 @@ export class CreateGradeDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @IsUUID()
+  @IsOptional()
+  academicTrackId?: string;
 }
 

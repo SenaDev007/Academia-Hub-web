@@ -1,4 +1,4 @@
-import { IsString, IsDateString, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsString, IsDateString, IsNumber, IsOptional, Min, IsUUID } from 'class-validator';
 
 export class CreateExamDto {
   @IsString()
@@ -32,5 +32,9 @@ export class CreateExamDto {
   @Min(0)
   @IsOptional()
   maxScore?: number;
+
+  @IsUUID()
+  @IsOptional()
+  academicTrackId?: string;
 }
 

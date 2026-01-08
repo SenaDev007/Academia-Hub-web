@@ -22,8 +22,8 @@ export class StudentsService {
     });
   }
 
-  async findAll(tenantId: string, schoolLevelId: string): Promise<Student[]> {
-    return this.studentsRepository.findAll(tenantId, schoolLevelId);
+  async findAll(tenantId: string, schoolLevelId: string, academicYearId?: string): Promise<Student[]> {
+    return this.studentsRepository.findAll(tenantId, schoolLevelId, academicYearId);
   }
 
   async findOne(id: string, tenantId: string, schoolLevelId: string): Promise<Student> {

@@ -11,6 +11,7 @@ import { Tenant } from '../../tenants/entities/tenant.entity';
 import { User } from '../../users/entities/user.entity';
 import { AcademicYear } from '../../academic-years/entities/academic-year.entity';
 import { SchoolLevel } from '../../school-levels/entities/school-level.entity';
+import { AcademicTrack } from '../../academic-tracks/entities/academic-track.entity';
 
 @Entity('classes')
 export class Class {
@@ -53,6 +54,18 @@ export class Class {
 
   @Column({ nullable: true })
   roomId: string;
+
+  /**
+   * Academic Track (FR/EN) - NULLABLE pour compatibilité
+   * NULL = track par défaut (FR)
+   * Exemples : CP1 (FR), Nursery 1 (EN)
+   */
+  @Column({ type: 'uuid', nullable: true })
+  academicTrackId: string | null;
+
+  @ManyToOne(() => AcademicTrack, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'academic_track_id' })
+  academicTrack: AcademicTrack | null;
 
   @Column({ nullable: true, type: 'text' })
   description: string;

@@ -31,15 +31,26 @@ import { GradingPoliciesModule } from './grading-policies/grading-policies.modul
 import { SalaryPoliciesModule } from './salary-policies/salary-policies.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { SchoolLevelsModule } from './school-levels/school-levels.module';
+import { AcademicTracksModule } from './academic-tracks/academic-tracks.module';
+import { TenantFeaturesModule } from './tenant-features/tenant-features.module';
+import { PaymentFlowsModule } from './payment-flows/payment-flows.module';
+import { OrionBilingualModule } from './orion/orion-bilingual.module';
+import { CommunicationModule } from './communication/communication.module';
+import { GeneralModule } from './modules/general/general.module';
 import { ModulesModule } from './modules/modules.module';
 import { ContextModule } from './common/context/context.module';
 import { SynthesisModule } from './modules/synthesis/synthesis.module';
+import { SyncModule } from './sync/sync.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { TenantValidationGuard } from './common/guards/tenant-validation.guard';
 import { TenantIsolationGuard } from './common/guards/tenant-isolation.guard';
 import { ContextValidationGuard } from './common/guards/context-validation.guard';
+import { SchoolLevelIsolationGuard } from './common/guards/school-level-isolation.guard';
+import { AcademicYearEnforcementGuard } from './common/guards/academic-year-enforcement.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { ContextInterceptor } from './common/interceptors/context.interceptor';
+import { SchoolLevelEnforcementInterceptor } from './common/interceptors/school-level-enforcement.interceptor';
+import { AcademicYearEnforcementInterceptor } from './common/interceptors/academic-year-enforcement.interceptor';
 import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
 
 @Module({
@@ -100,6 +111,24 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     // School Levels module
     SchoolLevelsModule,
     
+    // Academic Tracks module (Bilingue FR/EN)
+    AcademicTracksModule,
+    
+    // Tenant Features module (Feature Flags)
+    TenantFeaturesModule,
+    
+    // Payment Flows module (Séparation SAAS/TUITION)
+    PaymentFlowsModule,
+    
+    // ORION Bilingual Analysis module
+    OrionBilingualModule,
+    
+    // Communication module
+    CommunicationModule,
+    
+    // General module (Agrégations contrôlées cross-level)
+    GeneralModule,
+    
     // Modules module
     ModulesModule,
     
@@ -114,6 +143,9 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     
     // Synthesis module (Module général de synthèse - Lecture seule)
     SynthesisModule,
+    
+    // Sync & Offline
+    SyncModule,
   ],
   controllers: [AppController],
   providers: [
@@ -135,8 +167,24 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
       useClass: ContextValidationGuard, // Validation du contexte (tenant + school_level + module)
     },
     {
+      provide: APP_GUARD,
+      useClass: SchoolLevelIsolationGuard, // Isolation stricte des niveaux scolaires (RÈGLE STRUCTURANTE)
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AcademicYearEnforcementGuard, // Enforcement academic_year_id obligatoire (DIMENSION OBLIGATOIRE)
+    },
+    {
       provide: APP_INTERCEPTOR,
-      useClass: ContextInterceptor, // Résolution du contexte (DOIT être avant AuditLogInterceptor)
+      useClass: ContextInterceptor, // Résolution du contexte (DOIT être avant autres interceptors)
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SchoolLevelEnforcementInterceptor, // Enforcement school_level_id obligatoire
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: AcademicYearEnforcementInterceptor, // Enforcement academic_year_id obligatoire
     },
     {
       provide: APP_INTERCEPTOR,

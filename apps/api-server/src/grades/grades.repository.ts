@@ -22,7 +22,14 @@ export class GradesRepository {
     });
   }
 
-  async findAll(tenantId: string, studentId?: string, subjectId?: string, classId?: string, quarterId?: string): Promise<Grade[]> {
+  async findAll(
+    tenantId: string, 
+    studentId?: string, 
+    subjectId?: string, 
+    classId?: string, 
+    quarterId?: string,
+    academicTrackId?: string | null, // NULL = track par défaut (FR)
+  ): Promise<Grade[]> {
     const where: any = { tenantId };
     if (studentId) {
       where.studentId = studentId;
@@ -36,9 +43,15 @@ export class GradesRepository {
     if (quarterId) {
       where.quarterId = quarterId;
     }
+    // Filtrer par academic track si spécifié
+    // Si academicTrackId est null, on filtre les notes sans track (FR par défaut)
+    // Si academicTrackId est défini, on filtre par ce track
+    if (academicTrackId !== undefined) {
+      where.academicTrackId = academicTrackId;
+    }
     return this.repository.find({
       where,
-      relations: ['student', 'subject', 'exam'],
+      relations: ['student', 'subject', 'exam', 'academicTrack'],
       order: { createdAt: 'DESC' },
     });
   }

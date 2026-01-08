@@ -19,10 +19,11 @@
  * 
  * Voir DESIGN-SYSTEM.md et docs/ICON-SYSTEM.md pour les règles complètes
  */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -32,13 +33,13 @@ export default {
           900: '#0A2A5E', // Base — Autorité, structure principale
           800: '#0D3B85', // Header, sidebar, fonds structurants
           700: '#114FC4', // Hover, focus, highlights contrôlés
-          600: '#1C6FE8', // Éléments actifs, liens importants (bleu lumineux du logo)
+          600: '#1C6FE8', // Éléments actifs, liens importants
         },
         
         // GOLD PREMIUM — Living Gold (usage ≤ 5%)
         gold: {
           600: '#CFA63A', // Accent principal (ORION, badges premium)
-          500: '#F2C94C', // Badges premium, focus, points d'accent (point gold du logo)
+          500: '#F2C94C', // Badges premium, focus, points d'accent
           400: '#FFE08A', // Hover très subtil (rare)
         },
         
@@ -62,21 +63,6 @@ export default {
           500: '#DC2626', // Hover CTA
         },
         
-        // Alias pour compatibilité (déprécié — utiliser blue)
-        navy: {
-          900: '#0A2A5E', // Alias pour blue-900
-          800: '#0D3B85', // Alias pour blue-800
-          700: '#114FC4', // Alias pour blue-700
-          600: '#1C6FE8', // Alias pour blue-600
-        },
-        
-        // Gris institutionnel — Slate Gray (déprécié — utiliser graphite)
-        slate: {
-          700: '#334155', // Alias pour graphite-700
-          600: '#475569', // Texte secondaire foncé
-          500: '#64748B', // Alias pour graphite-500
-          400: '#CBD5E1', // Bordures légères
-        },
         // Palette gris complémentaire (pour compatibilité technique)
         gray: {
           50: '#F7F9FC',  // Cloud (alias)
@@ -90,25 +76,10 @@ export default {
           800: '#1E293B', // Texte sur fond clair
           900: '#0F172A', // Graphite-900 (alias)
         },
-        // Alias pour compatibilité (déprécié — utiliser blue)
-        primary: {
-          50: '#F7F9FC',  // Cloud
-          100: '#EEF2F8', // Mist
-          200: '#E2E8F0', // Bordures très légères
-          300: '#CBD5E1', // Bordures légères
-          400: '#94A3B8', // Texte secondaire léger
-          500: '#64748B', // Graphite-500
-          600: '#475569', // Texte secondaire foncé
-          700: '#334155', // Graphite-700
-          800: '#1E293B', // Texte sur fond clair
-          900: '#0A2A5E', // Blue-900 (Royal Institutional Blue)
-        },
       },
       fontFamily: {
         sans: [
           'Inter',
-          'Montserrat',
-          'Poppins',
           'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
@@ -116,6 +87,11 @@ export default {
           'Roboto',
           '"Helvetica Neue"',
           'Arial',
+          'sans-serif',
+        ],
+        montserrat: [
+          'Montserrat',
+          'system-ui',
           'sans-serif',
         ],
       },
@@ -151,4 +127,3 @@ export default {
   plugins: [],
   darkMode: 'class', // Activation du mode sombre via classe
 }
-

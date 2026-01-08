@@ -21,7 +21,18 @@
     "typeorm": "typeorm-ts-node-commonjs",
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
-    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts"
+    "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
+    "generate:sqlite-schema": "ts-node scripts/generate-sqlite-schema-improved.ts",
+    "migrate:sqlite:generate": "ts-node scripts/sqlite-migration-manager.ts generate",
+    "migrate:sqlite:up": "ts-node scripts/sqlite-migration-manager.ts up",
+    "migrate:sqlite:down": "ts-node scripts/sqlite-migration-manager.ts down",
+    "validate:schema": "ts-node scripts/validate-schema-conformity.ts",
+    "analyze:schema": "ts-node scripts/analyze-schema.ts",
+    "migrate:generate-safe": "ts-node scripts/generate-safe-migrations.ts",
+    "migrate:validate": "ts-node scripts/validate-migrations.ts",
+    "migrate:status": "npx prisma migrate status --schema=prisma/schema.prisma",
+    "migrate:deploy": "npx prisma migrate deploy --schema=prisma/schema.prisma",
+    "migrate:dev": "npx prisma migrate dev --schema=prisma/schema.prisma"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
@@ -41,7 +52,10 @@
     "typeorm": "^0.3.17",
     "uuid": "^9.0.1",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "@prisma/client": "^5.19.0",
+    "@prisma/internals": "^5.19.0",
+    "better-sqlite3": "^9.2.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.2.1",
@@ -67,7 +81,9 @@
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "@types/better-sqlite3": "^7.6.8",
+    "prisma": "^5.19.0"
   },
   "jest": {
     "moduleFileExtensions": [

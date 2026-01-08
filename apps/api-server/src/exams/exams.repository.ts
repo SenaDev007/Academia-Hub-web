@@ -22,7 +22,13 @@ export class ExamsRepository {
     });
   }
 
-  async findAll(tenantId: string, classId?: string, subjectId?: string, academicYearId?: string): Promise<Exam[]> {
+  async findAll(
+    tenantId: string, 
+    classId?: string, 
+    subjectId?: string, 
+    academicYearId?: string,
+    academicTrackId?: string | null, // NULL = track par défaut (FR)
+  ): Promise<Exam[]> {
     const where: any = { tenantId };
     if (classId) {
       where.classId = classId;
@@ -33,9 +39,15 @@ export class ExamsRepository {
     if (academicYearId) {
       where.academicYearId = academicYearId;
     }
+    // Filtrer par academic track si spécifié
+    // Si academicTrackId est null, on filtre les examens sans track (FR par défaut)
+    // Si academicTrackId est défini, on filtre par ce track
+    if (academicTrackId !== undefined) {
+      where.academicTrackId = academicTrackId;
+    }
     return this.repository.find({
       where,
-      relations: ['subject', 'class'],
+      relations: ['subject', 'class', 'academicTrack'],
       order: { examDate: 'DESC' },
     });
   }
