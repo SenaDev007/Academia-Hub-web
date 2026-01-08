@@ -9,8 +9,7 @@
  */
 
 import { redirect } from 'next/navigation';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth';
 import PilotageLayout from '@/components/pilotage/PilotageLayout';
 import type { User, Tenant } from '@/types';
 
@@ -19,7 +18,7 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session?.user) {
     redirect('/login');

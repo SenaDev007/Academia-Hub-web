@@ -12,7 +12,6 @@ import {
   loadPedagogyKpi,
   loadSystemHealthKpi,
   loadDirectionKpi,
-,
 } from '@/lib/orion/orion-kpi.service';
 import { executeOrionRules } from '@/lib/orion/orion-rule-engine';
 import { generateOrionResponse } from '@/lib/orion/orion-llm.service';

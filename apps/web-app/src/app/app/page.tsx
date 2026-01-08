@@ -8,8 +8,7 @@
  * ============================================================================
  */
 
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import DirectorDashboard from '@/components/pilotage/dashboards/DirectorDashboard';
 import TeacherDashboard from '@/components/pilotage/dashboards/TeacherDashboard';
@@ -18,7 +17,7 @@ import AdminDashboard from '@/components/pilotage/dashboards/AdminDashboard';
 import type { User } from '@/types';
 
 export default async function AppPage() {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession();
 
   if (!session?.user) {
     redirect('/login');
