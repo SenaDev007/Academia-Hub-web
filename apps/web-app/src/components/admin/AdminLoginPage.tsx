@@ -50,7 +50,42 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Vérifier les identifiants dans IndexedDB
+      // ============================================
+      // IDENTIFIANTS PROVISOIRES (TEST)
+      // ============================================
+      const testCredentials = [
+        { email: 'admin@academiahub.com', password: 'admin123' },
+        { email: 'superadmin@test.com', password: 'superadmin123' },
+      ];
+
+      const testUser = testCredentials.find(
+        (tc) => tc.email === credentials.email && tc.password === credentials.password
+      );
+
+      if (testUser) {
+        // Connexion provisoire réussie - créer une session de test
+        const sessionData = {
+          user: {
+            id: 'super-admin-1',
+            email: testUser.email,
+            firstName: 'Super',
+            lastName: 'Admin',
+            role: 'SUPER_ADMIN',
+          },
+          token: 'super-admin-token',
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        };
+
+        sessionStorage.setItem('admin_session', JSON.stringify(sessionData));
+        const sessionCookieValue = JSON.stringify(sessionData);
+        document.cookie = `academia_session=${sessionCookieValue}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+        document.cookie = `academia_token=${sessionData.token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+
+        window.location.href = '/admin';
+        return;
+      }
+
+      // Si pas d'identifiants de test, vérifier dans IndexedDB
       const isValid = await adminAuthService.verifyCredentials(
         credentials.email,
         credentials.password
@@ -193,6 +228,15 @@ export default function AdminLoginPage() {
               )}
             </button>
           </form>
+
+          {/* Identifiants provisoires (TEST) */}
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-xs font-semibold text-yellow-900 mb-2">🔑 Identifiants provisoires (Test) :</p>
+            <div className="text-xs text-yellow-800 space-y-1">
+              <p>• <strong>admin@academiahub.com</strong> / admin123</p>
+              <p>• <strong>superadmin@test.com</strong> / superadmin123</p>
+            </div>
+          </div>
 
           {/* Security Notice */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">

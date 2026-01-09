@@ -1,0 +1,43 @@
+/**
+ * API Route - QHSE Risk Register
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const academicYearId = searchParams.get('academicYearId');
+    const schoolLevelId = searchParams.get('schoolLevelId');
+
+    const params = new URLSearchParams();
+    if (academicYearId) params.append('academicYearId', academicYearId);
+    if (schoolLevelId) params.append('schoolLevelId', schoolLevelId);
+
+    const token = request.headers.get('authorization') || '';
+
+    const response = await fetch(`${API_BASE_URL}/qhs/risk-register?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: token }),
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error: any) {
+    console.error('Error fetching QHSE risks:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch risks' },
+      { status: 500 }
+    );
+  }
+}
+

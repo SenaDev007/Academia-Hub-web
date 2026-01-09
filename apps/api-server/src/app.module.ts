@@ -35,6 +35,8 @@ import { AcademicTracksModule } from './academic-tracks/academic-tracks.module';
 import { TenantFeaturesModule } from './tenant-features/tenant-features.module';
 import { PaymentFlowsModule } from './payment-flows/payment-flows.module';
 import { OrionBilingualModule } from './orion/orion-bilingual.module';
+import { QhsModule } from './qhs/qhs.module';
+import { KpiObjectivesModule } from './kpi-objectives/kpi-objectives.module';
 import { CommunicationModule } from './communication/communication.module';
 import { GeneralModule } from './modules/general/general.module';
 import { ModulesModule } from './modules/modules.module';
@@ -122,6 +124,12 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     
     // ORION Bilingual Analysis module
     OrionBilingualModule,
+    
+    // QHSE+ module (Gouvernance, Risques & Conformité)
+    QhsModule,
+    
+    // KPI Objectives module (Pilotage Direction)
+    KpiObjectivesModule,
     
     // Communication module
     CommunicationModule,

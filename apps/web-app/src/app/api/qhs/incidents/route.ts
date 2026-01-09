@@ -1,5 +1,6 @@
 /**
- * API Route - ORION Alerts
+ * API Route - QHSE Incidents
+ * Proxy vers l'API backend NestJS
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,13 +11,22 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const academicYearId = searchParams.get('academicYearId');
+    const schoolLevelId = searchParams.get('schoolLevelId');
+    const type = searchParams.get('type');
+    const gravity = searchParams.get('gravity');
+    const status = searchParams.get('status');
 
     const params = new URLSearchParams();
     if (academicYearId) params.append('academicYearId', academicYearId);
+    if (schoolLevelId) params.append('schoolLevelId', schoolLevelId);
+    if (type) params.append('type', type);
+    if (gravity) params.append('gravity', gravity);
+    if (status) params.append('status', status);
 
+    // TODO: Récupérer le token d'authentification depuis la session
     const token = request.headers.get('authorization') || '';
 
-    const response = await fetch(`${API_BASE_URL}/orion/alerts?${params.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/qhs/incidents?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -31,9 +41,9 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Error fetching ORION alerts:', error);
+    console.error('Error fetching QHSE incidents:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch alerts' },
+      { error: error.message || 'Failed to fetch incidents' },
       { status: 500 }
     );
   }
@@ -41,20 +51,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const academicYearId = searchParams.get('academicYearId');
+    const body = await request.json();
 
-    const params = new URLSearchParams();
-    if (academicYearId) params.append('academicYearId', academicYearId);
-
+    // TODO: Récupérer le token d'authentification depuis la session
     const token = request.headers.get('authorization') || '';
 
-    const response = await fetch(`${API_BASE_URL}/orion/alerts/generate?${params.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/qhs/incidents`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: token }),
       },
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -64,10 +72,11 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error: any) {
-    console.error('Error generating ORION alerts:', error);
+    console.error('Error creating QHSE incident:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to generate alerts' },
+      { error: error.message || 'Failed to create incident' },
       { status: 500 }
     );
   }
 }
+

@@ -25,6 +25,52 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // ============================================
+      // IDENTIFIANTS PROVISOIRES (TEST)
+      // ============================================
+      const testCredentials = [
+        { email: 'admin@test.com', password: 'admin123', role: 'DIRECTOR' },
+        { email: 'directeur@test.com', password: 'directeur123', role: 'DIRECTOR' },
+        { email: 'enseignant@test.com', password: 'enseignant123', role: 'TEACHER' },
+        { email: 'comptable@test.com', password: 'comptable123', role: 'ACCOUNTANT' },
+      ];
+
+      const testUser = testCredentials.find(
+        (tc) => tc.email === credentials.email && tc.password === credentials.password
+      );
+
+      if (testUser) {
+        // Connexion provisoire réussie - créer une session de test
+        const sessionData = {
+          user: {
+            id: `test-user-${Date.now()}`,
+            email: testUser.email,
+            firstName: 'Test',
+            lastName: 'User',
+            role: testUser.role,
+            tenantId: 'test-tenant-id',
+          },
+          token: 'test-token-' + Date.now(),
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        };
+
+        // Stocker dans sessionStorage
+        sessionStorage.setItem('academia_session', JSON.stringify(sessionData));
+        // Stocker aussi dans un cookie lisible côté serveur pour les Server Components
+        try {
+          document.cookie = `academia_test_session=${encodeURIComponent(
+            JSON.stringify(sessionData.user),
+          )}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+        } catch (cookieError) {
+          console.warn('Unable to set test session cookie:', cookieError);
+        }
+        
+        // Rediriger vers le dashboard
+        window.location.href = '/app';
+        return;
+      }
+
+      // Si pas d'identifiants de test, essayer l'API normale
       // Extraire le sous-domaine depuis l'URL
       const host = window.location.host;
       const parts = host.split('.');
@@ -125,6 +171,17 @@ export default function LoginPage() {
             )}
           </button>
         </form>
+
+        {/* Identifiants provisoires (TEST) */}
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs font-semibold text-blue-900 mb-2">🔑 Identifiants provisoires (Test) :</p>
+          <div className="text-xs text-blue-800 space-y-1">
+            <p>• <strong>admin@test.com</strong> / admin123 (Directeur)</p>
+            <p>• <strong>directeur@test.com</strong> / directeur123 (Directeur)</p>
+            <p>• <strong>enseignant@test.com</strong> / enseignant123 (Enseignant)</p>
+            <p>• <strong>comptable@test.com</strong> / comptable123 (Comptable)</p>
+          </div>
+        </div>
 
         {/* Links */}
         <div className="mt-6 text-center space-y-2">

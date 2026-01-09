@@ -254,6 +254,16 @@ export default function CompleteLandingPage() {
               <AppIcon name="playCircle" size="action" className="text-white" />
               Voir Academia Hub
             </button>
+            {/* Bouton provisoire - Accès Dashboard École */}
+            <Link
+              href="/app"
+              prefetch={true}
+              className="bg-green-600 text-white px-8 py-4 rounded-md font-semibold hover:bg-green-700 transition-all duration-300 inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 border-2 border-green-400"
+              title="Bouton provisoire - Accès direct au dashboard École"
+            >
+              <AppIcon name="dashboard" size="action" className="text-white" />
+              Dashboard École (Test)
+            </Link>
           </div>
         </div>
       </section>

@@ -22,6 +22,31 @@ export async function getServerSession() {
     } = await supabase.auth.getUser();
 
     if (error || !user) {
+      // Si pas d'utilisateur Supabase, essayer une session de test basée sur un cookie
+      const testSessionCookie = cookieStore.get('academia_test_session');
+      if (testSessionCookie?.value) {
+        try {
+          const testUser = JSON.parse(testSessionCookie.value) as Partial<User>;
+          const now = new Date().toISOString();
+          const userData: User = {
+            id: testUser.id || 'test-user',
+            email: testUser.email || 'test@test.com',
+            firstName: testUser.firstName || 'Test',
+            lastName: testUser.lastName || 'User',
+            role: (testUser.role as string) || 'DIRECTOR',
+            tenantId: testUser.tenantId || 'test-tenant-id',
+            createdAt: testUser.createdAt || now,
+            updatedAt: testUser.updatedAt || now,
+          };
+
+          return {
+            user: userData,
+            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          };
+        } catch (parseError) {
+          console.warn('Unable to parse academia_test_session cookie:', parseError);
+        }
+      }
       return null;
     }
 

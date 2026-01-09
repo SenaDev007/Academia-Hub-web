@@ -34,6 +34,7 @@ model Tenant {
   slug              String   @unique
   schemaName        String?
   countryId         String
+  type              String   @default("SCHOOL") // SCHOOL | PATRONAT
   subscriptionStatus String  @default("TRIAL") // TRIAL, ACTIVE_SUBSCRIBED, EXPIRED, SUSPENDED
   status            String   @default("active")
   subscriptionPlan  String   @default("free")
@@ -174,6 +175,24 @@ model Tenant {
   syncConflicts  SyncConflict[]
   syncLogs       SyncLog[]
   activityLogs   ActivityLog[]
+  // Module Patronat & Examens
+  patronat        Patronat?
+  patronatUsers  PatronatUser[]
+  patronatSchools PatronatSchool[] @relation("PatronatSchools")
+  patronatSchoolCreators PatronatSchool[] @relation("PatronatSchoolCreator")
+  patronatSchoolSuspenders PatronatSchool[] @relation("PatronatSchoolSuspender")
+  examCandidateSchoolTenants ExamCandidate[] @relation("ExamCandidateSchoolTenant")
+  resourceAccessSchoolTenants ResourceAccessLog[] @relation("ResourceAccessSchoolTenant")
+  nationalExams  NationalExam[]
+  examCenters    ExamCenter[]
+  examCandidates ExamCandidate[]
+  examRooms      ExamRoom[]
+  examSupervisors ExamSupervisor[]
+  nationalExamSubjects NationalExamSubject[]
+  examResults    ExamResult[]
+  examDocuments  ExamDocument[]
+  questionBankResources QuestionBankResource[]
+  resourceAccessLogs ResourceAccessLog[]
 
   @@index([subdomain])
   @@index([slug])
@@ -325,6 +344,7 @@ model SchoolLevel {
   absences Absence[]
   discipline Discipline[]
   expenses Expense[]
+  questionBankResources QuestionBankResource[] @relation("QuestionBankSchoolLevel")
   feeConfigurations FeeConfiguration[]
   announcements Announcement[]
   modules  Module[]
@@ -494,6 +514,24 @@ model User {
   passwordResets PasswordReset[]
   atlasConversations AtlasConversation[]
   activityLogs ActivityLog[]
+  // Module Patronat & Examens
+  patronatUsers PatronatUser[]
+  patronatSchoolCreators PatronatSchool[] @relation("PatronatSchoolCreator")
+  patronatSchoolSuspenders PatronatSchool[] @relation("PatronatSchoolSuspender")
+  nationalExamCreators NationalExam[] @relation("NationalExamCreator")
+  examCenterCreators ExamCenter[] @relation("ExamCenterCreator")
+  examCandidateCreators ExamCandidate[] @relation("ExamCandidateCreator")
+  examRoomCreators ExamRoom[] @relation("ExamRoomCreator")
+  examSupervisorCreators ExamSupervisor[] @relation("ExamSupervisorCreator")
+  examSupervisorUsers ExamSupervisor[] @relation("ExamSupervisorUser")
+  nationalExamSubjectCreators NationalExamSubject[] @relation("NationalExamSubjectCreator")
+  examResultEnterers ExamResult[] @relation("ExamResultEnterer")
+  examResultValidators ExamResult[] @relation("ExamResultValidator")
+  examDocumentGenerators ExamDocument[] @relation("ExamDocumentGenerator")
+  examDocumentPublishers ExamDocument[] @relation("ExamDocumentPublisher")
+  questionBankUploaders QuestionBankResource[] @relation("QuestionBankUploader")
+  resourceAccessUsers ResourceAccessLog[] @relation("ResourceAccessUser")
+  patronatUserCreators PatronatUser[] @relation("PatronatUserCreator")
 
   @@index([tenantId, role])
   @@index([email])
@@ -1694,6 +1732,62 @@ model GeneratedDocument {
   @@index([tenantId])
   @@index([documentType])
   @@map("generated_documents")
+}
+
+// ============================================================================
+// GED INSTITUTIONNELLE
+// ============================================================================
+
+model GedDocument {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String?
+  schoolLevelId  String?
+  category       String   // ADMIN, PEDAGOGIQUE, FINANCIER, QHSE, RH
+  title          String
+  description    String?
+  sourceType     String?  // STUDENT_DOCUMENT, GENERATED_DOCUMENT, QHSE_AUDIT, etc.
+  sourceId       String?
+  archivalStatus String   @default("DRAFT") // DRAFT, VALIDATED, ARCHIVED
+  retentionPolicy String? // Durée légale, ex: 5Y, 10Y
+  metadata       Json?
+  createdById    String?
+  validatedById  String?
+  validatedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  createdBy    User?        @relation("GedDocumentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  validatedBy  User?        @relation("GedDocumentValidatedBy", fields: [validatedById], references: [id], onDelete: SetNull)
+  versions     GedDocumentVersion[]
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([category, archivalStatus])
+  @@index([sourceType, sourceId])
+  @@map("ged_documents")
+}
+
+model GedDocumentVersion {
+  id           String   @id @default(uuid())
+  documentId   String
+  versionNumber Int
+  filePath     String
+  fileName     String
+  fileSize     Int
+  mimeType     String
+  hash         String?
+  createdById  String?
+  createdAt    DateTime @default(now())
+
+  document GedDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy User?      @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+  @@map("ged_document_versions")
 }
 
 // ============================================================================
@@ -3618,6 +3712,152 @@ model CorrectiveAction {
   @@map("corrective_actions")
 }
 
+// ============================================================================
+// QHSE+ GOUVERNANCE, RISQUES & CONFORMITÉ (SOCLE TRANSVERSAL)
+// ============================================================================
+
+model QhsIncident {
+  id               String   @id @default(uuid())
+  tenantId         String
+  academicYearId   String
+  schoolLevelId    String?
+  sourceModule     String   // SCOLARITE, FINANCE, RH, DISCIPLINE, SECURITE, AUTRE
+  category         String   // ADMINISTRATIF, PEDAGOGIQUE, FINANCIER, RH, DISCIPLINAIRE, SECURITE
+  type             String   // Type métier précis (ex: RETARD_PAIEMENT, INCIDENT_CLASSE, INCIDENT_TRANSPORT)
+  gravity          String   // MINEUR, MAJEUR, CRITIQUE
+  status           String   @default("OUVERT") // OUVERT, EN_COURS, CLOTURE
+  title            String
+  description      String
+  location         String?
+  relatedResourceType String? // STUDENT, STAFF, INVOICE, CLASS, EXAM, etc.
+  relatedResourceId   String?
+  createdById      String?
+  validatedById    String?
+  validatedAt      DateTime?
+  metadata         Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  createdBy    User?        @relation("QhsIncidentCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  validatedBy  User?        @relation("QhsIncidentValidatedBy", fields: [validatedById], references: [id], onDelete: SetNull)
+  decisions    QhsDecisionLog[]
+  correctiveActions QhsCorrectiveAction[]
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([sourceModule, category])
+  @@index([status, gravity])
+  @@map("qhs_incidents")
+}
+
+model QhsDecisionLog {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String?
+  incidentId     String
+  decidedById    String?
+  decidedAt      DateTime @default(now())
+  decisionType   String   // MESURE_DISCIPLINAIRE, INFORMATION_PARENTS, SUSPENSION, etc.
+  summary        String
+  details        String?
+  metadata       Json?
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  incident     QhsIncident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  decidedBy    User?        @relation(fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([incidentId])
+  @@map("qhs_decision_logs")
+}
+
+model QhsCorrectiveAction {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String?
+  incidentId     String
+  action         String
+  ownerId        String?
+  dueDate        DateTime
+  status         String   @default("PENDING") // PENDING, EN_COURS, TERMINEE
+  completedAt    DateTime?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  incident     QhsIncident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  owner        User?        @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([incidentId])
+  @@index([status])
+  @@map("qhs_corrective_actions")
+}
+
+model QhsAudit {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String?
+  auditType      String   // ADMINISTRATIF, PEDAGOGIQUE, FINANCIER, QHSE, RH
+  scope          String?  // ETABLISSEMENT, NIVEAU, CYCLE, SERVICE, etc.
+  date           DateTime
+  auditor        String?
+  status         String   @default("EN_COURS") // EN_COURS, CLOTURE
+  globalResult   String?  // CONFORME, NON_CONFORME, A_SURVEILLER
+  checklist      Json?    // Liste structurée des points de contrôle et résultats
+  recommendations String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([auditType, status])
+  @@map("qhs_audits")
+}
+
+model QhsRiskRegister {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String?
+  code           String
+  title          String
+  description    String?
+  domain         String   // PEDAGOGIQUE, FINANCIER, RH, QHSE, STRATEGIQUE
+  probability    Int      // 1 à 5
+  impact         Int      // 1 à 5
+  level          Int      // probabilité * impact
+  status         String   @default("ACTIF") // ACTIF, MITIGE, CLOTURE
+  ownerId        String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  owner        User?        @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, academicYearId, code])
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([domain, status])
+  @@map("qhs_risk_register")
+}
+
 // Boutique
 model Product {
   id             String   @id @default(uuid())
@@ -3847,6 +4087,36 @@ model KpiSnapshot {
   @@map("kpi_snapshots")
 }
 
+// ============================================================================
+// KPI OBJECTIVES (PILOTAGE DIRECTIONNEL)
+// ============================================================================
+
+model KpiObjective {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String?
+  kpiId          String
+  period         String   // YYYY, YYYY-MM, YYYY-MM-DD
+  targetValue    Float
+  minAcceptable  Float?
+  maxAcceptable  Float?
+  status         String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  kpi          KpiDefinition @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  createdBy    User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@unique([kpiId, period])
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@map("kpi_objectives")
+}
+
 model OrionAlert {
   id             String   @id @default(uuid())
   tenantId       String
@@ -3897,6 +4167,58 @@ model OrionReport {
   @@index([tenantId])
   @@index([reportType])
   @@map("orion_reports")
+}
+
+// ============================================================================
+// AUTOMATISATION & SCÉNARIOS
+// ============================================================================
+
+model AutomationRule {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String?
+  schoolLevelId  String?
+  name           String
+  code           String
+  scope          String   // FINANCE, PRESENCE, DOCUMENTS, QHSE, RH, PEDAGOGIE, GENERAL
+  description    String?
+  condition      Json     // DSL métier: champs, opérateurs, valeurs
+  action         Json     // Actions: notifications, création d'incident QHSE, tasks, etc.
+  isActive       Boolean  @default(true)
+  createdById    String?
+  approvedById   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  createdBy    User?        @relation("AutomationRuleCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  approvedBy   User?        @relation("AutomationRuleApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+  executions   AutomationExecution[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, scope, isActive])
+  @@map("automation_rules")
+}
+
+model AutomationExecution {
+  id             String   @id @default(uuid())
+  tenantId       String
+  ruleId         String
+  triggeredAt    DateTime @default(now())
+  status         String   @default("SUCCESS") // SUCCESS, FAILED, SKIPPED
+  inputPayload   Json?
+  actionPayload  Json?
+  errorMessage   String?
+  createdAt      DateTime @default(now())
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  rule   AutomationRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, triggeredAt])
+  @@index([ruleId, status])
+  @@map("automation_executions")
 }
 
 model AtlasConversation {
@@ -4028,6 +4350,536 @@ model SyncLog {
   @@index([operationId])
   @@index([level])
   @@map("sync_logs")
+}
+
+// ============================================================================
+// MODULE PATRONAT & EXAMENS NATIONAUX
+// ============================================================================
+// 
+// Module institutionnel pour l'organisation des examens nationaux
+// Isolation métier par naming (patronat_*, exam_*, question_bank_*)
+// Séparation par tenant.type = 'PATRONAT'
+// Relations avec écoles existantes via tables de liaison
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// PATRONAT - ENTITÉ PRINCIPALE
+// ----------------------------------------------------------------------------
+
+model Patronat {
+  id                String   @id @default(uuid())
+  tenantId          String   @unique // Un patronat = un tenant PATRONAT
+  name              String
+  abbreviation      String?
+  legalName         String?
+  registrationNumber String? // Numéro d'enregistrement officiel
+  address           String?
+  primaryPhone      String?
+  primaryEmail      String?
+  website           String?
+  logo              String?
+  region            String?  // Région ou département
+  scope             String   @default("DEPARTMENTAL") // DEPARTMENTAL, REGIONAL, NATIONAL
+  status            String   @default("ACTIVE") // ACTIVE, SUSPENDED, INACTIVE
+  metadata          Json?    // Données additionnelles
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  users             PatronatUser[]
+  schools           PatronatSchool[]
+  exams             NationalExam[]
+  questionBankResources QuestionBankResource[]
+
+  @@index([tenantId])
+  @@index([region])
+  @@index([status])
+  @@map("patronats")
+}
+
+// ----------------------------------------------------------------------------
+// UTILISATEURS PATRONAT
+// ----------------------------------------------------------------------------
+
+model PatronatUser {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  userId            String   // User existant
+  role              String   // PATRONAT_ADMIN, PATRONAT_OPERATOR, EXAM_SUPERVISOR, EXAM_VIEWER
+  permissions       String[] @default([]) // Permissions granulaires
+  isActive          Boolean  @default(true)
+  assignedRegions   String[] @default([]) // Régions/départements assignés
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creator           User?    @relation("PatronatUserCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@index([role])
+  @@map("patronat_users")
+}
+
+// ----------------------------------------------------------------------------
+// ÉCOLES RATTACHÉES AU PATRONAT
+// ----------------------------------------------------------------------------
+
+model PatronatSchool {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  schoolTenantId    String   // Tenant SCHOOL (référence à un tenant existant)
+  academicYearId    String   // Année scolaire
+  status            String   @default("PENDING") // PENDING, ACTIVE, SUSPENDED, REJECTED
+  invitationToken   String?  @unique // Token pour invitation
+  invitedAt         DateTime?
+  joinedAt          DateTime?
+  suspendedAt       DateTime?
+  suspendedBy       String?
+  suspendedReason   String?
+  accessLevel       String   @default("READ_ONLY") // READ_ONLY, FULL_ACCESS
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation("PatronatSchools", fields: [tenantId], references: [id], onDelete: Cascade)
+  schoolTenant      Tenant        @relation("SchoolTenants", fields: [schoolTenantId], references: [id], onDelete: Restrict)
+  academicYear      AcademicYear  @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  creator           User?         @relation("PatronatSchoolCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  suspender         User?         @relation("PatronatSchoolSuspender", fields: [suspendedBy], references: [id], onDelete: SetNull)
+  candidates        ExamCandidate[]
+
+  @@unique([tenantId, schoolTenantId, academicYearId])
+  @@index([tenantId])
+  @@index([schoolTenantId])
+  @@index([academicYearId])
+  @@index([status])
+  @@map("patronat_schools")
+}
+
+// ----------------------------------------------------------------------------
+// EXAMENS NATIONAUX
+// ----------------------------------------------------------------------------
+
+model NationalExam {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  code              String   // CEP, BEPC, BAC, etc.
+  name              String
+  description       String?
+  examType          String   // CEP, BEPC, BAC, CONCOURS, etc.
+  level             String   // PRIMAIRE, SECONDAIRE
+  startDate         DateTime
+  endDate           DateTime
+  registrationStartDate DateTime
+  registrationEndDate   DateTime
+  status            String   @default("DRAFT") // DRAFT, REGISTRATION_OPEN, REGISTRATION_CLOSED, IN_PROGRESS, COMPLETED, CANCELLED
+  totalCandidates   Int      @default(0)
+  totalCenters      Int      @default(0)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("NationalExamAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  creator           User?         @relation("NationalExamCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  centers           ExamCenter[]
+  candidates        ExamCandidate[]
+  subjects          NationalExamSubject[]
+  results           ExamResult[]
+  documents         ExamDocument[]
+
+  @@unique([tenantId, academicYearId, code])
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([code])
+  @@index([status])
+  @@index([startDate])
+  @@map("national_exams")
+}
+
+// ----------------------------------------------------------------------------
+// CENTRES D'EXAMEN
+// ----------------------------------------------------------------------------
+
+model ExamCenter {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  code              String   // Code unique du centre
+  name              String
+  address           String?
+  location          Json?    // Coordonnées GPS
+  capacity          Int      @default(0) // Capacité totale
+  totalRooms        Int      @default(0)
+  status            String   @default("ACTIVE") // ACTIVE, SUSPENDED, CLOSED
+  contactName       String?
+  contactPhone      String?
+  contactEmail      String?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("ExamCenterAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  creator           User?         @relation("ExamCenterCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  rooms              ExamRoom[]
+  candidates         ExamCandidate[]
+  supervisors        ExamSupervisor[]
+
+  @@unique([tenantId, academicYearId, examId, code])
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([code])
+  @@index([status])
+  @@map("exam_centers")
+}
+
+// ----------------------------------------------------------------------------
+// CANDIDATS AUX EXAMENS
+// ----------------------------------------------------------------------------
+
+model ExamCandidate {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  patronatSchoolId String?  // École d'origine (si rattachée)
+  schoolTenantId    String?  // Tenant école (si école existante)
+  centerId          String?  // Centre d'examen assigné
+  roomId            String?  // Salle assignée
+  registrationNumber String  @unique // Numéro d'inscription unique
+  matricule         String   @unique // Matricule candidat
+  tableNumber       String?  // Numéro de table
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime?
+  gender            String?  // M, F
+  nationality       String?
+  placeOfBirth      String?
+  address           String?
+  phone             String?
+  email             String?
+  photo             String?  // URL photo
+  registrationDate  DateTime @default(now())
+  status            String   @default("REGISTERED") // REGISTERED, CONFIRMED, ABSENT, DISQUALIFIED, PASSED, FAILED
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("ExamCandidateAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  patronatSchool    PatronatSchool? @relation(fields: [patronatSchoolId], references: [id], onDelete: SetNull)
+  schoolTenant      Tenant?       @relation("ExamCandidateSchoolTenant", fields: [schoolTenantId], references: [id], onDelete: SetNull)
+  center            ExamCenter?   @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  room              ExamRoom?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  creator           User?         @relation("ExamCandidateCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  results           ExamResult[]
+  documents         ExamDocument[]
+
+  @@unique([tenantId, academicYearId, examId, registrationNumber])
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([registrationNumber])
+  @@index([matricule])
+  @@index([tableNumber])
+  @@index([status])
+  @@index([centerId])
+  @@map("exam_candidates")
+}
+
+// ----------------------------------------------------------------------------
+// SALLES D'EXAMEN
+// ----------------------------------------------------------------------------
+
+model ExamRoom {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  centerId         String   // ExamCenter
+  code              String   // Code salle (ex: Salle A, Salle 1)
+  name              String
+  capacity          Int      @default(0)
+  currentOccupancy  Int      @default(0)
+  floor             Int?
+  building          String?
+  status            String   @default("AVAILABLE") // AVAILABLE, OCCUPIED, CLOSED
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("ExamRoomAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation("ExamRoomExam", fields: [examId], references: [id], onDelete: Cascade)
+  center            ExamCenter    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  creator           User?         @relation("ExamRoomCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  candidates        ExamCandidate[]
+  supervisors       ExamSupervisor[]
+
+  @@unique([tenantId, academicYearId, examId, centerId, code])
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([centerId])
+  @@index([code])
+  @@index([status])
+  @@map("exam_rooms")
+}
+
+// ----------------------------------------------------------------------------
+// SURVEILLANTS D'EXAMEN
+// ----------------------------------------------------------------------------
+
+model ExamSupervisor {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  centerId         String?  // ExamCenter (si assigné à un centre)
+  roomId            String?  // ExamRoom (si assigné à une salle)
+  userId            String?  // User existant (si utilisateur Academia Hub)
+  firstName         String
+  lastName          String
+  email             String?
+  phone             String?
+  role              String   @default("SUPERVISOR") // SUPERVISOR, HEAD_SUPERVISOR, OBSERVER
+  status            String   @default("ASSIGNED") // ASSIGNED, PRESENT, ABSENT, REPLACED
+  assignedDate      DateTime @default(now())
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("ExamSupervisorAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation("ExamSupervisorExam", fields: [examId], references: [id], onDelete: Cascade)
+  center            ExamCenter?   @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  room              ExamRoom?     @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  user              User?          @relation("ExamSupervisorUser", fields: [userId], references: [id], onDelete: SetNull)
+  creator           User?          @relation("ExamSupervisorCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([centerId])
+  @@index([roomId])
+  @@index([status])
+  @@map("exam_supervisors")
+}
+
+// ----------------------------------------------------------------------------
+// ÉPREUVES / MATIÈRES D'EXAMEN
+// ----------------------------------------------------------------------------
+
+model NationalExamSubject {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  code              String   // Code matière (ex: MAT, FR, ANG, etc.)
+  name              String
+  description       String?
+  coefficient       Float    @default(1.0)
+  duration          Int?     // Durée en minutes
+  maxScore          Float    @default(20.0)
+  passingScore      Float?   // Note minimale pour valider
+  examDate          DateTime?
+  startTime         String?  // Heure de début (HH:mm)
+  endTime           String?  // Heure de fin (HH:mm)
+  order             Int      @default(0) // Ordre d'affichage
+  status            String   @default("DRAFT") // DRAFT, SCHEDULED, IN_PROGRESS, COMPLETED
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("NationalExamSubjectAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  creator           User?         @relation("NationalExamSubjectCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  results           ExamResult[]
+
+  @@unique([tenantId, academicYearId, examId, code])
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([code])
+  @@index([examDate])
+  @@map("national_exam_subjects")
+}
+
+// ----------------------------------------------------------------------------
+// RÉSULTATS D'EXAMEN
+// ----------------------------------------------------------------------------
+
+model ExamResult {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  candidateId       String   // ExamCandidate
+  subjectId         String   // ExamSubject
+  score             Float
+  maxScore          Float    @default(20.0)
+  coefficient       Float    @default(1.0)
+  weightedScore     Float    // score * coefficient
+  grade             String?  // Mention (TRÈS BIEN, BIEN, etc.)
+  rank              Int?     // Classement dans la matière
+  status            String   @default("DRAFT") // DRAFT, VALIDATED, PUBLISHED
+  remarks           String?
+  enteredBy         String?
+  validatedBy       String?
+  validatedAt       DateTime?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("ExamResultAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  candidate         ExamCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  subject           NationalExamSubject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  enterer           User?         @relation("ExamResultEnterer", fields: [enteredBy], references: [id], onDelete: SetNull)
+  validator         User?         @relation("ExamResultValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, academicYearId, examId, candidateId, subjectId])
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([candidateId])
+  @@index([subjectId])
+  @@index([status])
+  @@map("exam_results")
+}
+
+// ----------------------------------------------------------------------------
+// DOCUMENTS D'EXAMEN
+// ----------------------------------------------------------------------------
+
+model ExamDocument {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  examId            String   // NationalExam
+  candidateId       String?  // ExamCandidate (si document lié à un candidat)
+  documentType      String   // LISTE_SURVEILLANCE, RELEVE_NOTES, ATTESTATION, CERTIFICAT, etc.
+  title             String
+  description       String?
+  fileUrl           String
+  fileSize          Int?
+  mimeType          String?
+  status            String   @default("DRAFT") // DRAFT, GENERATED, PUBLISHED, ARCHIVED
+  generatedBy       String?
+  generatedAt       DateTime?
+  publishedBy       String?
+  publishedAt       DateTime?
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("ExamDocumentAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  exam              NationalExam  @relation(fields: [examId], references: [id], onDelete: Cascade)
+  candidate         ExamCandidate? @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  generator         User?         @relation("ExamDocumentGenerator", fields: [generatedBy], references: [id], onDelete: SetNull)
+  publisher         User?         @relation("ExamDocumentPublisher", fields: [publishedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([examId])
+  @@index([candidateId])
+  @@index([documentType])
+  @@index([status])
+  @@map("exam_documents")
+}
+
+// ----------------------------------------------------------------------------
+// BANQUE D'ÉPREUVES
+// ----------------------------------------------------------------------------
+
+model QuestionBankResource {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  academicYearId    String   // Année scolaire
+  schoolLevelId     String?  // Niveau scolaire (optionnel)
+  title             String
+  description       String?
+  resourceType      String   // EXAM_SUBJECT, PRACTICE_TEST, CORRECTION, etc.
+  subject           String?  // Matière
+  class             String?  // Classe
+  examType          String?  // Type d'examen
+  fileUrl           String
+  fileSize          Int?
+  mimeType          String?
+  isPublic          Boolean  @default(false) // Accessible à toutes les écoles
+  accessLevel       String   @default("RESTRICTED") // PUBLIC, RESTRICTED, PRIVATE
+  uploadedBy        String?
+  uploadedAt        DateTime @default(now())
+  status            String   @default("ACTIVE") // ACTIVE, ARCHIVED, DELETED
+  downloadCount     Int      @default(0)
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant            Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear  @relation("QuestionBankAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel       SchoolLevel?  @relation("QuestionBankSchoolLevel", fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  uploader          User?         @relation("QuestionBankUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  accessLogs        ResourceAccessLog[]
+
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([schoolLevelId])
+  @@index([resourceType])
+  @@index([subject])
+  @@index([isPublic])
+  @@index([status])
+  @@map("question_bank_resources")
+}
+
+// ----------------------------------------------------------------------------
+// LOGS D'ACCÈS AUX RESSOURCES
+// ----------------------------------------------------------------------------
+
+model ResourceAccessLog {
+  id                String   @id @default(uuid())
+  tenantId          String   // Tenant PATRONAT
+  resourceId        String   // QuestionBankResource
+  accessedBy        String?  // User ID
+  schoolTenantId    String?  // Tenant école (si accès depuis une école)
+  accessType        String   // VIEW, DOWNLOAD, PREVIEW
+  ipAddress         String?
+  userAgent         String?
+  accessedAt        DateTime @default(now())
+
+  tenant            Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  resource          QuestionBankResource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user              User?               @relation("ResourceAccessUser", fields: [accessedBy], references: [id], onDelete: SetNull)
+  schoolTenant      Tenant?              @relation("ResourceAccessSchoolTenant", fields: [schoolTenantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([resourceId])
+  @@index([accessedBy])
+  @@index([schoolTenantId])
+  @@index([accessType])
+  @@index([accessedAt])
+  @@map("resource_access_logs")
 }
 
 // ============================================================================

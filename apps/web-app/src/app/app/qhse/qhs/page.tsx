@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: 'Dashboard QHSE+ pour la gestion des incidents, risques et audits',
 };
 
-export default async function QhsePage() {
+export default async function QhsPage() {
   const session = await getServerSession();
 
   if (!session?.user) {
@@ -41,3 +41,4 @@ export default async function QhsePage() {
     </PilotageLayout>
   );
 }
+

@@ -33,11 +33,11 @@ export default function PremiumHeader() {
     return pathname === path || pathname.startsWith(path);
   };
 
-  const menuItems = [
+  const menuItems: Array<{ path: string; label: string; isInstitutional?: boolean }> = [
     { path: '/', label: 'Accueil' },
-    { path: '/plateforme', label: 'Plateforme' },
     { path: '/modules', label: 'Modules' },
     { path: '/#tarification', label: 'Tarification' },
+    { path: '/patronat-examens', label: 'Patronat & Examens', isInstitutional: true },
     { path: '/securite', label: 'Sécurité & Méthode' },
     { path: '/contact', label: 'Contact' },
   ];
@@ -62,7 +62,7 @@ export default function PremiumHeader() {
             <div className="relative">
                     <Image
                       src="/images/logo-Academia Hub.png"
-                      alt="Academia Hub - Retour à l'accueil"
+                      alt="Academia Hub - Connexion Super Admin"
                       width={52}
                       height={52}
                       className="h-14 w-auto transition-opacity duration-200 group-hover:opacity-90"
@@ -85,33 +85,20 @@ export default function PremiumHeader() {
                 prefetch={true}
                 className={cn(
                   'relative px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200',
-                  isActive(item.path)
+                  item.isInstitutional
+                    ? 'text-blue-800 font-semibold border border-blue-200 hover:border-blue-300 hover:bg-blue-50'
+                    : isActive(item.path)
                     ? 'text-blue-900 bg-cloud'
                     : 'text-graphite-700 hover:text-blue-900 hover:bg-cloud'
                 )}
               >
                 {item.label}
-                {isActive(item.path) && (
+                {isActive(item.path) && !item.isInstitutional && (
                   <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-900 rounded-full" />
                 )}
               </Link>
             ))}
             <div className="ml-8 pl-8 border-l border-gray-200 flex-shrink-0 flex items-center space-x-3">
-              {/* Bouton de test - Accès direct à l'interface de pilotage */}
-              <Link
-                href="/app-test"
-                prefetch={true}
-                className={cn(
-                  'bg-gold-500 text-white px-6 py-2.5 rounded-md',
-                  'font-semibold hover:bg-gold-600 transition-all duration-200',
-                  'shadow-sm hover:shadow-md transform hover:-translate-y-0.5',
-                  'inline-flex items-center space-x-2'
-                )}
-                title="Accès test - Interface de pilotage"
-              >
-                <span>Pilotage</span>
-                <AppIcon name="dashboard" size="submenu" className="text-white" />
-              </Link>
               <Link
                 href="/login"
                 prefetch={true}
@@ -151,11 +138,11 @@ export default function PremiumHeader() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+          {/* Mobile Menu */}
       <div
         className={cn(
           'lg:hidden overflow-hidden transition-all duration-300 ease-in-out',
-          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          isMenuOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
         )}
       >
         <div className={cn(bgColor('card'), 'border-t border-gray-200 shadow-lg')}>
@@ -167,7 +154,9 @@ export default function PremiumHeader() {
                 onClick={() => setIsMenuOpen(false)}
                 className={cn(
                   'px-4 py-3 rounded-lg text-base font-medium transition-all duration-200',
-                  isActive(item.path)
+                  item.isInstitutional
+                    ? 'text-blue-800 font-semibold border border-blue-200 bg-blue-50 hover:bg-blue-100'
+                    : isActive(item.path)
                     ? 'text-blue-900 bg-cloud font-semibold'
                     : 'text-graphite-700 hover:text-blue-900 hover:bg-cloud'
                 )}
@@ -176,20 +165,6 @@ export default function PremiumHeader() {
               </Link>
             ))}
             <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
-              <Link
-                href="/app-test"
-                onClick={() => setIsMenuOpen(false)}
-                className={cn(
-                  'bg-gold-500 text-white w-full py-3 rounded-md',
-                  'font-semibold hover:bg-gold-600 transition-all duration-200',
-                  'shadow-sm hover:shadow-md',
-                  'inline-flex items-center justify-center space-x-2'
-                )}
-                title="Accès test - Interface de pilotage"
-              >
-                <span>Pilotage</span>
-                <AppIcon name="dashboard" size="submenu" className="text-white" />
-              </Link>
               <Link
                 href="/login"
                 onClick={() => setIsMenuOpen(false)}

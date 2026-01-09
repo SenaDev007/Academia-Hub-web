@@ -24,7 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/plateforme`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.9,
@@ -96,7 +95,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
  */
 function getDefaultPriority(path: string): number {
   // Pages importantes
-  if (path.includes('signup') || path.includes('modules') || path.includes('plateforme')) {
+  if (path.includes('signup') || path.includes('modules')) {
     return 0.9;
   }
   

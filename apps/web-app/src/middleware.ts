@@ -63,7 +63,6 @@ async function resolveTenant(subdomain: string): Promise<{ id: string; slug: str
 
 const publicRoutes = [
   '/',
-  '/plateforme',
   '/modules',
   '/tarification',
   '/securite',
@@ -84,6 +83,12 @@ const adminRoutes = [
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const subdomain = extractSubdomainFromRequest(request);
+
+  // Routes Patronat : utiliser le middleware dédié
+  if (pathname.startsWith('/patronat')) {
+    const { patronatMiddleware } = await import('./middleware-patronat');
+    return patronatMiddleware(request);
+  }
 
   // Initialiser Supabase client pour l'authentification
   let response = NextResponse.next();
