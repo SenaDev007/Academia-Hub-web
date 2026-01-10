@@ -79,8 +79,8 @@ export class OrionAlertsService {
     // Alerte pour incidents critiques ouverts
     if (criticalIncidents.length > 0) {
       alerts.push({
-        type: OrionAlertType.QHSE,
-        severity: OrionAlertSeverity.CRITICAL,
+        type: 'QHSE',
+        severity: 'CRITICAL',
         title: `${criticalIncidents.length} incident(s) critique(s) en cours`,
         description: `Des incidents critiques nécessitent une attention immédiate.`,
         recommendation: 'Examiner et traiter les incidents critiques dans le module QHSE.',
@@ -100,8 +100,8 @@ export class OrionAlertsService {
     // Alerte pour incidents répétés
     if (repeatedIncidents.length > 0) {
       alerts.push({
-        type: OrionAlertType.QHSE,
-        severity: OrionAlertSeverity.WARNING,
+        type: QHSE,
+        severity: WARNING,
         title: 'Incidents critiques répétés détectés',
         description: `Plusieurs incidents critiques du même type ont été signalés. Analyse de tendance recommandée.`,
         recommendation: 'Analyser les causes racines et mettre en place des actions préventives.',
@@ -142,8 +142,8 @@ export class OrionAlertsService {
 
     if (highRisks.length > 0) {
       alerts.push({
-        type: OrionAlertType.QHSE,
-        severity: OrionAlertSeverity.WARNING,
+        type: QHSE,
+        severity: WARNING,
         title: `${highRisks.length} risque(s) élevé(s) non mitigé(s)`,
         description: `Des risques élevés ou critiques nécessitent une attention.`,
         recommendation: 'Examiner le registre des risques et mettre en place des mesures de mitigation.',
@@ -222,8 +222,8 @@ export class OrionAlertsService {
           type: this.getKpiAlertType(objective.kpi.category),
           severity:
             Math.abs(percentageGap) > 20
-              ? OrionAlertSeverity.CRITICAL
-              : OrionAlertSeverity.WARNING,
+              ? CRITICAL
+              : WARNING,
           title: `Écart détecté : ${objective.kpi.name}`,
           description: `L'objectif de ${objective.targetValue} ${objective.kpi.unit || ''} n'est pas atteint. Valeur actuelle : ${actualValue} ${objective.kpi.unit || ''} (écart : ${percentageGap.toFixed(1)}%)`,
           recommendation: 'Analyser les causes de l\'écart et ajuster les actions si nécessaire.',
@@ -269,8 +269,8 @@ export class OrionAlertsService {
 
     if (examsWithoutScores.length > 0) {
       alerts.push({
-        type: OrionAlertType.PEDAGOGICAL,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'PEDAGOGIC',
+        severity: 'WARNING',
         title: `${examsWithoutScores.length} examen(s) sans notes`,
         description: `Des examens ont été créés mais aucune note n'a encore été saisie.`,
         recommendation: 'Saisir les notes pour ces examens ou vérifier leur pertinence.',
@@ -307,8 +307,8 @@ export class OrionAlertsService {
 
     if (pendingScores.length > 0) {
       alerts.push({
-        type: OrionAlertType.PEDAGOGICAL,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'PEDAGOGIC',
+        severity: 'WARNING',
         title: `${pendingScores.length} note(s) en attente de validation depuis plus de 7 jours`,
         description: `Des notes ont été saisies mais ne sont pas encore validées, ce qui bloque le calcul des moyennes.`,
         recommendation: 'Valider les notes en attente pour permettre le calcul des bulletins.',
@@ -361,8 +361,8 @@ export class OrionAlertsService {
 
         if (missingCount > 0) {
           alerts.push({
-            type: OrionAlertType.PEDAGOGICAL,
-            severity: OrionAlertSeverity.INFO,
+            type: PEDAGOGICAL,
+            severity: INFO,
             title: `${missingCount} bulletin(s) non généré(s) pour ${quarter.name}`,
             description: `Des élèves ont des notes validées mais n'ont pas encore de bulletin pour cette période.`,
             recommendation: `Générer les bulletins manquants pour ${quarter.name}.`,
@@ -392,8 +392,8 @@ export class OrionAlertsService {
 
     if (veryLowAverages.length > 5) {
       alerts.push({
-        type: OrionAlertType.PEDAGOGICAL,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'PEDAGOGIC',
+        severity: 'WARNING',
         title: `${veryLowAverages.length} moyenne(s) très faible(s) détectée(s)`,
         description: `Plusieurs bulletins présentent des moyennes inférieures à 5/20, ce qui peut indiquer un problème pédagogique.`,
         recommendation: 'Analyser les causes des moyennes très faibles et mettre en place un accompagnement.',
@@ -407,8 +407,8 @@ export class OrionAlertsService {
 
     if (veryHighAverages.length > 10) {
       alerts.push({
-        type: OrionAlertType.PEDAGOGICAL,
-        severity: OrionAlertSeverity.INFO,
+        type: PEDAGOGICAL,
+        severity: INFO,
         title: `${veryHighAverages.length} moyenne(s) exceptionnelle(s)`,
         description: `Plusieurs bulletins présentent des moyennes supérieures à 19/20.`,
         recommendation: 'Vérifier la cohérence des notes et la difficulté des examens.',
@@ -457,8 +457,8 @@ export class OrionAlertsService {
       );
 
       alerts.push({
-        type: OrionAlertType.FINANCIAL,
-        severity: OrionAlertSeverity.CRITICAL,
+        type: 'FINANCIAL',
+        severity: 'CRITICAL',
         title: `${criticalArrears.length} impayé(s) critique(s)`,
         description: `Montant total en impayés critiques : ${totalCriticalAmount.toLocaleString('fr-FR')} XOF`,
         recommendation: 'Traiter immédiatement les impayés critiques via le module Recouvrement.',
@@ -497,8 +497,8 @@ export class OrionAlertsService {
 
     if (brokenPromises.length > 0) {
       alerts.push({
-        type: OrionAlertType.FINANCIAL,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'FINANCIAL',
+        severity: 'WARNING',
         title: `${brokenPromises.length} promesse(s) de paiement non tenue(s)`,
         description: `Des promesses de paiement ont été rompues, nécessitant un suivi renforcé.`,
         recommendation: 'Contacter les parents concernés et mettre à jour le plan de recouvrement.',
@@ -533,8 +533,8 @@ export class OrionAlertsService {
 
       if (collectionRate < 70) {
         alerts.push({
-          type: OrionAlertType.FINANCIAL,
-          severity: collectionRate < 50 ? OrionAlertSeverity.CRITICAL : OrionAlertSeverity.WARNING,
+          type: FINANCIAL,
+          severity: collectionRate < 50 ? CRITICAL : WARNING,
           title: `Taux de recouvrement faible : ${collectionRate.toFixed(1)}%`,
           description: `Le taux de recouvrement est en dessous du seuil acceptable (70%).`,
           recommendation: 'Renforcer les actions de recouvrement et analyser les causes des impayés.',
@@ -564,8 +564,8 @@ export class OrionAlertsService {
 
     if (unvalidatedClosures.length > 0) {
       alerts.push({
-        type: OrionAlertType.FINANCIAL,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'FINANCIAL',
+        severity: 'WARNING',
         title: `${unvalidatedClosures.length} clôture(s) journalière(s) non validée(s)`,
         description: `Des clôtures journalières attendent validation depuis plusieurs jours.`,
         recommendation: 'Valider les clôtures en attente pour maintenir la traçabilité financière.',
@@ -605,8 +605,8 @@ export class OrionAlertsService {
       );
 
       alerts.push({
-        type: OrionAlertType.FINANCIAL,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'FINANCIAL',
+        severity: 'WARNING',
         title: `${pendingExpenses.length} dépense(s) en attente d'approbation (> 7 jours)`,
         description: `Montant total en attente : ${totalPendingAmount.toLocaleString('fr-FR')} XOF`,
         recommendation: 'Traiter les demandes de dépenses en attente pour maintenir la fluidité opérationnelle.',
@@ -653,8 +653,8 @@ export class OrionAlertsService {
 
     if (netCashFlow < 0) {
       alerts.push({
-        type: OrionAlertType.FINANCIAL,
-        severity: Math.abs(netCashFlow) > totalIncome * 0.3 ? OrionAlertSeverity.CRITICAL : OrionAlertSeverity.WARNING,
+        type: FINANCIAL,
+        severity: Math.abs(netCashFlow) > totalIncome * 0.3 ? CRITICAL : WARNING,
         title: `Risque de trésorerie détecté`,
         description: `Sur les 30 derniers jours, les dépenses (${totalExpenses.toLocaleString('fr-FR')} XOF) dépassent les recettes (${totalIncome.toLocaleString('fr-FR')} XOF).`,
         recommendation: 'Analyser les dépenses et optimiser les recettes pour rétablir l\'équilibre financier.',
@@ -717,8 +717,8 @@ export class OrionAlertsService {
 
     if (highAbsenceStaff.length > 0) {
       alerts.push({
-        type: OrionAlertType.RH,
-        severity: OrionAlertSeverity.WARNING,
+        type: 'RH',
+        severity: 'WARNING',
         title: `${highAbsenceStaff.length} membre(s) du personnel avec absences répétées`,
         description: `Certains membres du personnel ont un taux d'absence élevé sur les 30 derniers jours.`,
         recommendation: 'Examiner les causes des absences et prendre les mesures appropriées.',
@@ -755,8 +755,8 @@ export class OrionAlertsService {
       // Alerte si la masse salariale dépasse un seuil (exemple: 10M XOF/mois)
       if (averagePayroll > 10000000) {
         alerts.push({
-          type: OrionAlertType.RH,
-          severity: OrionAlertSeverity.WARNING,
+          type: RH,
+          severity: WARNING,
           title: `Masse salariale élevée : ${(averagePayroll / 1000000).toFixed(1)}M XOF/mois`,
           description: `La masse salariale moyenne dépasse le seuil de 10M XOF par mois.`,
           recommendation: 'Analyser la structure des salaires et optimiser les coûts RH si nécessaire.',
@@ -787,8 +787,8 @@ export class OrionAlertsService {
 
     if (upcomingExpirations.length > 0) {
       alerts.push({
-        type: OrionAlertType.RH,
-        severity: OrionAlertSeverity.INFO,
+        type: 'RH',
+        severity: 'INFO',
         title: `${upcomingExpirations.length} contrat(s) expirant dans les 3 prochains mois`,
         description: `Des contrats de travail arrivent à échéance et nécessitent un renouvellement ou une décision.`,
         recommendation: 'Planifier le renouvellement ou la fin des contrats concernés.',
@@ -816,8 +816,8 @@ export class OrionAlertsService {
 
     if (cnssDeclarations.length > 0) {
       alerts.push({
-        type: OrionAlertType.RH,
-        severity: OrionAlertSeverity.CRITICAL,
+        type: 'RH',
+        severity: 'CRITICAL',
         title: `${cnssDeclarations.length} déclaration(s) CNSS en retard ou non déclarée(s)`,
         description: `Des déclarations CNSS sont en attente de déclaration ou en retard.`,
         recommendation: 'Déclarer immédiatement les déclarations CNSS en retard pour éviter des pénalités.',
@@ -857,8 +857,8 @@ export class OrionAlertsService {
 
       if (!currentDeclaration || currentDeclaration.status === 'DRAFT') {
         alerts.push({
-          type: OrionAlertType.RH,
-          severity: OrionAlertSeverity.WARNING,
+          type: RH,
+          severity: WARNING,
           title: `${employeesCNSS.length} employé(s) CNSS sans déclaration pour le mois en cours`,
           description: `Des employés sont déclarés CNSS mais aucune déclaration n'a été générée pour le mois en cours.`,
           recommendation: 'Générer la déclaration CNSS du mois en cours pour assurer la conformité.',
@@ -874,17 +874,196 @@ export class OrionAlertsService {
     return alerts;
   }
 
+  /**
+   * Génère des alertes communication basées sur les taux de livraison, engagement et risques (Module 6)
+   */
+  async generateCommunicationAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
+    const alerts: any[] = [];
+    const where: any = { tenantId };
+    if (academicYearId) {
+      where.academicYearId = academicYearId;
+    }
+
+    // 1. Alertes pour messages échoués
+    const failedMessages = await this.prisma.message.findMany({
+      where: {
+        ...where,
+        status: 'FAILED',
+        createdAt: {
+          gte: new Date(new Date().setDate(new Date().getDate() - 7)), // 7 derniers jours
+        },
+      },
+      take: 10,
+    });
+
+    if (failedMessages.length > 0) {
+      alerts.push({
+        type: 'OPERATIONAL',
+        severity: 'WARNING',
+        title: `${failedMessages.length} message(s) échoué(s) cette semaine`,
+        description: `Certains messages n'ont pas pu être envoyés. Vérifiez la configuration des canaux.`,
+        recommendation: 'Examiner les logs des messages échoués et vérifier la configuration des canaux de communication.',
+        metadata: {
+          source: 'COMMUNICATION_FAILED_MESSAGES',
+          count: failedMessages.length,
+          messages: failedMessages.map(m => ({
+            id: m.id,
+            subject: m.subject,
+            messageType: m.messageType,
+            createdAt: m.createdAt,
+          })),
+        },
+      });
+    }
+
+    // 2. Alertes pour taux de livraison faible
+    const recentMessages = await this.prisma.message.findMany({
+      where: {
+        ...where,
+        status: 'SENT',
+        sentAt: {
+          gte: new Date(new Date().setDate(new Date().getDate() - 30)), // 30 derniers jours
+        },
+      },
+      include: {
+        logs: true,
+      },
+      take: 100,
+    });
+
+    if (recentMessages.length > 0) {
+      const totalLogs = recentMessages.reduce((sum, msg) => sum + msg.logs.length, 0);
+      const deliveredLogs = recentMessages.reduce(
+        (sum, msg) => sum + msg.logs.filter(log => log.status === 'DELIVERED').length,
+        0
+      );
+      const deliveryRate = totalLogs > 0 ? (deliveredLogs / totalLogs) * 100 : 0;
+
+      if (deliveryRate < 85) {
+        alerts.push({
+          type: OPERATIONAL,
+          severity: WARNING,
+          title: `Taux de livraison faible : ${deliveryRate.toFixed(1)}%`,
+          description: `Le taux de livraison des messages est en dessous du seuil recommandé (85%).`,
+          recommendation: 'Vérifier la qualité des contacts (emails, téléphones) et la configuration des canaux.',
+          metadata: {
+            source: 'COMMUNICATION_LOW_DELIVERY_RATE',
+            deliveryRate,
+            threshold: 85,
+            totalMessages: recentMessages.length,
+            deliveredCount: deliveredLogs,
+            totalLogs,
+          },
+        });
+      }
+    }
+
+    // 3. Alertes pour messages planifiés en échec
+    const failedScheduled = await this.prisma.scheduledMessage.findMany({
+      where: {
+        message: { tenantId },
+        status: 'FAILED',
+        scheduledAt: {
+          gte: new Date(new Date().setDate(new Date().getDate() - 7)),
+        },
+      },
+      include: {
+        message: { select: { id: true, subject: true, messageType: true } },
+      },
+      take: 10,
+    });
+
+    if (failedScheduled.length > 0) {
+      alerts.push({
+        type: 'OPERATIONAL',
+        severity: 'WARNING',
+        title: `${failedScheduled.length} message(s) planifié(s) en échec`,
+        description: `Des messages planifiés n'ont pas pu être envoyés automatiquement.`,
+        recommendation: 'Vérifier les messages planifiés en échec et corriger les problèmes (canaux, destinataires, etc.).',
+        metadata: {
+          source: 'COMMUNICATION_FAILED_SCHEDULED',
+          count: failedScheduled.length,
+          scheduled: failedScheduled.map(s => ({
+            id: s.id,
+            messageId: s.messageId,
+            subject: s.message.subject,
+            scheduledAt: s.scheduledAt,
+            errorMessage: s.errorMessage,
+          })),
+        },
+      });
+    }
+
+    // 4. Alertes pour déclencheurs automatisés inactifs
+    const inactiveTriggers = await this.prisma.automatedTrigger.findMany({
+      where: {
+        tenantId,
+        isActive: false,
+      },
+      take: 10,
+    });
+
+    if (inactiveTriggers.length > 0) {
+      alerts.push({
+        type: 'OPERATIONAL',
+        severity: 'INFO',
+        title: `${inactiveTriggers.length} déclencheur(s) automatisé(s) inactif(s)`,
+        description: `Certains déclencheurs automatisés sont désactivés et ne génèrent plus de messages automatiques.`,
+        recommendation: 'Réactiver les déclencheurs si nécessaire ou les supprimer s\'ils ne sont plus utilisés.',
+        metadata: {
+          source: 'COMMUNICATION_INACTIVE_TRIGGERS',
+          count: inactiveTriggers.length,
+          triggers: inactiveTriggers.map(t => ({
+            id: t.id,
+            triggerType: t.triggerType,
+            channel: t.channelId,
+          })),
+        },
+      });
+    }
+
+    // 5. Alertes pour canaux de communication inactifs
+    const inactiveChannels = await this.prisma.communicationChannel.findMany({
+      where: {
+        tenantId,
+        isActive: false,
+      },
+    });
+
+    if (inactiveChannels.length > 0) {
+      alerts.push({
+        type: 'OPERATIONAL',
+        severity: 'INFO',
+        title: `${inactiveChannels.length} canal(x) de communication inactif(s)`,
+        description: `Certains canaux de communication sont désactivés et ne peuvent pas être utilisés pour envoyer des messages.`,
+        recommendation: 'Réactiver les canaux nécessaires ou vérifier leur configuration.',
+        metadata: {
+          source: 'COMMUNICATION_INACTIVE_CHANNELS',
+          count: inactiveChannels.length,
+          channels: inactiveChannels.map(c => ({
+            id: c.id,
+            code: c.code,
+            name: c.name,
+          })),
+        },
+      });
+    }
+
+    return alerts;
+  }
+
   async generateAllAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
-    const [qhsAlerts, riskAlerts, kpiAlerts, examAlerts, financialAlerts, hrAlerts] = await Promise.all([
+    const [qhsAlerts, riskAlerts, kpiAlerts, examAlerts, financialAlerts, hrAlerts, communicationAlerts] = await Promise.all([
       this.generateQhsAlerts(tenantId, academicYearId),
       this.generateRiskAlerts(tenantId, academicYearId),
       this.generateKpiAlerts(tenantId, academicYearId),
       this.generateExamAlerts(tenantId, academicYearId),
       this.generateFinancialAlerts(tenantId, academicYearId),
       this.generateHRAlerts(tenantId, academicYearId),
+      this.generateCommunicationAlerts(tenantId, academicYearId),
     ]);
 
-    const allAlerts = [...qhsAlerts, ...riskAlerts, ...kpiAlerts, ...examAlerts, ...financialAlerts, ...hrAlerts];
+    const allAlerts = [...qhsAlerts, ...riskAlerts, ...kpiAlerts, ...examAlerts, ...financialAlerts, ...hrAlerts, ...communicationAlerts];
 
     // Sauvegarder les alertes dans la table orion_alerts
     if (allAlerts.length > 0) {
@@ -899,7 +1078,8 @@ export class OrionAlertsService {
               title: alert.title,
               description: alert.description,
               recommendation: alert.recommendation,
-              status: 'ACTIVE',
+              message: alert.title, // Message court pour affichage
+              acknowledged: false,
               metadata: alert.metadata,
             },
           }),
@@ -913,18 +1093,40 @@ export class OrionAlertsService {
   /**
    * Récupère les alertes ORION actives pour un tenant
    */
-  async getActiveAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
+  async getActiveAlerts(tenantId: string, filters?: {
+    academicYearId?: string;
+    schoolLevelId?: string;
+    alertType?: string;
+    severity?: string;
+    acknowledged?: boolean;
+  }): Promise<any[]> {
     const where: any = {
       tenantId,
-      status: 'ACTIVE',
     };
 
-    if (academicYearId) {
-      where.academicYearId = academicYearId;
+    if (filters?.academicYearId) {
+      where.academicYearId = filters.academicYearId;
+    }
+    if (filters?.schoolLevelId) {
+      where.schoolLevelId = filters.schoolLevelId;
+    }
+    if (filters?.alertType) {
+      where.alertType = filters.alertType;
+    }
+    if (filters?.severity) {
+      where.severity = filters.severity;
+    }
+    if (filters?.acknowledged !== undefined) {
+      where.acknowledged = filters.acknowledged;
     }
 
     return this.prisma.orionAlert.findMany({
       where,
+      include: {
+        academicYear: { select: { id: true, label: true } },
+        schoolLevel: { select: { id: true, code: true, label: true } },
+        acknowledgedUser: { select: { id: true, firstName: true, lastName: true } },
+      },
       orderBy: [
         { severity: 'desc' }, // CRITICAL en premier
         { createdAt: 'desc' },
@@ -934,12 +1136,12 @@ export class OrionAlertsService {
   }
 
   /**
-   * Marque une alerte comme résolue
+   * Marque une alerte comme acquittée (acknowledged)
    */
   async acknowledgeAlert(
     alertId: string,
     tenantId: string,
-    userId: string,
+    userId?: string,
   ): Promise<void> {
     await this.prisma.orionAlert.updateMany({
       where: {
@@ -947,9 +1149,32 @@ export class OrionAlertsService {
         tenantId,
       },
       data: {
-        status: 'ACKNOWLEDGED',
+        acknowledged: true,
         acknowledgedAt: new Date(),
-        acknowledgedBy: userId,
+        acknowledgedBy: userId || null,
+      },
+    });
+  }
+
+  /**
+   * Sauvegarde une alerte dans la base de données
+   */
+  async saveAlert(tenantId: string, alert: {
+    academicYearId?: string;
+    schoolLevelId?: string;
+    alertType: string;
+    severity: string;
+    title: string;
+    description: string;
+    recommendation?: string;
+    message?: string;
+    metadata?: any;
+  }) {
+    return this.prisma.orionAlert.create({
+      data: {
+        tenantId,
+        ...alert,
+        acknowledged: false,
       },
     });
   }
@@ -957,20 +1182,23 @@ export class OrionAlertsService {
   /**
    * Convertit la catégorie KPI en type d'alerte ORION
    */
-  private getKpiAlertType(category: string | null): OrionAlertType {
-    if (!category) return OrionAlertType.OPERATIONAL;
+  private getKpiAlertType(category: string | null): string {
+    if (!category) return 'OPERATIONAL';
 
     const categoryUpper = category.toUpperCase();
     if (categoryUpper.includes('PEDAGOGICAL') || categoryUpper.includes('PEDAGOGIE')) {
-      return OrionAlertType.PEDAGOGICAL;
+      return 'PEDAGOGIC';
     }
     if (categoryUpper.includes('FINANCIAL') || categoryUpper.includes('FINANCE')) {
-      return OrionAlertType.FINANCIAL;
+      return 'FINANCIAL';
     }
     if (categoryUpper.includes('RH') || categoryUpper.includes('HR')) {
-      return OrionAlertType.RH;
+      return 'RH';
     }
-    return OrionAlertType.OPERATIONAL;
+    if (categoryUpper.includes('QHSE') || categoryUpper.includes('QHS')) {
+      return 'QHSE';
+    }
+    return 'OPERATIONAL';
   }
 }
 

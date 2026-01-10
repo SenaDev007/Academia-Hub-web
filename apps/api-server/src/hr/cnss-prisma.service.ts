@@ -163,6 +163,25 @@ export class CNSSPrismaService {
     });
   }
 
+  /**
+   * Récupère le taux CNSS actif (alias pour compatibilité)
+   */
+  async findActiveCNSSRate(countryCode: string, effectiveDate?: Date) {
+    const date = effectiveDate || new Date();
+    
+    return this.prisma.cNSSRate.findFirst({
+      where: {
+        countryCode,
+        effectiveFrom: { lte: date },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: date } },
+        ],
+      },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+  }
+
   // ============================================================================
   // CNSS DECLARATIONS
   // ============================================================================

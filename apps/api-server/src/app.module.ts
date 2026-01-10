@@ -34,8 +34,11 @@ import { SchoolLevelsModule } from './school-levels/school-levels.module';
 import { AcademicTracksModule } from './academic-tracks/academic-tracks.module';
 import { TenantFeaturesModule } from './tenant-features/tenant-features.module';
 import { PaymentFlowsModule } from './payment-flows/payment-flows.module';
-import { OrionBilingualModule } from './orion/orion-bilingual.module';
+import { OrionModule } from './orion/orion.module';
 import { QhsModule } from './qhs/qhs.module';
+import { SettingsModule } from './settings/settings.module';
+import { MeetingsModule } from './meetings/meetings.module';
+import { ModulesComplementairesModule } from './modules-complementaires/modules-complementaires.module';
 import { KpiObjectivesModule } from './kpi-objectives/kpi-objectives.module';
 import { PedagogyModule } from './pedagogy/pedagogy.module';
 import { ExamsGradesModule } from './exams-grades/exams-grades.module';
@@ -98,6 +101,9 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     // Personnel, RH & Paie module (Module 5)
     HRModule,
     
+    // Communication & Engagement module (Module 6)
+    CommunicationModule,
+    
     // Attendance & Discipline
     AbsencesModule,
     DisciplineModule,
@@ -136,11 +142,20 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     // Payment Flows module (Séparation SAAS/TUITION)
     PaymentFlowsModule,
     
-    // ORION Bilingual Analysis module
-    OrionBilingualModule,
+    // ORION - Pilotage Direction & IA (Module 8)
+    OrionModule,
     
     // QHSE+ module (Gouvernance, Risques & Conformité)
     QhsModule,
+    
+    // Module Transversal — Paramètres (Centre de contrôle stratégique)
+    SettingsModule,
+    
+    // Module Transversal — Réunions (Administratives, Pédagogiques & Parents)
+    MeetingsModule,
+    
+    // Module 9 - Modules Complémentaires
+    ModulesComplementairesModule,
     
     // KPI Objectives module (Pilotage Direction)
     KpiObjectivesModule,

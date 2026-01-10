@@ -61,9 +61,34 @@ model Tenant {
   students          Student[]
   users             User[]
   schools           School[]
+  studentIdentifiers StudentIdentifier[]
+  studentIdCards     StudentIdCard[]
   tenantFeatures    TenantFeature[]
   paymentFlows      PaymentFlow[]
   auditLogs         AuditLog[]
+  // Module Paramètres
+  schoolSettings    SchoolSettings?
+  securitySettings  SecuritySettings?
+  offlineSyncSettings OfflineSyncSettings?
+  orionSettings     OrionSettings?
+  atlasSettings     AtlasSettings?
+  settingsHistory   SettingsHistory[]
+  // Module Réunions
+  meetings          Meeting[]
+  meetingMinutesTemplates MeetingMinutesTemplate[]
+  // Module 9 - Modules Complémentaires
+  canteenEnrollments CanteenEnrollment[]
+  transportAssignments TransportAssignment[]
+  transportIncidents TransportIncident[]
+  vehicles Vehicle[]
+  routes Route[]
+  libraryBooks LibraryBook[]
+  labs Lab[]
+  medicalRecords MedicalRecord[]
+  medications Medication[]
+  shopProducts ShopProduct[]
+  shopSales ShopSale[]
+  educastContents EducastContent[]
   tuitionPayments   TuitionPayment[]
   payments          Payment[]
   subjects          Subject[]
@@ -81,6 +106,10 @@ model Tenant {
   quarters          Quarter[]
   roles             Role[]
   messages          Message[]
+  communicationChannels CommunicationChannel[]
+  messageTemplates  MessageTemplate[]
+  automatedTriggers AutomatedTrigger[]
+  messageLogs       MessageLog[]
   announcements     Announcement[]
   schoolPaymentAccounts SchoolPaymentAccount[]
   modules           Module[]
@@ -145,6 +174,13 @@ model Tenant {
   lessonJournalEntries LessonJournalEntry[]
   lessonJournalValidations LessonJournalValidation[]
   lessonPlans     LessonPlan[]
+  pedagogicalDocuments PedagogicalDocument[]
+  pedagogicalDocumentVersions PedagogicalDocumentVersion[]
+  pedagogicalDocumentReviews PedagogicalDocumentReview[]
+  pedagogicalDocumentComments PedagogicalDocumentComment[]
+  pedagogicalDocumentNotifications PedagogicalDocumentNotification[]
+  weeklyDutyAssignments WeeklyDutyAssignment[]
+  weeklySemainiers WeeklySemainier[]
   lessonPlanAssignments LessonPlanAssignment[]
   homeworkEntries HomeworkEntry[]
   homeworkSubmissions HomeworkSubmission[]
@@ -219,6 +255,19 @@ model Tenant {
   examDocuments  ExamDocument[]
   questionBankResources QuestionBankResource[]
   resourceAccessLogs ResourceAccessLog[]
+  // Module 7 - QHSE, Incidents & Conformité
+  incidents            Incident[]
+  inspections          Inspection[]
+  complianceRequirements ComplianceRequirement[]
+  complianceRecords    ComplianceRecord[]
+  riskAlerts           RiskAlert[]
+  // Module 8 - ORION
+  kpiDefinitions       KpiDefinition[]
+  kpiSnapshots         KpiSnapshot[]
+  orionAlerts          OrionAlert[]
+  orionInsights        OrionInsight[]
+  orionAuditLogs       OrionAuditLog[]
+  orionReports         OrionReport[]
 
   @@index([subdomain])
   @@index([slug])
@@ -333,11 +382,23 @@ model AcademicYear {
   payrolls Payroll[]
   payrollItems PayrollItem[]
   salaryPayments SalaryPayment[]
+  // Module 9 - Modules Complémentaires (existants)
   libraryBooks LibraryBook[]
   labEquipment LabEquipment[]
   vehicles Vehicle[]
   products Product[]
   mediaContents MediaContent[]
+  // Module 9 - Nouvelles relations
+  canteenEnrollments CanteenEnrollment[]
+  transportAssignments TransportAssignment[]
+  transportIncidents TransportIncident[]
+  libraryLoans LibraryLoan[]
+  labs Lab[]
+  medicalRecords MedicalRecord[]
+  medications Medication[]
+  shopProducts ShopProduct[]
+  shopSales ShopSale[]
+  educastContents EducastContent[]
   inspections Inspection[]
   correctiveActions CorrectiveAction[]
   discounts Discount[]
@@ -345,6 +406,19 @@ model AcademicYear {
   expenseCategories ExpenseCategory[]
   cashClosures CashClosure[]
   treasuryMovements TreasuryMovement[]
+  messages       Message[]
+  automatedTriggers AutomatedTrigger[]
+  // Module 7 - QHSE, Incidents & Conformité
+  incidents            Incident[]
+  inspections          Inspection[]
+  complianceRecords    ComplianceRecord[]
+  riskAlerts           RiskAlert[]
+  // Module 8 - ORION
+  kpiDefinitions       KpiDefinition[]
+  kpiSnapshots         KpiSnapshot[]
+  orionAlerts          OrionAlert[]
+  orionInsights        OrionInsight[]
+  orionReports         OrionReport[]
 
   @@unique([tenantId, name])
   @@unique([tenantId, label])
@@ -458,6 +532,24 @@ model SchoolLevel {
   correctiveActions CorrectiveAction[]
   products Product[]
   mediaContents MediaContent[]
+  messages       Message[]
+  automatedTriggers AutomatedTrigger[]
+  // Module 7 - QHSE, Incidents & Conformité
+  incidents            Incident[]
+  inspections          Inspection[]
+  complianceRecords    ComplianceRecord[]
+  riskAlerts           RiskAlert[]
+  // Module 8 - ORION
+  kpiDefinitions       KpiDefinition[]
+  kpiSnapshots         KpiSnapshot[]
+  orionAlerts          OrionAlert[]
+  orionInsights        OrionInsight[]
+  orionReports         OrionReport[]
+  // Module Réunions
+  meetings Meeting[] @relation("MeetingSchoolLevel")
+  canteenEnrollments CanteenEnrollment[] @relation("CanteenEnrollmentSchoolLevel")
+  educastContents EducastContent[] @relation("EducastContentSchoolLevel")
+  educastAccesses EducastAccess[] @relation("EducastAccessSchoolLevel")
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -485,6 +577,14 @@ model AcademicTrack {
   studentAcademicTracks StudentAcademicTrack[]
   pedagogicalSheets PedagogicalSheet[]
   lessonJournals LessonJournal[]
+  // Module Réunions
+  meetings Meeting[] @relation("MeetingStudent")
+  canteenEnrollments CanteenEnrollment[]
+  transportAssignments TransportAssignment[]
+  libraryLoans LibraryLoan[]
+  educastAccesses EducastAccess[]
+  educastSessions EducastSession[]
+  medicalRecords MedicalRecord[]
   lessonPlans LessonPlan[]
   homeworkEntries HomeworkEntry[]
   examSessions ExamSession[]
@@ -572,6 +672,58 @@ model User {
   questionBankUploaders QuestionBankResource[] @relation("QuestionBankUploader")
   resourceAccessUsers ResourceAccessLog[] @relation("ResourceAccessUser")
   patronatUserCreators PatronatUser[] @relation("PatronatUserCreator")
+  // Module 7 - QHSE, Incidents & Conformité
+  reportedIncidents Incident[] @relation("IncidentReportedBy")
+  closedIncidents Incident[] @relation("IncidentClosedBy")
+  incidentActions IncidentAction[] @relation("IncidentActionResponsible")
+  validatedComplianceRecords ComplianceRecord[] @relation("ComplianceRecordValidator")
+  acknowledgedRiskAlerts RiskAlert[] @relation("RiskAlertAcknowledgedBy")
+  // Module 2 - Système de Workflow Pédagogique
+  validatedPedagogicalDocuments PedagogicalDocument[] @relation("PedagogicalDocumentValidator")
+  acknowledgedPedagogicalDocuments PedagogicalDocument[] @relation("PedagogicalDocumentAcknowledger")
+  pedagogicalDocumentVersionCreators PedagogicalDocumentVersion[]
+  pedagogicalDocumentReviewers PedagogicalDocumentReview[] @relation("PedagogicalDocumentReviewer")
+  pedagogicalDocumentCommentAuthors PedagogicalDocumentComment[] @relation("PedagogicalDocumentCommentAuthor")
+  pedagogicalDocumentNotificationRecipients PedagogicalDocumentNotification[] @relation("PedagogicalDocumentNotificationRecipient")
+  weeklyDutyAssigners WeeklyDutyAssignment[]
+  weeklySemainierValidators WeeklySemainier[] @relation("WeeklySemainierValidator")
+  weeklySemainierIncidentReporters WeeklySemainierIncident[] @relation("WeeklySemainierIncidentReporter")
+  // Module 1 - Matricule Global & Cartes Scolaires
+  generatedStudentIdentifiers StudentIdentifier[] @relation("StudentIdentifierGenerator")
+  generatedStudentIdCards StudentIdCard[] @relation("StudentIdCardGenerator")
+  revokedStudentIdCards StudentIdCard[] @relation("StudentIdCardRevoker")
+  // Module 8 - ORION
+  acknowledgedOrionAlerts OrionAlert[] @relation("OrionAlertAcknowledgedBy")
+  orionAuditLogs OrionAuditLog[] @relation("OrionAuditLogUser")
+  // Module Paramètres
+  settingsHistory SettingsHistory[] @relation("SettingsHistoryUser")
+  enabledFeatures TenantFeature[] @relation("TenantFeatureEnabledBy")
+  disabledFeatures TenantFeature[] @relation("TenantFeatureDisabledBy")
+  // Module Réunions
+  createdMeetings Meeting[] @relation("MeetingCreator")
+  cancelledMeetings Meeting[] @relation("MeetingCancelledBy")
+  meetingParticipants MeetingParticipant[] @relation("MeetingParticipantInviter")
+  meetingAgendaPresenters MeetingAgenda[] @relation("MeetingAgendaPresenter")
+  meetingMinutesRecorders MeetingMinutes[] @relation("MeetingMinutesRecorder")
+  meetingMinutesValidators MeetingMinutes[] @relation("MeetingMinutesValidator")
+  meetingMinutesVersionModifiers MeetingMinutesVersion[] @relation("MeetingMinutesVersionModifier")
+  meetingMinutesVersionValidators MeetingMinutesVersion[] @relation("MeetingMinutesVersionValidator")
+  electronicSignatures ElectronicSignature[] @relation("ElectronicSignatureUser")
+  meetingDecisionResponsibles MeetingDecision[] @relation("MeetingDecisionResponsible")
+  meetingAttachmentUploaders MeetingAttachment[] @relation("MeetingAttachmentUploader")
+  // Module 9 - Modules Complémentaires
+  canteenAttendanceRecorders CanteenAttendance[] @relation("CanteenAttendanceRecorder")
+  transportAttendanceRecorders TransportAttendance[] @relation("TransportAttendanceRecorder")
+  transportIncidentReporters TransportIncident[] @relation("TransportIncidentReporter")
+  libraryLoanLoaners LibraryLoan[] @relation("LibraryLoanLoaner")
+  libraryLoanReturners LibraryLoan[] @relation("LibraryLoanReturner")
+  labReservationUsers LabReservation[] @relation("LabReservationUser")
+  labIncidentReporters LabIncident[] @relation("LabIncidentReporter")
+  medicalVisitPerformers MedicalVisit[] @relation("MedicalVisitPerformer")
+  medicalAlertAcknowledgers MedicalAlert[] @relation("MedicalAlertAcknowledger")
+  shopSaleSellers ShopSale[] @relation("ShopSaleSeller")
+  educastContentUploaders EducastContent[] @relation("EducastContentUploader")
+  educastAccessGranters EducastAccess[] @relation("EducastAccessGranter")
 
   @@index([tenantId, role])
   @@index([email])
@@ -713,6 +865,9 @@ model Student {
   medications Medication[]
   orders Order[]
   mediaSessions MediaSession[]
+  incidents Incident[]
+  identifier        StudentIdentifier?
+  idCards           StudentIdCard[]
 
   @@unique([tenantId, studentCode])
   @@index([tenantId, academicYearId, schoolLevelId])
@@ -776,6 +931,12 @@ model Class {
   staffAssignments StaffAssignment[]
   classSubjects ClassSubject[]
   dailyLogs DailyLog[]
+  incidents Incident[]
+  // Module Réunions
+  meetings Meeting[] @relation("MeetingClass")
+  canteenEnrollments CanteenEnrollment[] @relation("CanteenEnrollmentClass")
+  educastContents EducastContent[] @relation("EducastContentClass")
+  educastAccesses EducastAccess[] @relation("EducastAccessClass")
 
   @@unique([tenantId, academicYearId, code])
   @@index([tenantId, academicYearId, schoolLevelId])
@@ -960,6 +1121,8 @@ model Teacher {
   teacherSubjects TeacherSubject[]
   teacherClassAssignments TeacherClassAssignment[]
   dailyLogs DailyLog[]
+  pedagogicalDocuments PedagogicalDocument[]
+  weeklyDutyAssignments WeeklyDutyAssignment[]
 
   @@map("teachers")
 }
@@ -1258,28 +1421,44 @@ model Room {
 // ============================================================================
 
 model Message {
-  id         String   @id @default(uuid())
-  tenantId   String
-  type       String   @default("DIRECT") // DIRECT, GROUP, BROADCAST
-  subject    String?
-  content    String
-  fromUserId String
-  toUserId   String
-  status     String   @default("SENT") // SENT, DELIVERED, READ
-  readAt     DateTime?
-  isArchived Boolean  @default(false)
-  attachments Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String?
+  schoolLevelId  String?
+  channelId     String?
+  senderUserId  String
+  subject       String?
+  content       String
+  contentFr     String?  // Contenu en français
+  contentEn     String?  // Contenu en anglais
+  messageType   String   @default("INFO") // INFO | ALERT | REMINDER | DISCIPLINE | FINANCE
+  status        String   @default("DRAFT") // DRAFT | PENDING | SENT | DELIVERED | FAILED
+  isScheduled   Boolean  @default(false)
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  isArchived    Boolean  @default(false)
+  attachments   Json?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  tenant  Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  fromUser User  @relation("MessageSender", fields: [fromUserId], references: [id], onDelete: Cascade)
-  toUser   User  @relation("MessageReceiver", fields: [toUserId], references: [id], onDelete: Cascade)
-  recipients MessageRecipient[]
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear  AcademicYear?     @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel   SchoolLevel?      @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  channel       CommunicationChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  sender        User              @relation("MessageSender", fields: [senderUserId], references: [id], onDelete: Cascade)
+  recipients    MessageRecipient[]
+  targets       MessageTarget[]
+  scheduled     ScheduledMessage?
+  logs          MessageLog[]
 
   @@index([tenantId])
-  @@index([fromUserId])
-  @@index([toUserId])
+  @@index([academicYearId])
+  @@index([schoolLevelId])
+  @@index([channelId])
+  @@index([senderUserId])
+  @@index([messageType])
+  @@index([status])
   @@map("messages")
 }
 
@@ -1393,22 +1572,29 @@ model Module {
 // FEATURES & CONFIGURATION
 // ============================================================================
 
+/**
+ * Feature Flags — Modules et fonctionnalités activables/désactivables
+ */
 model TenantFeature {
-  tenantId   String
-  featureCode String  // BILINGUAL_TRACK, etc.
-  isEnabled  Boolean  @default(false)
-  status     String   @default("INACTIVE") // ACTIVE, INACTIVE, PENDING_PAYMENT
-  enabledAt  DateTime?
-  enabledBy  String?
-  disabledAt DateTime?
-  disabledBy String?
-  metadata   Json?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  tenantId     String
+  featureCode  String  // CANTINE, TRANSPORT, BIBLIOTHEQUE, INFIRMERIE, EDUCAST, PATRONAT, BILINGUAL_TRACK, etc.
+  isEnabled    Boolean @default(false)
+  status       String  @default("INACTIVE") // ACTIVE, INACTIVE, PENDING_PAYMENT, LOCKED
+  enabledAt    DateTime?
+  enabledBy    String?
+  disabledAt   DateTime?
+  disabledBy   String?
+  metadata     Json?   // Configuration spécifique au feature
+  billingImpact String? // Impact sur facturation (mensuel, annuel, etc.)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  enabledByUser User? @relation("TenantFeatureEnabledBy", fields: [enabledBy], references: [id], onDelete: SetNull)
+  disabledByUser User? @relation("TenantFeatureDisabledBy", fields: [disabledBy], references: [id], onDelete: SetNull)
 
   @@id([tenantId, featureCode])
+  @@index([tenantId, status])
   @@map("tenant_features")
 }
 
@@ -1500,15 +1686,458 @@ model TenantSetting {
   tenantId  String
   key       String
   value     Json?
-  category  String?  // general, billing, features, etc.
+  category  String?  // general, billing, features, communication, security, orion, atlas, offline, etc.
+  description String?
+  isSystem   Boolean  @default(false) // Paramètre système vs personnalisé
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  history SettingsHistory[]
 
   @@unique([tenantId, key])
   @@index([tenantId, category])
   @@map("tenant_settings")
+}
+
+// ============================================================================
+// MODULE TRANSVERSAL — PARAMÈTRES DE L'APPLICATION
+// ============================================================================
+
+/**
+ * Paramètres de l'école (identité, locale, etc.)
+ */
+model SchoolSettings {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  schoolName      String
+  logoUrl         String?
+  sealUrl         String?  // Cachet
+  signatureUrl    String?  // Signature
+  timezone        String   @default("Africa/Porto-Novo") // Fuseau horaire
+  defaultLanguage String   @default("FR") // FR | EN
+  currency        String   @default("XOF") // Code devise ISO
+  currencySymbol  String   @default("FCFA")
+  address         String?
+  phone           String?
+  email           String?
+  website         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("school_settings")
+}
+
+/**
+ * Historique des changements de paramètres (audit immuable)
+ */
+model SettingsHistory {
+  id            String   @id @default(uuid())
+  tenantId      String
+  settingId     String?
+  key           String   // Clé du paramètre modifié
+  category      String?
+  oldValue      Json?
+  newValue      Json?
+  changedBy     String?
+  changedAt     DateTime @default(now())
+  reason        String?  // Raison du changement
+  ipAddress     String?
+  userAgent     String?
+
+  tenant  Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  setting TenantSetting? @relation(fields: [settingId], references: [id], onDelete: SetNull)
+  user    User?         @relation("SettingsHistoryUser", fields: [changedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, key])
+  @@index([tenantId, category])
+  @@index([changedAt])
+  @@map("settings_history")
+}
+
+/**
+ * Paramètres de sécurité et conformité
+ */
+model SecuritySettings {
+  id                    String   @id @default(uuid())
+  tenantId              String   @unique
+  passwordMinLength     Int      @default(8)
+  passwordRequireUppercase Boolean @default(true)
+  passwordRequireLowercase Boolean @default(true)
+  passwordRequireNumbers Boolean @default(true)
+  passwordRequireSpecial Boolean @default(false)
+  passwordExpirationDays Int?    // Expiration des mots de passe (null = jamais)
+  sessionTimeoutMinutes Int      @default(30)
+  maxLoginAttempts      Int      @default(5)
+  lockoutDurationMinutes Int     @default(15)
+  twoFactorEnabled      Boolean  @default(false)
+  requireEmailVerification Boolean @default(true)
+  auditLogRetentionDays Int      @default(365) // Conservation des logs d'audit
+  dataRetentionYears    Int      @default(7)   // Conservation des données
+  gdprCompliant         Boolean  @default(false)
+  allowInspectionAccess Boolean  @default(false) // Accès inspection externe
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("security_settings")
+}
+
+/**
+ * Paramètres de synchronisation offline
+ */
+model OfflineSyncSettings {
+  id                    String   @id @default(uuid())
+  tenantId              String   @unique
+  isEnabled             Boolean  @default(true)
+  syncFrequencyMinutes  Int      @default(15) // Fréquence de synchronisation
+  conflictResolution    String   @default("SERVER_WINS") // SERVER_WINS | CLIENT_WINS | MANUAL
+  autoSyncOnConnect     Boolean  @default(true)
+  maxOfflineDays        Int      @default(7) // Nombre max de jours sans sync
+  allowOfflineModification Boolean @default(true)
+  syncOnBackground      Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("offline_sync_settings")
+}
+
+/**
+ * Paramètres ORION (IA de pilotage)
+ */
+model OrionSettings {
+  id                    String   @id @default(uuid())
+  tenantId              String   @unique
+  isEnabled             Boolean  @default(true)
+  alertThresholdCritical Int     @default(5)   // Seuil d'alertes critiques
+  alertThresholdWarning  Int     @default(10)  // Seuil d'alertes warning
+  kpiCalculationFrequency String @default("DAILY") // HOURLY | DAILY | WEEKLY
+  autoGenerateInsights   Boolean @default(true)
+  insightsFrequency      String  @default("WEEKLY") // DAILY | WEEKLY | MONTHLY
+  visibleKPICategories   String[] @default(["PEDAGOGICAL", "FINANCIAL", "RH", "QHSE"])
+  allowOrionExports      Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("orion_settings")
+}
+
+/**
+ * Paramètres ATLAS (Chatbot IA)
+ */
+model AtlasSettings {
+  id                    String   @id @default(uuid())
+  tenantId              String   @unique
+  isEnabled             Boolean  @default(false)
+  scope                 String   @default("LIMITED") // FULL | LIMITED | DISABLED
+  allowedModules        String[] @default([]) // Modules accessibles par ATLAS
+  allowHumanHandoff     Boolean  @default(true) // Passage à un humain
+  conversationHistoryDays Int    @default(90)  // Conservation historique
+  maxConversationsPerDay Int?    // Limite de conversations par jour (null = illimité)
+  language              String   @default("FR") // FR | EN
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("atlas_settings")
+}
+
+// ============================================================================
+// MODULE TRANSVERSAL — RÉUNIONS ADMINISTRATIVES, PÉDAGOGIQUES & PARENTS
+// ============================================================================
+
+/**
+ * Réunions (administratives, pédagogiques, parents)
+ */
+model Meeting {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  meetingType    String   // ADMIN | PEDAGOGIC | PARENTS
+  scopeType      String   // SCHOOL | LEVEL | CLASS | STUDENT
+  schoolLevelId  String?  // ID du niveau si scopeType = LEVEL
+  classId        String?  // ID de la classe si scopeType = CLASS
+  studentId      String?  // ID de l'étudiant si scopeType = STUDENT
+  title          String
+  description    String?
+  meetingDate    DateTime @db.Date
+  startTime      String?  // Format HH:mm
+  endTime        String?  // Format HH:mm
+  location       String?  // Salle / en ligne
+  locationOnline Boolean  @default(false) // Réunion en ligne
+  meetingLink    String?  // Lien pour réunion en ligne
+  status         String   @default("PLANNED") // PLANNED | HELD | CANCELLED | POSTPONED
+  cancelledAt    DateTime?
+  cancelledBy    String?
+  cancelledReason String?
+  createdBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear       @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel?       @relation("MeetingSchoolLevel", fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  class        Class?             @relation("MeetingClass", fields: [classId], references: [id], onDelete: SetNull)
+  student      Student?           @relation("MeetingStudent", fields: [studentId], references: [id], onDelete: SetNull)
+  creator      User?              @relation("MeetingCreator", fields: [createdBy], references: [id], onDelete: SetNull)
+  cancelledByUser User?           @relation("MeetingCancelledBy", fields: [cancelledBy], references: [id], onDelete: SetNull)
+  participants MeetingParticipant[]
+  agendas      MeetingAgenda[]
+  minutes      MeetingMinutes[]
+  decisions    MeetingDecision[]
+  attachments  MeetingAttachment[]
+  notifications MeetingNotification[]
+
+  @@index([tenantId, academicYearId])
+  @@index([meetingType])
+  @@index([scopeType])
+  @@index([schoolLevelId])
+  @@index([classId])
+  @@index([studentId])
+  @@index([status])
+  @@index([meetingDate])
+  @@map("meetings")
+}
+
+/**
+ * Participants aux réunions
+ */
+model MeetingParticipant {
+  id             String   @id @default(uuid())
+  meetingId      String
+  participantType String   // STAFF | GUARDIAN | STUDENT
+  participantId  String   // ID du staff/guardian/student
+  invitedAt      DateTime @default(now())
+  invitedBy      String?
+  attendanceStatus String? // PRESENT | ABSENT | EXCUSED | NOT_ATTENDED
+  attendanceTime DateTime? // Heure d'arrivée
+  excuseReason   String?  // Raison d'absence si excusé
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  meeting       Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  inviter       User?   @relation("MeetingParticipantInviter", fields: [invitedBy], references: [id], onDelete: SetNull)
+
+  @@unique([meetingId, participantType, participantId])
+  @@index([meetingId])
+  @@index([participantType, participantId])
+  @@index([attendanceStatus])
+  @@map("meeting_participants")
+}
+
+/**
+ * Ordres du jour des réunions
+ */
+model MeetingAgenda {
+  id             String   @id @default(uuid())
+  meetingId      String
+  agendaOrder    Int      @default(0) // Ordre dans l'ordre du jour
+  topic          String
+  description    String?
+  presenterId    String?  // User qui présente ce point
+  durationMinutes Int?    // Durée estimée en minutes
+  status         String   @default("PLANNED") // PLANNED | COVERED | SKIPPED
+  notes          String?  // Notes de discussion
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  presenter User?   @relation("MeetingAgendaPresenter", fields: [presenterId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId])
+  @@index([meetingId, agendaOrder])
+  @@map("meeting_agendas")
+}
+
+/**
+ * Templates officiels de comptes rendus de réunions
+ */
+model MeetingMinutesTemplate {
+  id            String   @id @default(uuid())
+  tenantId      String?
+  meetingType   String   // ADMIN | PEDAGOGIC | PARENTS
+  name          String   // Nom du template
+  description   String?
+  template      String   // Template avec variables (Handlebars/Mustache)
+  structure     Json?    // Structure JSON du template
+  isSystem      Boolean  @default(false) // Template système vs personnalisé
+  isActive      Boolean  @default(true)
+  language      String   @default("FR") // FR | EN
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  minutes      MeetingMinutes[]
+  versions     MeetingMinutesVersion[]
+
+  @@index([tenantId, meetingType])
+  @@index([isSystem])
+  @@index([isActive])
+  @@map("meeting_minutes_templates")
+}
+
+/**
+ * Comptes rendus de réunions
+ */
+model MeetingMinutes {
+  id            String   @id @default(uuid())
+  meetingId     String   @unique
+  templateId    String?  // Template utilisé
+  version       Int      @default(1) // Version du compte rendu
+  content       String   // Contenu du compte rendu (markdown ou texte)
+  renderedContent String? // Contenu rendu final (après remplacement des variables)
+  pdfPath       String?  // Chemin du PDF généré
+  language      String   @default("FR") // FR | EN (pour bilingue)
+  recordedBy    String?  // User qui a pris les notes
+  recordedAt    DateTime?
+  validatedBy   String?  // User qui a validé le compte rendu
+  validatedAt   DateTime?
+  validated     Boolean  @default(false) // Compte rendu validé par la direction
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  meeting     Meeting             @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  template    MeetingMinutesTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  recorder    User?   @relation("MeetingMinutesRecorder", fields: [recordedBy], references: [id], onDelete: SetNull)
+  validator   User?   @relation("MeetingMinutesValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+  history     MeetingMinutesVersion[]
+  signatures  ElectronicSignature[]
+
+  @@index([meetingId])
+  @@index([templateId])
+  @@index([validated])
+  @@index([language])
+  @@index([version])
+  @@map("meeting_minutes")
+}
+
+/**
+ * Historique des versions de comptes rendus (immuable)
+ */
+model MeetingMinutesVersion {
+  id            String   @id @default(uuid())
+  minutesId     String
+  templateId    String?
+  version       Int      // Numéro de version
+  content       String   // Contenu de cette version
+  renderedContent String? // Contenu rendu de cette version
+  pdfPath       String?  // Chemin du PDF de cette version
+  changes       String?  // Description des changements
+  modifiedBy    String?
+  modifiedAt    DateTime @default(now())
+  validatedBy   String?  // User qui a validé cette version
+  validatedAt   DateTime?
+
+  minutes       MeetingMinutes        @relation(fields: [minutesId], references: [id], onDelete: Cascade)
+  template      MeetingMinutesTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  modifier      User?                 @relation("MeetingMinutesVersionModifier", fields: [modifiedBy], references: [id], onDelete: SetNull)
+  validator     User?                 @relation("MeetingMinutesVersionValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+
+  @@index([minutesId])
+  @@index([version])
+  @@index([modifiedAt])
+  @@map("meeting_minutes_versions")
+}
+
+/**
+ * Signatures électroniques pour les comptes rendus
+ */
+model ElectronicSignature {
+  id            String   @id @default(uuid())
+  minutesId     String
+  userId        String   // User qui signe
+  signatureType String   @default("VALIDATION") // VALIDATION | APPROVAL | ACKNOWLEDGMENT
+  signatureHash String   // Hash de la signature (pour intégrité)
+  signatureData String?  // Données de signature (image, certificat, etc.)
+  ipAddress     String?
+  userAgent     String?
+  signedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  minutes MeetingMinutes @relation(fields: [minutesId], references: [id], onDelete: Cascade)
+  user    User          @relation("ElectronicSignatureUser", fields: [userId], references: [id], onDelete: Restrict)
+
+  @@unique([minutesId, userId, signatureType])
+  @@index([minutesId])
+  @@index([userId])
+  @@index([signedAt])
+  @@map("electronic_signatures")
+}
+
+/**
+ * Décisions prises lors des réunions
+ */
+model MeetingDecision {
+  id               String   @id @default(uuid())
+  meetingId        String
+  decisionText     String   // Texte de la décision
+  decisionOrder    Int      @default(0) // Ordre de la décision dans la réunion
+  responsibleId    String?  // User responsable de l'exécution
+  dueDate          DateTime? // Date limite d'exécution
+  status           String   @default("PENDING") // PENDING | IN_PROGRESS | DONE | CANCELLED
+  completionDate   DateTime? // Date d'exécution
+  completionNotes  String?  // Notes d'exécution
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  meeting     Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  responsible User?   @relation("MeetingDecisionResponsible", fields: [responsibleId], references: [id], onDelete: SetNull)
+
+  @@index([meetingId])
+  @@index([responsibleId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("meeting_decisions")
+}
+
+/**
+ * Pièces jointes des réunions
+ */
+model MeetingAttachment {
+  id          String   @id @default(uuid())
+  meetingId   String
+  fileName    String
+  filePath    String   // Chemin du fichier
+  fileSize    Int?     // Taille en bytes
+  fileType    String?  // Type MIME
+  uploadedBy  String?
+  createdAt   DateTime @default(now())
+
+  meeting   Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  uploader  User?   @relation("MeetingAttachmentUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
+
+  @@index([meetingId])
+  @@map("meeting_attachments")
+}
+
+/**
+ * Notifications envoyées pour les réunions
+ */
+model MeetingNotification {
+  id          String   @id @default(uuid())
+  meetingId   String
+  participantId String // ID du participant
+  channel     String   // SMS | EMAIL | WHATSAPP | PUSH
+  status      String   @default("PENDING") // PENDING | SENT | FAILED | DELIVERED
+  sentAt      DateTime?
+  errorMessage String?
+  createdAt   DateTime @default(now())
+
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([participantId])
+  @@index([status])
+  @@index([channel])
+  @@map("meeting_notifications")
 }
 
 // ============================================================================
@@ -1615,6 +2244,89 @@ model StudentEnrollment {
   @@index([tenantId, academicYearId, schoolLevelId])
   @@index([studentId])
   @@map("student_enrollments")
+}
+
+// ============================================================================
+// MODULE 1 - MATRICULE GLOBAL UNIQUE & CARTES SCOLAIRES
+// ============================================================================
+
+/**
+ * Identifiant global unique de l'élève
+ * Matricule unique à l'échelle de toute la plateforme Academia Hub
+ * Format: AH-BJ-XXXX-YYYY-NNNNN
+ */
+model StudentIdentifier {
+  id                    String   @id @default(uuid())
+  tenantId              String
+  studentId             String   @unique
+  globalMatricule       String   @unique // Format: AH-BJ-XXXX-YYYY-NNNNN (UNIQUE GLOBAL)
+  countryCode           String   @default("BJ") // BJ pour Bénin (extensible)
+  institutionCode       String   // Code établissement (4 caractères)
+  firstEnrollmentYear   Int      // Année de première inscription
+  sequenceNumber        Int      // Numéro séquentiel global (5 chiffres)
+  temporaryLocalId      String?  // ID temporaire si généré offline
+  isOfflineGenerated    Boolean  @default(false) // Généré en mode offline
+  synchronizedAt        DateTime? // Date de synchronisation après offline
+  generatedAt           DateTime @default(now())
+  generatedBy           String?  // User/System qui a généré
+  locked                Boolean  @default(true) // Verrouillé après création (non modifiable)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  generator User? @relation("StudentIdentifierGenerator", fields: [generatedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([globalMatricule])
+  @@index([countryCode, institutionCode, firstEnrollmentYear])
+  @@index([isOfflineGenerated, synchronizedAt])
+  @@map("student_identifiers")
+}
+
+/**
+ * Carte d'identité scolaire officielle
+ * Une carte par année scolaire (historique conservé)
+ */
+model StudentIdCard {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  studentId      String
+  cardNumber     String   @unique // Numéro unique de la carte (format: CARD-YYYY-XXXXXX)
+  qrPayload      String   // Données du QR Code (matricule + tenant + hash)
+  qrHash         String   // Hash pour vérification d'intégrité
+  frontImagePath String?  // Chemin image face avant (PNG/PDF)
+  backImagePath  String?  // Chemin image face arrière (PNG/PDF)
+  pdfPath        String?  // Chemin PDF complet (face avant + arrière)
+  generatedAt    DateTime @default(now())
+  generatedBy    String?  // User qui a généré
+  validUntil     DateTime? // Date d'expiration (fin année scolaire)
+  isActive       Boolean  @default(true) // Carte active
+  isRevoked      Boolean  @default(false) // Carte révoquée (perdue, volée, etc.)
+  revokedAt      DateTime?
+  revokedBy      String?
+  revocationReason String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  generator    User?        @relation("StudentIdCardGenerator", fields: [generatedBy], references: [id], onDelete: SetNull)
+  revoker      User?        @relation("StudentIdCardRevoker", fields: [revokedBy], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, academicYearId, studentId]) // Une carte par élève par année
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([studentId])
+  @@index([cardNumber])
+  @@index([qrHash])
+  @@index([isActive, isRevoked])
+  @@index([validUntil])
+  @@map("student_id_cards")
 }
 
 model Admission {
@@ -2184,6 +2896,8 @@ model Staff {
   overtimeRecords OvertimeRecord[]
   payrollItems PayrollItem[]
   employeeCNSS EmployeeCNSS?
+  taxWithholdings TaxWithholding[]
+  salaryPayments SalaryPayment[]
 
   @@index([tenantId])
   @@index([employeeNumber])
@@ -2415,10 +3129,19 @@ model PayrollItem {
   baseSalary     Decimal  @db.Decimal(10, 2)
   overtimeAmount Decimal  @default(0) @db.Decimal(10, 2)
   bonuses        Decimal  @default(0) @db.Decimal(10, 2)
-  deductions     Decimal  @default(0) @db.Decimal(10, 2)
-  netSalary      Decimal  @db.Decimal(10, 2)
-  status         String   @default("PENDING") // PENDING, PAID
+  grossSalary    Decimal  @db.Decimal(10, 2) // Brut total (base + heures sup + primes)
+  cnssEmployee   Decimal  @default(0) @db.Decimal(10, 2) // Part employé CNSS
+  cnssEmployer   Decimal  @default(0) @db.Decimal(10, 2) // Part employeur CNSS (non déduite du salaire)
+  taxableAmount  Decimal  @db.Decimal(10, 2) // Net imposable (brut - CNSS employé)
+  irppAmount     Decimal  @default(0) @db.Decimal(10, 2) // IRPP retenu
+  otherDeductions Decimal @default(0) @db.Decimal(10, 2) // Autres retenues (avances, sanctions, etc.)
+  totalDeductions Decimal @db.Decimal(10, 2) // Total retenues
+  netSalary      Decimal  @db.Decimal(10, 2) // Net à payer (brut - total retenues)
+  status         String   @default("PENDING") // PENDING | CALCULATED | VALIDATED | PAID
+  calculatedAt   DateTime? // Date du calcul
+  validatedAt    DateTime? // Date de validation
   paidAt         DateTime?
+  notes          String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -2428,10 +3151,13 @@ model PayrollItem {
   payroll      Payroll       @relation(fields: [payrollId], references: [id], onDelete: Cascade)
   staff        Staff         @relation(fields: [staffId], references: [id], onDelete: Cascade)
   salarySlip   SalarySlip?
+  taxWithholdings TaxWithholding[]
+  payments     SalaryPayment[]
 
   @@index([tenantId, academicYearId])
   @@index([payrollId])
   @@index([staffId])
+  @@index([status])
   @@map("payroll_items")
 }
 
@@ -2459,6 +3185,7 @@ model SalaryPayment {
 
   @@index([tenantId, academicYearId])
   @@index([staffId])
+  @@index([payrollItemId])
   @@index([paymentDate])
   @@map("salary_payments")
 }
@@ -2524,7 +3251,11 @@ model SalarySlip {
   id             String   @id @default(uuid())
   payrollItemId  String   @unique
   receiptNumber  String   @unique
-  filePath       String?
+  period         String   // Format: YYYY-MM (période de paie)
+  filePath       String?  // Chemin du PDF généré
+  pdfGenerated   Boolean  @default(false) // PDF généré ou non
+  pdfGeneratedAt DateTime? // Date de génération PDF
+  content        String?  // Contenu JSON du bulletin (pour historique)
   issuedAt       DateTime @default(now())
   issuedBy       String?
   createdAt      DateTime @default(now())
@@ -2534,6 +3265,8 @@ model SalarySlip {
   issuer      User?       @relation("SalarySlipIssuer", fields: [issuedBy], references: [id], onDelete: SetNull)
 
   @@index([receiptNumber])
+  @@index([period])
+  @@index([pdfGenerated])
   @@map("salary_slips")
 }
 
@@ -2621,6 +3354,74 @@ model CNSSDeclarationLine {
   @@index([cnssDeclarationId])
   @@index([employeeCNSSId])
   @@map("cnss_declaration_lines")
+}
+
+// ============================================================================
+// MODULE 5 - FISCALITÉ & RETENUES (IRPP & ASSIMILÉS)
+// ============================================================================
+
+/**
+ * Barèmes de taux d'impôt (IRPP/IUTS) par pays
+ * Géré par policy pays, jamais codé en dur
+ */
+model TaxRate {
+  id             String   @id @default(uuid())
+  countryCode    String   // BJ, etc.
+  taxType        String   @default("IRPP") // IRPP | IUTS | OTHER
+  bracketMin     Decimal  @db.Decimal(10, 2) // Montant minimum de la tranche
+  bracketMax     Decimal? @db.Decimal(10, 2) // Montant maximum (null = pas de limite)
+  ratePercentage Decimal  @db.Decimal(5, 2) // Taux en pourcentage (ex: 15.50)
+  fixedAmount    Decimal? @db.Decimal(10, 2) // Montant fixe si applicable
+  effectiveFrom  DateTime @db.Date
+  effectiveTo    DateTime? @db.Date // null = toujours actif
+  isActive       Boolean  @default(true)
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  withholdings TaxWithholding[]
+
+  @@unique([countryCode, taxType, bracketMin, effectiveFrom])
+  @@index([countryCode, taxType])
+  @@index([effectiveFrom, effectiveTo])
+  @@index([isActive])
+  @@map("tax_rates")
+}
+
+/**
+ * Retenues fiscales appliquées aux salaires
+ * Historisation complète pour audit
+ */
+model TaxWithholding {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  payrollItemId  String
+  staffId        String
+  taxRateId      String?  // Référence au barème utilisé
+  taxType        String   @default("IRPP") // IRPP | IUTS | OTHER
+  taxableAmount  Decimal  @db.Decimal(10, 2) // Montant imposable
+  bracketMin     Decimal? @db.Decimal(10, 2) // Tranche utilisée
+  bracketMax     Decimal? @db.Decimal(10, 2) // Tranche utilisée
+  ratePercentage Decimal? @db.Decimal(5, 2) // Taux appliqué
+  fixedAmount    Decimal? @db.Decimal(10, 2) // Montant fixe appliqué
+  withheldAmount Decimal  @db.Decimal(10, 2) // Montant retenu
+  calculationDetails Json? // Détails du calcul (pour audit)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  payrollItem  PayrollItem  @relation(fields: [payrollItemId], references: [id], onDelete: Cascade)
+  staff        Staff        @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  taxRate      TaxRate?     @relation(fields: [taxRateId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId])
+  @@index([payrollItemId])
+  @@index([staffId])
+  @@index([taxType])
+  @@index([taxRateId])
+  @@map("tax_withholdings")
 }
 
 // ============================================================================
@@ -2848,6 +3649,321 @@ model PedagogicalSheetValidation {
   @@index([tenantId, academicYearId, schoolLevelId])
   @@index([pedagogicalSheetId])
   @@map("pedagogical_sheet_validations")
+}
+
+// ============================================================================
+// MODULE 2 - SYSTÈME DE WORKFLOW PÉDAGOGIQUE
+// ============================================================================
+
+/**
+ * Modèle unifié pour tous les documents pédagogiques
+ * Fiches pédagogiques, Cahiers journaux, Cahiers de textes, Semainier
+ */
+model PedagogicalDocument {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  teacherId      String?  // Enseignant créateur
+  classId        String?
+  subjectId      String?
+  documentType   String   // FICHE_PEDAGOGIQUE | CAHIER_JOURNAL | CAHIER_TEXTE | SEMAINIER
+  title          String
+  description    String?
+  content        String   // Contenu structuré (JSON ou HTML)
+  period         String?  // Période/semaine concernée (format: YYYY-WW ou YYYY-MM)
+  weekStartDate  DateTime? @db.Date // Date début semaine (pour semainier)
+  weekEndDate    DateTime? @db.Date // Date fin semaine (pour semainier)
+  status         String   @default("DRAFT") // DRAFT | SUBMITTED | APPROVED | REJECTED | ACKNOWLEDGED
+  submittedAt    DateTime?
+  validatedAt    DateTime?
+  validatedBy    String?  // Directeur/validateur
+  rejectionReason String?
+  acknowledgedAt DateTime? // Pour cahier de textes (pas de rejet)
+  acknowledgedBy String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  teacher      Teacher?     @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  class        Class?       @relation(fields: [classId], references: [id], onDelete: SetNull)
+  subject      Subject?     @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  validator    User?        @relation("PedagogicalDocumentValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+  acknowledger User?        @relation("PedagogicalDocumentAcknowledger", fields: [acknowledgedBy], references: [id], onDelete: SetNull)
+  reviews      PedagogicalDocumentReview[]
+  comments     PedagogicalDocumentComment[]
+  notifications PedagogicalDocumentNotification[]
+  versions     PedagogicalDocumentVersion[]
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([teacherId])
+  @@index([documentType])
+  @@index([status])
+  @@index([submittedAt])
+  @@index([period])
+  @@map("pedagogical_documents")
+}
+
+/**
+ * Versions historiques des documents pédagogiques
+ * Pour traçabilité complète
+ */
+model PedagogicalDocumentVersion {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  documentId     String
+  versionNumber  Int
+  content        String   // Contenu de cette version
+  changes        String?  // Description des changements
+  createdBy      String?  // Enseignant qui a créé cette version
+  createdAt      DateTime @default(now())
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel       @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  document     PedagogicalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  creator      User?             @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+
+  @@unique([documentId, versionNumber])
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([documentId])
+  @@map("pedagogical_document_versions")
+}
+
+/**
+ * Reviews/Validations par la direction
+ * Un document peut avoir plusieurs reviews (commentaires par paragraphe)
+ */
+model PedagogicalDocumentReview {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  documentId     String
+  reviewerId     String   // Directeur/validateur
+  decision       String   // APPROVED | REJECTED
+  comments       String?  // Commentaires généraux
+  sectionComments Json?   // Commentaires par section/paragraphe
+  reviewedAt     DateTime @default(now())
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel       @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  document     PedagogicalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reviewer     User              @relation("PedagogicalDocumentReviewer", fields: [reviewerId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([documentId])
+  @@index([reviewerId])
+  @@index([decision])
+  @@map("pedagogical_document_reviews")
+}
+
+/**
+ * Commentaires pédagogiques (bidirectionnels)
+ * Enseignant ↔ Direction
+ */
+model PedagogicalDocumentComment {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  documentId     String
+  authorId       String   // Enseignant ou Direction
+  authorRole     String   // TEACHER | DIRECTOR
+  comment        String
+  section        String?  // Section du document concernée (optionnel)
+  isRead         Boolean  @default(false)
+  readAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel       @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  document     PedagogicalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  author       User              @relation("PedagogicalDocumentCommentAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([documentId])
+  @@index([authorId])
+  @@index([isRead])
+  @@map("pedagogical_document_comments")
+}
+
+/**
+ * Notifications pour le workflow pédagogique
+ * Traçabilité complète des événements
+ */
+model PedagogicalDocumentNotification {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  documentId     String
+  recipientId    String   // Enseignant ou Direction destinataire
+  notificationType String // SUBMISSION | VALIDATION | REJECTION | COMMENT | REMINDER
+  title          String
+  message        String
+  smsSent        Boolean  @default(false)
+  smsSentAt      DateTime?
+  whatsappSent   Boolean  @default(false)
+  whatsappSentAt DateTime?
+  emailSent      Boolean  @default(false)
+  emailSentAt    DateTime?
+  inAppRead      Boolean  @default(false)
+  inAppReadAt    DateTime?
+  createdAt      DateTime @default(now())
+
+  tenant       Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel       @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  document     PedagogicalDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  recipient    User              @relation("PedagogicalDocumentNotificationRecipient", fields: [recipientId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([documentId])
+  @@index([recipientId])
+  @@index([notificationType])
+  @@index([inAppRead])
+  @@map("pedagogical_document_notifications")
+}
+
+/**
+ * CAHIER DU SEMAINIER
+ * Responsabilité tournante entre enseignants
+ */
+model WeeklyDutyAssignment {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  teacherId      String   // Enseignant désigné
+  weekStartDate  DateTime @db.Date
+  weekEndDate    DateTime @db.Date
+  weekNumber     Int      // Numéro de semaine (1-52)
+  assignmentMode String   @default("AUTO") // AUTO | MANUAL
+  assignedBy     String?  // User qui a fait la désignation (si manuelle)
+  reason         String?  // Motif de changement exceptionnel (si manuelle)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  teacher      Teacher      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  assigner     User?        @relation(fields: [assignedBy], references: [id], onDelete: SetNull)
+  semainier    WeeklySemainier?
+
+  @@unique([tenantId, academicYearId, schoolLevelId, weekStartDate])
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([teacherId])
+  @@index([weekStartDate, weekEndDate])
+  @@index([isActive])
+  @@map("weekly_duty_assignments")
+}
+
+/**
+ * Contenu du cahier du semainier
+ * Rempli par l'enseignant désigné
+ */
+model WeeklySemainier {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  assignmentId   String   @unique
+  weekStartDate  DateTime @db.Date
+  weekEndDate    DateTime @db.Date
+  content        String   // Contenu structuré (JSON avec incidents, observations, actions)
+  status         String   @default("EN_COURS") // EN_COURS | SOUMIS | VALIDATED
+  submittedAt    DateTime?
+  validatedAt    DateTime?
+  validatedBy    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  assignment   WeeklyDutyAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  validator    User?        @relation("WeeklySemainierValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+  dailyEntries WeeklySemainierDailyEntry[]
+  incidents    WeeklySemainierIncident[]
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([weekStartDate, weekEndDate])
+  @@index([status])
+  @@map("weekly_semainiers")
+}
+
+/**
+ * Entrées quotidiennes du semainier
+ * Pour traçabilité jour par jour
+ */
+model WeeklySemainierDailyEntry {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  semainierId    String
+  date           DateTime @db.Date
+  observations   String?  // Observations générales
+  actions        String?  // Actions prises
+  events         Json?    // Événements importants
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  semainier    WeeklySemainier @relation(fields: [semainierId], references: [id], onDelete: Cascade)
+
+  @@unique([semainierId, date])
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([semainierId])
+  @@index([date])
+  @@map("weekly_semainier_daily_entries")
+}
+
+/**
+ * Incidents enregistrés dans le semainier
+ * Pour suivi et remontée vers QHSE si nécessaire
+ */
+model WeeklySemainierIncident {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  semainierId    String
+  date           DateTime @db.Date
+  type           String   // ABSENCE | RETARD | DISCIPLINE | SECURITY | OTHER
+  description    String
+  severity       String   @default("LOW") // LOW | MEDIUM | HIGH | CRITICAL
+  reportedBy     String   // Enseignant qui a signalé
+  actions        String?  // Actions prises immédiatement
+  escalatedToQHSE Boolean @default(false) // Escalade vers QHSE si critique
+  escalatedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  semainier    WeeklySemainier @relation(fields: [semainierId], references: [id], onDelete: Cascade)
+  reporter     User        @relation("WeeklySemainierIncidentReporter", fields: [reportedBy], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([semainierId])
+  @@index([date])
+  @@index([type, severity])
+  @@index([escalatedToQHSE])
+  @@map("weekly_semainier_incidents")
 }
 
 model LessonJournal {
@@ -3574,9 +4690,11 @@ model MessageRecipient {
   tenantId       String
   messageId      String
   recipientId    String
-  recipientType  String
-  status         String   @default("UNREAD")
+  recipientType  String   // USER | STUDENT | GUARDIAN | STAFF
+  status         String   @default("PENDING") // PENDING | SENT | DELIVERED | READ | FAILED
+  deliveredAt    DateTime?
   readAt         DateTime?
+  errorMessage   String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -3585,24 +4703,151 @@ model MessageRecipient {
 
   @@unique([messageId, recipientId, recipientType])
   @@index([tenantId])
+  @@index([recipientId])
+  @@index([status])
   @@map("message_recipients")
+}
+
+// ============================================================================
+// MODULE 6 — COMMUNICATION & ENGAGEMENT
+// ============================================================================
+
+/**
+ * Canaux de communication (SMS, EMAIL, WHATSAPP, PUSH)
+ */
+model CommunicationChannel {
+  id            String   @id @default(uuid())
+  tenantId      String
+  code          String   // SMS | EMAIL | WHATSAPP | PUSH
+  name          String
+  isActive      Boolean  @default(true)
+  config        Json?    // Configuration spécifique au canal (API keys, etc.)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  messages      Message[]
+  templates     MessageTemplate[]
+  triggers      AutomatedTrigger[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([code])
+  @@map("communication_channels")
+}
+
+/**
+ * Cibles de messages (STUDENT, GUARDIAN, STAFF, CLASS, LEVEL)
+ */
+model MessageTarget {
+  id            String   @id @default(uuid())
+  messageId     String
+  targetType    String   // STUDENT | GUARDIAN | STAFF | CLASS | LEVEL
+  targetId      String
+  createdAt     DateTime @default(now())
+
+  message       Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, targetType, targetId])
+  @@index([targetType, targetId])
+  @@map("message_targets")
+}
+
+/**
+ * Messages planifiés
+ */
+model ScheduledMessage {
+  id            String   @id @default(uuid())
+  messageId     String   @unique
+  scheduledAt   DateTime
+  status        String   @default("PENDING") // PENDING | SENT | FAILED | CANCELLED
+  sentAt        DateTime?
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  message       Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("scheduled_messages")
+}
+
+/**
+ * Déclencheurs automatisés
+ */
+model AutomatedTrigger {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String?
+  schoolLevelId  String?
+  triggerType   String   // ABSENCE | IMPAYE | RETARD | INCIDENT | GRADE | EVENT
+  channelId     String
+  templateId    String?
+  conditions    Json?    // Conditions pour le déclenchement
+  isActive      Boolean  @default(true)
+  lastTriggeredAt DateTime?
+  triggerCount  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear  AcademicYear?     @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel   SchoolLevel?      @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  channel       CommunicationChannel @relation(fields: [channelId], references: [id], onDelete: Restrict)
+  template      MessageTemplate?  @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([academicYearId])
+  @@index([triggerType])
+  @@index([isActive])
+  @@map("automated_triggers")
+}
+
+/**
+ * Logs détaillés des messages envoyés
+ */
+model MessageLog {
+  id            String   @id @default(uuid())
+  messageId     String
+  recipient     String   // Email, téléphone, etc.
+  recipientType String   // STUDENT | GUARDIAN | STAFF
+  status        String   @default("PENDING") // DELIVERED | OPENED | FAILED | BOUNCED
+  deliveredAt   DateTime?
+  openedAt      DateTime?
+  errorMessage  String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  message       Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([recipient])
+  @@index([status])
+  @@map("message_logs")
 }
 
 model MessageTemplate {
   id             String   @id @default(uuid())
   tenantId       String
   name           String
-  type           String
+  type           String   // INFO | ALERT | REMINDER | DISCIPLINE | FINANCE
+  channelId      String?
   subject        String?
   content        String
+  contentFr      String?  // Contenu en français
+  contentEn      String?  // Contenu en anglais
   variables      Json?
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenant    Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  channel   CommunicationChannel? @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  triggers  AutomatedTrigger[]
 
   @@index([tenantId, type])
+  @@index([channelId])
   @@map("message_templates")
 }
 
@@ -4080,23 +5325,25 @@ model Inspection {
   tenantId       String
   academicYearId String?
   schoolLevelId  String?
-  inspectionType String   // SAFETY, HEALTH, ENVIRONMENTAL
-  date           DateTime
-  inspector      String?
-  findings       String
-  status         String   @default("PENDING") // PENDING, COMPLETED, FOLLOW_UP
+  inspectionType String   // HYGIENE | SECURITE | PEDAGOGIE | ADMIN
+  inspectorName  String?
+  inspectionDate DateTime
+  summary        String?
+  status         String   @default("PENDING") // PENDING | COMPLETED | FOLLOW_UP
   followUpDate   DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  academicYear AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
-  schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
-  incidents    Incident[]
+  tenant         Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear   AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel    SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  incidents      Incident[]
+  checklists     InspectionChecklist[]
   correctiveActions CorrectiveAction[]
 
-  @@index([tenantId])
-  @@index([date])
+  @@index([tenantId, academicYearId])
+  @@index([inspectionType])
+  @@index([inspectionDate])
   @@map("inspections")
 }
 
@@ -4104,26 +5351,38 @@ model Incident {
   id             String   @id @default(uuid())
   tenantId       String
   academicYearId String
-  schoolLevelId  String
+  schoolLevelId  String?
+  studentId      String?  // Peut être lié à un élève
+  classId        String?  // Peut être lié à une classe
   inspectionId   String?
-  incidentType   String   // ACCIDENT, INJURY, EMERGENCY, OTHER
-  date           DateTime
-  location       String?
+  incidentType   String   // HYGIENE | SECURITE | SANTE | DISCIPLINE | INFRA
+  severity       String   @default("LOW") // LOW | MEDIUM | HIGH | CRITICAL
   description    String
-  severity       String   // MINOR, MODERATE, MAJOR, CRITICAL
-  reportedBy     String?
-  status         String   @default("REPORTED") // REPORTED, INVESTIGATING, RESOLVED
+  occurredAt     DateTime
+  location       String?
+  reportedByUserId String?
+  status         String   @default("OPEN") // OPEN | IN_PROGRESS | CLOSED
+  closedAt       DateTime?
+  closedByUserId String?
+  metadata       Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
-  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
-  inspection   Inspection?  @relation(fields: [inspectionId], references: [id], onDelete: SetNull)
-  correctiveActions CorrectiveAction[]
+  tenant          Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear    AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel     SchoolLevel? @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  student         Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  class           Class?       @relation(fields: [classId], references: [id], onDelete: SetNull)
+  inspection      Inspection?  @relation(fields: [inspectionId], references: [id], onDelete: SetNull)
+  reportedBy      User?        @relation("IncidentReportedBy", fields: [reportedByUserId], references: [id], onDelete: SetNull)
+  closedBy        User?        @relation("IncidentClosedBy", fields: [closedByUserId], references: [id], onDelete: SetNull)
+  attachments     IncidentAttachment[]
+  actions         IncidentAction[]
 
-  @@index([tenantId, academicYearId, schoolLevelId])
-  @@index([date])
+  @@index([tenantId, academicYearId])
+  @@index([incidentType, severity])
+  @@index([status])
+  @@index([occurredAt])
   @@map("incidents")
 }
 
@@ -4151,6 +5410,156 @@ model CorrectiveAction {
   @@index([tenantId])
   @@index([status])
   @@map("corrective_actions")
+}
+
+// ============================================================================
+// MODULE 7 — QHSE, INCIDENTS & CONFORMITÉ
+// ============================================================================
+
+/**
+ * Pièces jointes d'incident
+ */
+model IncidentAttachment {
+  id            String   @id @default(uuid())
+  incidentId    String
+  fileName      String
+  filePath      String
+  fileSize      Int?
+  mimeType      String?
+  uploadedBy    String?
+  createdAt     DateTime @default(now())
+
+  incident      Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+
+  @@index([incidentId])
+  @@map("incident_attachments")
+}
+
+/**
+ * Actions correctives pour les incidents
+ */
+model IncidentAction {
+  id                  String   @id @default(uuid())
+  incidentId          String
+  actionDescription   String
+  responsibleUserId   String?
+  dueDate             DateTime
+  status              String   @default("PENDING") // PENDING | DONE
+  completedAt         DateTime?
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  incident            Incident  @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  responsible         User?     @relation("IncidentActionResponsible", fields: [responsibleUserId], references: [id], onDelete: SetNull)
+
+  @@index([incidentId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("incident_actions")
+}
+
+/**
+ * Checklists d'inspection
+ */
+model InspectionChecklist {
+  id            String   @id @default(uuid())
+  inspectionId  String
+  itemLabel     String
+  status        String   @default("PENDING") // COMPLIANT | NON_COMPLIANT | PENDING
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  inspection    Inspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  @@index([inspectionId])
+  @@index([status])
+  @@map("inspection_checklists")
+}
+
+/**
+ * Exigences réglementaires
+ */
+model ComplianceRequirement {
+  id            String   @id @default(uuid())
+  tenantId      String
+  code          String   // Code unique de l'exigence
+  title         String
+  description   String?
+  category      String?  // HYGIENE | SECURITE | PEDAGOGIE | ADMIN | FINANCE
+  mandatory     Boolean  @default(true)
+  legalReference String? // Référence légale
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  records       ComplianceRecord[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([category])
+  @@map("compliance_requirements")
+}
+
+/**
+ * Enregistrements de conformité
+ */
+model ComplianceRecord {
+  id                        String   @id @default(uuid())
+  complianceRequirementId   String
+  academicYearId            String?
+  schoolLevelId             String?
+  status                    String   @default("PENDING") // COMPLIANT | NON_COMPLIANT | PENDING
+  evidencePath              String?  // Chemin vers la preuve (document, photo, etc.)
+  validated                 Boolean  @default(false)
+  validatedBy               String?
+  validatedAt               DateTime?
+  notes                     String?
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime @updatedAt
+
+  requirement   ComplianceRequirement @relation(fields: [complianceRequirementId], references: [id], onDelete: Restrict)
+  academicYear  AcademicYear?          @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel   SchoolLevel?           @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  validator     User?                  @relation("ComplianceRecordValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([complianceRequirementId, academicYearId, schoolLevelId])
+  @@index([complianceRequirementId])
+  @@index([academicYearId])
+  @@index([status])
+  @@map("compliance_records")
+}
+
+/**
+ * Alertes de risques
+ */
+model RiskAlert {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String?
+  schoolLevelId  String?
+  sourceType    String   // INCIDENT | AUDIT | COMPLIANCE | INSPECTION
+  sourceId      String   // ID de la source (incident_id, inspection_id, etc.)
+  riskLevel     String   @default("LOW") // LOW | MEDIUM | HIGH | CRITICAL
+  message       String
+  acknowledged  Boolean  @default(false)
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear  AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel   SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  acknowledgedUser User?      @relation("RiskAlertAcknowledgedBy", fields: [acknowledgedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId])
+  @@index([sourceType, sourceId])
+  @@index([riskLevel])
+  @@index([acknowledged])
+  @@map("risk_alerts")
 }
 
 // ============================================================================
@@ -4481,27 +5890,25 @@ model MediaView {
 
 model KpiDefinition {
   id             String   @id @default(uuid())
-  tenantId       String
-  academicYearId String?
-  schoolLevelId  String?
+  tenantId       String?
+  code           String   // Code unique du KPI (ex: TAUX_ABSENCE, TAUX_IMPAYE)
   name           String
-  code           String
   description    String?
-  formula        String?
-  category       String?  // PEDAGOGICAL, FINANCIAL, OPERATIONAL
-  unit           String?
-  targetValue    Float?
+  scope          String   @default("TENANT") // STUDENT | CLASS | LEVEL | TENANT
+  category       String?  // PEDAGOGICAL, FINANCIAL, OPERATIONAL, RH, QHSE
+  unit           String?  // %, XOF, nombre, etc.
+  formula        String?  // Formule SQL ou description du calcul
+  isSystem       Boolean  @default(false) // KPI système vs KPI personnalisé
   isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  academicYear AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
-  schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   snapshots    KpiSnapshot[]
 
   @@unique([tenantId, code])
-  @@index([tenantId])
+  @@index([scope])
+  @@index([category])
   @@map("kpi_definitions")
 }
 
@@ -4512,9 +5919,9 @@ model KpiSnapshot {
   schoolLevelId  String?
   kpiId          String
   value          Float
-  period         String   // Format: YYYY-MM ou YYYY-MM-DD
+  period         String?  // Format: YYYY-MM ou YYYY-MM-DD (optionnel)
   metadata       Json?
-  calculatedAt   DateTime @default(now())
+  computedAt     DateTime @default(now())
   createdAt      DateTime @default(now())
 
   tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
@@ -4522,9 +5929,10 @@ model KpiSnapshot {
   schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
   kpi          KpiDefinition @relation(fields: [kpiId], references: [id], onDelete: Cascade)
 
-  @@unique([kpiId, period])
-  @@index([tenantId])
+  @@unique([kpiId, tenantId, academicYearId, schoolLevelId, period])
+  @@index([tenantId, academicYearId])
   @@index([kpiId])
+  @@index([computedAt])
   @@map("kpi_snapshots")
 }
 
@@ -4563,15 +5971,15 @@ model OrionAlert {
   tenantId       String
   academicYearId String?
   schoolLevelId  String?
-  alertType      String   // PEDAGOGICAL, FINANCIAL, STRATEGIC, OPERATIONAL
-  severity       String   // INFO, WARNING, CRITICAL
+  alertType      String   // FINANCIAL | PEDAGOGIC | RH | QHSE | OPERATIONAL
+  severity       String   // INFO | WARNING | CRITICAL
   title          String
   description    String
   recommendation String?
-  status         String   @default("ACTIVE") // ACTIVE, ACKNOWLEDGED, RESOLVED
-  acknowledgedAt  DateTime?
+  message        String?  // Message court pour affichage
+  acknowledged   Boolean  @default(false)
+  acknowledgedAt DateTime?
   acknowledgedBy String?
-  resolvedAt     DateTime?
   metadata       Json?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -4579,11 +5987,13 @@ model OrionAlert {
   tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   academicYear AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
   schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  acknowledgedUser User?      @relation("OrionAlertAcknowledgedBy", fields: [acknowledgedBy], references: [id], onDelete: SetNull)
 
-  @@index([tenantId])
+  @@index([tenantId, academicYearId])
   @@index([alertType])
   @@index([severity])
-  @@index([status])
+  @@index([acknowledged])
+  @@index([createdAt])
   @@map("orion_alerts")
 }
 
@@ -4608,6 +6018,65 @@ model OrionReport {
   @@index([tenantId])
   @@index([reportType])
   @@map("orion_reports")
+}
+
+// ============================================================================
+// MODULE 8 — PILOTAGE DIRECTION & IA ORION
+// ============================================================================
+
+/**
+ * Insights et conseils ORION
+ */
+model OrionInsight {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String?
+  schoolLevelId  String?
+  category       String   // FINANCE | PEDAGOGIE | RH | RISQUE | OPERATIONAL
+  title          String
+  content        String   // Contenu de l'insight (synthèse, conseil, etc.)
+  priority       String   @default("LOW") // LOW | MEDIUM | HIGH
+  sourceData     Json?    // Données sources qui ont généré cet insight
+  isRead         Boolean  @default(false)
+  readAt         DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear? @relation(fields: [academicYearId], references: [id], onDelete: SetNull)
+  schoolLevel  SchoolLevel?  @relation(fields: [schoolLevelId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId])
+  @@index([category])
+  @@index([priority])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("orion_insights")
+}
+
+/**
+ * Logs d'audit ORION (qui a accédé à quoi)
+ */
+model OrionAuditLog {
+  id             String   @id @default(uuid())
+  tenantId       String
+  userId         String?
+  action         String   // VIEW_KPI | VIEW_ALERT | VIEW_INSIGHT | EXPORT_REPORT
+  resourceType   String?  // KPI | ALERT | INSIGHT | REPORT | DASHBOARD
+  resourceId     String?
+  metadata       Json?
+  ipAddress      String?
+  userAgent      String?
+  createdAt      DateTime @default(now())
+
+  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User?  @relation("OrionAuditLogUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, userId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@map("orion_audit_logs")
 }
 
 // ============================================================================
@@ -5605,4 +7074,878 @@ model CollectionAction {
   @@index([actionType])
   @@index([performedAt])
   @@map("collection_actions")
+}
+
+// ============================================================================
+// MODULE 9 — MODULES COMPLÉMENTAIRES
+// ============================================================================
+
+// ----------------------------------------------------------------------------
+// 9.1 CANTINE SCOLAIRE
+// ----------------------------------------------------------------------------
+
+/**
+ * Menus de la cantine par semaine
+ */
+model CanteenMenu {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  weekNumber    Int      // Numéro de semaine (1-52)
+  weekStartDate DateTime @db.Date
+  weekEndDate   DateTime @db.Date
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  meals        CanteenMeal[]
+
+  @@unique([tenantId, academicYearId, weekNumber])
+  @@index([tenantId, academicYearId])
+  @@index([weekStartDate, weekEndDate])
+  @@map("canteen_menus")
+}
+
+/**
+ * Repas individuels dans un menu
+ */
+model CanteenMeal {
+  id          String   @id @default(uuid())
+  menuId      String
+  dayOfWeek   Int      // 0=Dimanche, 1=Lundi, ..., 6=Samedi
+  mealType    String   // BREAKFAST | LUNCH | SNACK | DINNER
+  name        String
+  description String?
+  price       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  menu CanteenMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@index([menuId])
+  @@index([dayOfWeek, mealType])
+  @@map("canteen_meals")
+}
+
+/**
+ * Inscriptions des élèves à la cantine
+ */
+model CanteenEnrollment {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  studentId     String
+  schoolLevelId String?
+  classId       String?
+  startDate     DateTime @db.Date
+  endDate       DateTime? @db.Date
+  mealTypes     String[] // ["BREAKFAST", "LUNCH", "SNACK", "DINNER"]
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  schoolLevel  SchoolLevel? @relation("CanteenEnrollmentSchoolLevel", fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  class        Class?       @relation("CanteenEnrollmentClass", fields: [classId], references: [id], onDelete: SetNull)
+  attendances  CanteenAttendance[]
+  allergies    CanteenAllergy[]
+
+  @@unique([tenantId, academicYearId, studentId])
+  @@index([tenantId, academicYearId])
+  @@index([studentId])
+  @@index([isActive])
+  @@map("canteen_enrollments")
+}
+
+/**
+ * Présences aux repas
+ */
+model CanteenAttendance {
+  id           String   @id @default(uuid())
+  enrollmentId String
+  mealDate     DateTime @db.Date
+  mealType     String   // BREAKFAST | LUNCH | SNACK | DINNER
+  status       String   @default("PRESENT") // PRESENT | ABSENT | EXCUSED
+  notes        String?
+  recordedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  enrollment CanteenEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  recorder   User?             @relation("CanteenAttendanceRecorder", fields: [recordedBy], references: [id], onDelete: SetNull)
+
+  @@unique([enrollmentId, mealDate, mealType])
+  @@index([enrollmentId])
+  @@index([mealDate])
+  @@index([status])
+  @@map("canteen_attendances")
+}
+
+/**
+ * Allergies alimentaires des élèves
+ */
+model CanteenAllergy {
+  id           String   @id @default(uuid())
+  enrollmentId String
+  allergen     String   // Nom de l'allergène
+  severity     String   @default("MODERATE") // MILD | MODERATE | SEVERE
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  enrollment CanteenEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([allergen])
+  @@map("canteen_allergies")
+}
+
+// ----------------------------------------------------------------------------
+// 9.2 TRANSPORT SCOLAIRE
+// ----------------------------------------------------------------------------
+
+/**
+ * Véhicules de transport
+ */
+model Vehicle {
+  id              String   @id @default(uuid())
+  tenantId        String
+  academicYearId  String
+  vehicleType     String   // BUS | VAN | CAR
+  plateNumber     String
+  capacity        Int      // Nombre de places
+  driverId        String?  // ID du conducteur (Staff)
+  status          String   @default("ACTIVE") // ACTIVE | MAINTENANCE | OUT_OF_SERVICE
+  lastMaintenance DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  routes       Route[]
+  assignments  TransportAssignment[]
+  incidents    TransportIncident[]
+
+  @@unique([tenantId, academicYearId, plateNumber])
+  @@index([tenantId, academicYearId])
+  @@index([status])
+  @@map("vehicles")
+}
+
+/**
+ * Itinéraires de transport
+ */
+model Route {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  vehicleId     String
+  name          String
+  description   String?
+  startTime     String   // Format HH:mm
+  endTime       String?  // Format HH:mm
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  vehicle      Vehicle         @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  stops        RouteStop[]
+  assignments  TransportAssignment[]
+  incidents    TransportIncident[]
+
+  @@index([tenantId, academicYearId])
+  @@index([vehicleId])
+  @@index([isActive])
+  @@map("routes")
+}
+
+/**
+ * Arrêts d'un itinéraire
+ */
+model RouteStop {
+  id          String   @id @default(uuid())
+  routeId     String
+  stopOrder   Int      // Ordre de l'arrêt (1, 2, 3...)
+  name        String
+  address     String?
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  arrivalTime String?  // Format HH:mm
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  route Route @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  assignments TransportAssignment[]
+
+  @@index([routeId])
+  @@index([routeId, stopOrder])
+  @@map("route_stops")
+}
+
+/**
+ * Affectations élèves-itinéraires
+ */
+model TransportAssignment {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  studentId     String
+  routeId       String
+  vehicleId     String
+  stopId        String?  // Arrêt de prise en charge
+  startDate     DateTime @db.Date
+  endDate       DateTime? @db.Date
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  route        Route        @relation(fields: [routeId], references: [id], onDelete: Restrict)
+  vehicle      Vehicle      @relation(fields: [vehicleId], references: [id], onDelete: Restrict)
+  stop         RouteStop?   @relation(fields: [stopId], references: [id], onDelete: SetNull)
+  attendances  TransportAttendance[]
+
+  @@unique([tenantId, academicYearId, studentId])
+  @@index([tenantId, academicYearId])
+  @@index([studentId])
+  @@index([routeId])
+  @@index([vehicleId])
+  @@index([isActive])
+  @@map("transport_assignments")
+}
+
+/**
+ * Présences au transport
+ */
+model TransportAttendance {
+  id            String   @id @default(uuid())
+  assignmentId  String
+  attendanceDate DateTime @db.Date
+  direction     String   // MORNING | EVENING
+  status        String   @default("PRESENT") // PRESENT | ABSENT | EXCUSED
+  notes         String?
+  recordedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignment TransportAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  recorder   User?               @relation("TransportAttendanceRecorder", fields: [recordedBy], references: [id], onDelete: SetNull)
+
+  @@unique([assignmentId, attendanceDate, direction])
+  @@index([assignmentId])
+  @@index([attendanceDate])
+  @@index([status])
+  @@map("transport_attendances")
+}
+
+/**
+ * Incidents de transport
+ */
+model TransportIncident {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  vehicleId     String?
+  routeId       String?
+  incidentDate  DateTime @db.Date
+  incidentType  String   // ACCIDENT | BREAKDOWN | DELAY | OTHER
+  severity      String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  description   String
+  affectedStudents Int?  // Nombre d'élèves affectés
+  resolved      Boolean  @default(false)
+  resolvedAt    DateTime?
+  reportedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  vehicle     Vehicle?     @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+  route       Route?       @relation(fields: [routeId], references: [id], onDelete: SetNull)
+  reporter    User?        @relation("TransportIncidentReporter", fields: [reportedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId])
+  @@index([vehicleId])
+  @@index([routeId])
+  @@index([incidentDate])
+  @@index([severity])
+  @@index([resolved])
+  @@map("transport_incidents")
+}
+
+// ----------------------------------------------------------------------------
+// 9.3 BIBLIOTHÈQUE
+// ----------------------------------------------------------------------------
+
+/**
+ * Ouvrages de la bibliothèque
+ */
+model LibraryBook {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  isbn          String?
+  title         String
+  author        String?
+  publisher     String?
+  publicationYear Int?
+  category      String?
+  language      String   @default("FR")
+  totalCopies   Int      @default(1)
+  availableCopies Int    @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  copies       LibraryCopy[]
+  loans        LibraryLoan[]
+
+  @@index([tenantId, academicYearId])
+  @@index([isbn])
+  @@index([title])
+  @@index([author])
+  @@index([category])
+  @@map("library_books")
+}
+
+/**
+ * Exemplaires individuels d'un ouvrage
+ */
+model LibraryCopy {
+  id          String   @id @default(uuid())
+  bookId      String
+  copyNumber  String   // Numéro d'exemplaire (ex: "EX-001")
+  barcode     String?  // Code-barres unique
+  status      String   @default("AVAILABLE") // AVAILABLE | LOANED | RESERVED | MAINTENANCE | LOST
+  condition   String   @default("GOOD") // EXCELLENT | GOOD | FAIR | POOR
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  book  LibraryBook @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  loans LibraryLoan[]
+
+  @@unique([bookId, copyNumber])
+  @@index([bookId])
+  @@index([barcode])
+  @@index([status])
+  @@map("library_copies")
+}
+
+/**
+ * Emprunts
+ */
+model LibraryLoan {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  bookId        String
+  copyId        String
+  studentId     String
+  loanDate      DateTime @db.Date
+  dueDate       DateTime @db.Date
+  returnDate    DateTime? @db.Date
+  status        String   @default("ACTIVE") // ACTIVE | RETURNED | OVERDUE | LOST
+  notes         String?
+  loanedBy      String?
+  returnedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  book         LibraryBook  @relation(fields: [bookId], references: [id], onDelete: Restrict)
+  copy         LibraryCopy  @relation(fields: [copyId], references: [id], onDelete: Restrict)
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  loaner       User?        @relation("LibraryLoanLoaner", fields: [loanedBy], references: [id], onDelete: SetNull)
+  returner     User?        @relation("LibraryLoanReturner", fields: [returnedBy], references: [id], onDelete: SetNull)
+  penalties    LibraryPenalty[]
+
+  @@index([tenantId, academicYearId])
+  @@index([bookId])
+  @@index([copyId])
+  @@index([studentId])
+  @@index([loanDate])
+  @@index([dueDate])
+  @@index([status])
+  @@map("library_loans")
+}
+
+/**
+ * Pénalités pour retards
+ */
+model LibraryPenalty {
+  id            String   @id @default(uuid())
+  loanId        String
+  penaltyDate   DateTime @db.Date
+  penaltyType   String   @default("LATE_RETURN") // LATE_RETURN | DAMAGE | LOSS
+  amount        Decimal  @db.Decimal(10, 2)
+  description   String?
+  paid          Boolean  @default(false)
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  loan LibraryLoan @relation(fields: [loanId], references: [id], onDelete: Cascade)
+
+  @@index([loanId])
+  @@index([penaltyDate])
+  @@index([paid])
+  @@map("library_penalties")
+}
+
+// ----------------------------------------------------------------------------
+// 9.4 LABORATOIRES
+// ----------------------------------------------------------------------------
+
+/**
+ * Laboratoires
+ */
+model Lab {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  name          String
+  description   String?
+  location      String?
+  capacity      Int?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  equipment    LabEquipment[]
+  reservations LabReservation[]
+
+  @@unique([tenantId, academicYearId, name])
+  @@index([tenantId, academicYearId])
+  @@index([isActive])
+  @@map("labs")
+}
+
+/**
+ * Équipements de laboratoire
+ */
+model LabEquipment {
+  id            String   @id @default(uuid())
+  labId         String
+  name          String
+  equipmentType String   // EQUIPMENT | MATERIAL | TOOL
+  manufacturer  String?
+  model         String?
+  serialNumber  String?
+  quantity      Int      @default(1)
+  condition     String   @default("GOOD") // EXCELLENT | GOOD | FAIR | POOR | OUT_OF_ORDER
+  lastMaintenance DateTime?
+  nextMaintenance DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lab         Lab              @relation(fields: [labId], references: [id], onDelete: Cascade)
+  maintenance LabMaintenance[]
+  incidents   LabIncident[]
+
+  @@index([labId])
+  @@index([equipmentType])
+  @@index([condition])
+  @@map("lab_equipment")
+}
+
+/**
+ * Réservations de laboratoire
+ */
+model LabReservation {
+  id            String   @id @default(uuid())
+  labId         String
+  reservedBy    String?  // User (enseignant)
+  reservationDate DateTime @db.Date
+  startTime     String   // Format HH:mm
+  endTime       String   // Format HH:mm
+  purpose       String?
+  status        String   @default("CONFIRMED") // CONFIRMED | CANCELLED | COMPLETED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lab  Lab  @relation(fields: [labId], references: [id], onDelete: Cascade)
+  user User? @relation("LabReservationUser", fields: [reservedBy], references: [id], onDelete: SetNull)
+
+  @@index([labId])
+  @@index([reservationDate])
+  @@index([status])
+  @@map("lab_reservations")
+}
+
+/**
+ * Maintenance des équipements
+ */
+model LabMaintenance {
+  id            String   @id @default(uuid())
+  equipmentId   String
+  maintenanceDate DateTime @db.Date
+  maintenanceType String   // PREVENTIVE | REPAIR | CALIBRATION | INSPECTION
+  description   String?
+  cost          Decimal? @db.Decimal(10, 2)
+  performedBy   String?  // User ou fournisseur externe
+  nextMaintenance DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  equipment LabEquipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentId])
+  @@index([maintenanceDate])
+  @@map("lab_maintenance")
+}
+
+/**
+ * Incidents de laboratoire
+ */
+model LabIncident {
+  id            String   @id @default(uuid())
+  equipmentId   String
+  incidentDate  DateTime @db.Date
+  incidentType  String   // DAMAGE | BREAKDOWN | ACCIDENT | THEFT
+  severity      String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  description   String
+  resolved      Boolean  @default(false)
+  resolvedAt    DateTime?
+  reportedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  equipment LabEquipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  reporter  User?        @relation("LabIncidentReporter", fields: [reportedBy], references: [id], onDelete: SetNull)
+
+  @@index([equipmentId])
+  @@index([incidentDate])
+  @@index([severity])
+  @@index([resolved])
+  @@map("lab_incidents")
+}
+
+// ----------------------------------------------------------------------------
+// 9.5 INFIRMERIE
+// ----------------------------------------------------------------------------
+
+/**
+ * Dossiers médicaux des élèves
+ */
+model MedicalRecord {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  studentId     String
+  bloodType     String?
+  allergies     String[] // Liste des allergies
+  chronicConditions String[] // Maladies chroniques
+  medications   String[] // Médicaments en cours
+  emergencyContact String? // Contact d'urgence
+  emergencyPhone   String? // Téléphone d'urgence
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  visits       MedicalVisit[]
+  alerts       MedicalAlert[]
+
+  @@unique([tenantId, academicYearId, studentId])
+  @@index([tenantId, academicYearId])
+  @@index([studentId])
+  @@map("medical_records")
+}
+
+/**
+ * Consultations médicales
+ */
+model MedicalVisit {
+  id            String   @id @default(uuid())
+  recordId      String
+  visitDate     DateTime @db.Date
+  visitTime     String?  // Format HH:mm
+  reason        String   // Raison de la visite
+  diagnosis     String?
+  treatment     String?
+  medicationId  String?  // Si médicament prescrit
+  temperature   Decimal? @db.Decimal(4, 2)
+  bloodPressure String?
+  notes         String?
+  performedBy   String?  // User (infirmier/infirmière)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  record     MedicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  medication Medication?   @relation(fields: [medicationId], references: [id], onDelete: SetNull)
+  performer  User?         @relation("MedicalVisitPerformer", fields: [performedBy], references: [id], onDelete: SetNull)
+
+  @@index([recordId])
+  @@index([visitDate])
+  @@map("medical_visits")
+}
+
+/**
+ * Médicaments administrés
+ */
+model Medication {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  name          String
+  dosage        String?
+  form          String?  // TABLET | SYRUP | INJECTION | etc.
+  quantity      Int      @default(1)
+  expiryDate    DateTime? @db.Date
+  stockLevel    Int      @default(0)
+  isPrescription Boolean @default(false) // Médicament sur ordonnance
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  visits       MedicalVisit[]
+
+  @@index([tenantId, academicYearId])
+  @@index([name])
+  @@index([expiryDate])
+  @@map("medications")
+}
+
+/**
+ * Alertes santé
+ */
+model MedicalAlert {
+  id            String   @id @default(uuid())
+  recordId      String
+  alertType     String   // ALLERGY | CONDITION | MEDICATION | EMERGENCY
+  severity      String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  title         String
+  description   String
+  isActive      Boolean  @default(true)
+  acknowledged  Boolean  @default(false)
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  record      MedicalRecord @relation(fields: [recordId], references: [id], onDelete: Cascade)
+  acknowledger User?        @relation("MedicalAlertAcknowledger", fields: [acknowledgedBy], references: [id], onDelete: SetNull)
+
+  @@index([recordId])
+  @@index([alertType])
+  @@index([severity])
+  @@index([isActive])
+  @@map("medical_alerts")
+}
+
+// ----------------------------------------------------------------------------
+// 9.6 BOUTIQUE SCOLAIRE
+// ----------------------------------------------------------------------------
+
+/**
+ * Produits de la boutique
+ */
+model ShopProduct {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  code          String   // Code produit (ex: "UNIF-001")
+  name          String
+  description   String?
+  category      String?  // UNIFORM | SUPPLIES | BOOKS | OTHER
+  unitPrice     Decimal  @db.Decimal(10, 2)
+  costPrice     Decimal? @db.Decimal(10, 2) // Prix de revient
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  stock        ShopStock?
+  saleItems    ShopSaleItem[]
+
+  @@unique([tenantId, academicYearId, code])
+  @@index([tenantId, academicYearId])
+  @@index([category])
+  @@index([isActive])
+  @@map("shop_products")
+}
+
+/**
+ * Stock des produits
+ */
+model ShopStock {
+  id            String   @id @default(uuid())
+  productId     String   @unique
+  quantity      Int      @default(0)
+  minThreshold  Int      @default(10) // Seuil minimum
+  maxThreshold  Int?     // Seuil maximum
+  lastRestocked DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product ShopProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([quantity])
+  @@map("shop_stock")
+}
+
+/**
+ * Ventes
+ */
+model ShopSale {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  saleNumber    String   // Numéro de vente (ex: "SALE-2024-001")
+  saleDate      DateTime @db.Date
+  customerType  String   // STUDENT | STAFF | EXTERNAL
+  customerId    String?  // ID de l'élève/staff si applicable
+  customerName  String?  // Nom si client externe
+  totalAmount   Decimal  @db.Decimal(10, 2)
+  paymentStatus String   @default("PENDING") // PENDING | PAID | PARTIAL | CANCELLED
+  paymentMethod String?  // CASH | CARD | TRANSFER | CHECK
+  notes         String?
+  soldBy        String?  // User
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  seller       User?           @relation("ShopSaleSeller", fields: [soldBy], references: [id], onDelete: SetNull)
+  items        ShopSaleItem[]
+
+  @@unique([tenantId, academicYearId, saleNumber])
+  @@index([tenantId, academicYearId])
+  @@index([saleDate])
+  @@index([paymentStatus])
+  @@map("shop_sales")
+}
+
+/**
+ * Articles d'une vente
+ */
+model ShopSaleItem {
+  id            String   @id @default(uuid())
+  saleId        String
+  productId     String
+  quantity      Int      @default(1)
+  unitPrice     Decimal  @db.Decimal(10, 2)
+  totalPrice    Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+
+  sale    ShopSale    @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product ShopProduct @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("shop_sale_items")
+}
+
+// ----------------------------------------------------------------------------
+// 9.7 EDUCAST (CONTENU & DIFFUSION)
+// ----------------------------------------------------------------------------
+
+/**
+ * Contenus pédagogiques
+ */
+model EducastContent {
+  id            String   @id @default(uuid())
+  tenantId      String
+  academicYearId String
+  title         String
+  description   String?
+  contentType   String   // VIDEO | AUDIO | PDF | DOCUMENT | LINK
+  filePath      String?  // Chemin du fichier (si upload)
+  url           String?  // URL (si lien externe)
+  duration      Int?     // Durée en secondes (vidéo/audio)
+  fileSize      Int?     // Taille en bytes
+  thumbnailPath String?  // Miniature
+  schoolLevelId String?  // Restriction par niveau
+  classId       String?  // Restriction par classe
+  isPublic      Boolean  @default(false) // Public pour tout le niveau ou privé
+  isActive      Boolean  @default(true)
+  uploadedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant       Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear    @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel?    @relation("EducastContentSchoolLevel", fields: [schoolLevelId], references: [id], onDelete: SetNull)
+  class        Class?          @relation("EducastContentClass", fields: [classId], references: [id], onDelete: SetNull)
+  uploader     User?           @relation("EducastContentUploader", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  accesses     EducastAccess[]
+  sessions     EducastSession[]
+
+  @@index([tenantId, academicYearId])
+  @@index([contentType])
+  @@index([schoolLevelId])
+  @@index([classId])
+  @@index([isActive])
+  @@map("educast_contents")
+}
+
+/**
+ * Accès aux contenus
+ */
+model EducastAccess {
+  id            String   @id @default(uuid())
+  contentId     String
+  studentId     String?  // Si accès individuel
+  schoolLevelId String?  // Si accès par niveau
+  classId       String?  // Si accès par classe
+  accessType    String   // STUDENT | LEVEL | CLASS | ALL
+  grantedAt     DateTime @default(now())
+  grantedBy     String?
+  expiresAt     DateTime? // Date d'expiration de l'accès
+  createdAt     DateTime @default(now())
+
+  content     EducastContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  student     Student?       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  schoolLevel SchoolLevel?   @relation("EducastAccessSchoolLevel", fields: [schoolLevelId], references: [id], onDelete: Cascade)
+  class       Class?         @relation("EducastAccessClass", fields: [classId], references: [id], onDelete: Cascade)
+  granter     User?          @relation("EducastAccessGranter", fields: [grantedBy], references: [id], onDelete: SetNull)
+
+  @@index([contentId])
+  @@index([studentId])
+  @@index([schoolLevelId])
+  @@index([classId])
+  @@index([accessType])
+  @@map("educast_accesses")
+}
+
+/**
+ * Sessions de visionnage/consultation
+ */
+model EducastSession {
+  id            String   @id @default(uuid())
+  contentId     String
+  studentId     String
+  startTime     DateTime @default(now())
+  endTime       DateTime?
+  duration      Int?     // Durée en secondes
+  progress      Int?     // Pourcentage de progression (0-100)
+  completed     Boolean  @default(false)
+  deviceType    String?  // DESKTOP | MOBILE | TABLET
+  createdAt     DateTime @default(now())
+
+  content EducastContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  student Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@index([contentId])
+  @@index([studentId])
+  @@index([startTime])
+  @@index([completed])
+  @@map("educast_sessions")
 }

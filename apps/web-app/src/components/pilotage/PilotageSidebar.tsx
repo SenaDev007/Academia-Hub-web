@@ -36,6 +36,8 @@ import {
   Radio,
   ShoppingBag,
   AlertCircle,
+  Brain,
+  Calendar,
 } from 'lucide-react';
 import type { User } from '@/types';
 import { useSchoolLevel } from '@/hooks/useSchoolLevel';
@@ -101,6 +103,10 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
   // Modules principaux (domaines métier)
   const mainModules = [
     { path: '/app', label: 'Tableau de pilotage', icon: LayoutDashboard },
+    { path: '/app/orion', label: 'ORION — Pilotage Direction', icon: Brain },
+    { path: '/app/settings', label: 'Paramètres', icon: Settings },
+    { path: '/app/meetings', label: 'Réunions', icon: Calendar },
+    { path: '/app/modules-complementaires', label: 'Modules Complémentaires', icon: Network },
     { path: '/app/students', label: 'Élèves & Scolarité', icon: Users },
     { path: '/app/finance', label: 'Finances & Économat', icon: Calculator },
     { path: '/app/exams-grades', label: 'Examens, Notes & Bulletins', icon: BookOpen },

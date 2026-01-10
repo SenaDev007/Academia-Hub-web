@@ -1,0 +1,53 @@
+/**
+ * ============================================================================
+ * API PROXY - SCHEDULE MESSAGE
+ * ============================================================================
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { messageId: string } }
+) {
+  try {
+    const body = await request.json();
+    const response = await fetch(`${API_BASE_URL}/api/communication/scheduling/${params.messageId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': request.headers.get('Authorization') || '',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error scheduling message:', error);
+    return NextResponse.json({ error: 'Failed to schedule message' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { messageId: string } }
+) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/communication/scheduling/${params.messageId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': request.headers.get('Authorization') || '',
+      },
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error deleting scheduled message:', error);
+    return NextResponse.json({ error: 'Failed to delete scheduled message' }, { status: 500 });
+  }
+}
+

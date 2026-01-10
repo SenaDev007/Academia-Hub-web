@@ -22,6 +22,15 @@ import { ClassDiariesPrismaService } from './class-diaries-prisma.service';
 import { ClassDiariesPrismaController } from './class-diaries-prisma.controller';
 import { RoomsPrismaService } from './rooms-prisma.service';
 import { RoomsPrismaController } from './rooms-prisma.controller';
+// Module 2 - Système de Workflow Pédagogique
+import { PedagogicalDocumentService } from './services/pedagogical-document.service';
+import { PedagogicalWorkflowService } from './services/pedagogical-workflow.service';
+import { PedagogicalNotificationService } from './services/pedagogical-notification.service';
+import { WeeklySemainierService } from './services/weekly-semainier.service';
+import { PedagogyOrionService } from './services/pedagogy-orion.service';
+import { PedagogicalTeacherController } from './controllers/pedagogical-teacher.controller';
+import { PedagogicalDirectorController } from './controllers/pedagogical-director.controller';
+import { PedagogyOrionController } from './controllers/pedagogy-orion.controller';
 
 @Module({
   imports: [DatabaseModule],
@@ -34,6 +43,10 @@ import { RoomsPrismaController } from './rooms-prisma.controller';
     DailyLogsPrismaController,
     ClassDiariesPrismaController,
     RoomsPrismaController,
+    // Module 2 - Workflow Pédagogique
+    PedagogicalTeacherController,
+    PedagogicalDirectorController,
+    PedagogyOrionController,
   ],
   providers: [
     SubjectsPrismaService,
@@ -44,6 +57,12 @@ import { RoomsPrismaController } from './rooms-prisma.controller';
     DailyLogsPrismaService,
     ClassDiariesPrismaService,
     RoomsPrismaService,
+    // Module 2 - Workflow Pédagogique
+    PedagogicalDocumentService,
+    PedagogicalWorkflowService,
+    PedagogicalNotificationService,
+    WeeklySemainierService,
+    PedagogyOrionService,
   ],
   exports: [
     SubjectsPrismaService,
@@ -54,6 +73,12 @@ import { RoomsPrismaController } from './rooms-prisma.controller';
     DailyLogsPrismaService,
     ClassDiariesPrismaService,
     RoomsPrismaService,
+    // Module 2 - Workflow Pédagogique
+    PedagogicalDocumentService,
+    PedagogicalWorkflowService,
+    PedagogicalNotificationService,
+    WeeklySemainierService,
+    PedagogyOrionService,
   ],
 })
 export class PedagogyModule {}

@@ -328,6 +328,8 @@ export default function StudentsModulePage() {
             { id: 'list', label: 'Liste des élèves', href: '/app/students' },
             { id: 'enrollments', label: 'Inscriptions', href: '/app/students/enrollments' },
             { id: 'classes', label: 'Classes', href: '/app/students/classes' },
+            { id: 'matricules', label: 'Matricules', href: '/app/students/matricules' },
+            { id: 'id-cards', label: 'Cartes Scolaires', href: '/app/students/id-cards' },
             { id: 'attendance', label: 'Assiduité', href: '/app/students/attendance' },
             { id: 'discipline', label: 'Discipline', href: '/app/students/discipline' },
             { id: 'documents', label: 'Documents', href: '/app/students/documents' },

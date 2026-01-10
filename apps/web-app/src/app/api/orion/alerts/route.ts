@@ -1,73 +1,49 @@
 /**
- * API Route - ORION Alerts
+ * ============================================================================
+ * API PROXY - ORION ALERTS
+ * ============================================================================
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const academicYearId = searchParams.get('academicYearId');
+    const queryString = searchParams.toString();
+    const url = `${API_BASE_URL}/api/orion/alerts${queryString ? `?${queryString}` : ''}`;
 
-    const params = new URLSearchParams();
-    if (academicYearId) params.append('academicYearId', academicYearId);
-
-    const token = request.headers.get('authorization') || '';
-
-    const response = await fetch(`${API_BASE_URL}/orion/alerts?${params.toString()}`, {
-      method: 'GET',
+    const response = await fetch(url, {
       headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: token }),
+        'Authorization': request.headers.get('Authorization') || '',
       },
     });
 
-    if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`);
-    }
-
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching ORION alerts:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to fetch alerts' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch ORION alerts' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const academicYearId = searchParams.get('academicYearId');
-
-    const params = new URLSearchParams();
-    if (academicYearId) params.append('academicYearId', academicYearId);
-
-    const token = request.headers.get('authorization') || '';
-
-    const response = await fetch(`${API_BASE_URL}/orion/alerts/generate?${params.toString()}`, {
+    const body = await request.json();
+    const response = await fetch(`${API_BASE_URL}/api/orion/alerts/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: token }),
+        'Authorization': request.headers.get('Authorization') || '',
       },
+      body: JSON.stringify(body),
     });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`);
-    }
 
     const data = await response.json();
     return NextResponse.json(data);
-  } catch (error: any) {
-    console.error('Error generating ORION alerts:', error);
-    return NextResponse.json(
-      { error: error.message || 'Failed to generate alerts' },
-      { status: 500 }
-    );
+  } catch (error) {
+    console.error('Error generating alerts:', error);
+    return NextResponse.json({ error: 'Failed to generate alerts' }, { status: 500 });
   }
 }

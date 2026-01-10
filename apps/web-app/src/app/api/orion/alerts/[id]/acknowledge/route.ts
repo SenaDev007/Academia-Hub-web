@@ -1,62 +1,32 @@
 /**
- * ORION Alert Acknowledge API Route
- * 
- * Acquitte une alerte ORION
+ * ============================================================================
+ * API PROXY - ACKNOWLEDGE ORION ALERT
+ * ============================================================================
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-/**
- * POST /api/orion/alerts/:id/acknowledge
- * 
- * Acquitte une alerte
- */
-export async function POST(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    // TODO: Vérifier l'authentification et le rôle
-    const alertId = params.id;
-    const tenantId = request.headers.get('X-Tenant-ID') || '';
-    const userId = request.headers.get('X-User-ID') || 'unknown';
-
-    if (!tenantId) {
-      return NextResponse.json(
-        { error: 'Tenant ID manquant' },
-        { status: 400 }
-      );
-    }
-
-    // Déléguer au backend
-    const response = await fetch(`${API_URL}/orion/alerts/${alertId}/acknowledge`, {
-      method: 'POST',
+    const body = await request.json();
+    const response = await fetch(`${API_BASE_URL}/api/orion/alerts/${params.id}/acknowledge`, {
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': request.headers.get('Authorization') || '',
       },
-      body: JSON.stringify({
-        tenantId,
-        acknowledgedBy: userId,
-      }),
+      body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Erreur lors de l\'acquittement' }));
-      return NextResponse.json(
-        { error: error.message || 'Erreur lors de l\'acquittement de l\'alerte' },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
-    console.error('ORION alert acknowledge error:', error);
-    return NextResponse.json(
-      { error: error.message || 'Erreur interne' },
-      { status: 500 }
-    );
+    const data = await response.json();
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error acknowledging alert:', error);
+    return NextResponse.json({ error: 'Failed to acknowledge alert' }, { status: 500 });
   }
 }
-

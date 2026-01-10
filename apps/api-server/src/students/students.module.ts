@@ -17,6 +17,13 @@ import { DocumentsPrismaService } from './documents-prisma.service';
 import { DocumentsPrismaController, GeneratedDocumentsController } from './documents-prisma.controller';
 import { TransfersPrismaService } from './transfers-prisma.service';
 import { TransfersPrismaController } from './transfers-prisma.controller';
+// Module 1 - Matricule Global & Cartes Scolaires
+import { StudentIdentifierService } from './services/student-identifier.service';
+import { StudentIdCardService } from './services/student-id-card.service';
+import { StudentsOrionService } from './services/students-orion.service';
+import { StudentIdentifierController } from './controllers/student-identifier.controller';
+import { StudentIdCardController } from './controllers/student-id-card.controller';
+import { StudentsOrionController } from './controllers/students-orion.controller';
 
 @Module({
   imports: [
@@ -32,6 +39,10 @@ import { TransfersPrismaController } from './transfers-prisma.controller';
     DocumentsPrismaController,
     GeneratedDocumentsController,
     TransfersPrismaController,
+    // Module 1 - Matricule Global & Cartes Scolaires
+    StudentIdentifierController,
+    StudentIdCardController,
+    StudentsOrionController,
   ],
   providers: [
     StudentsService,
@@ -42,6 +53,10 @@ import { TransfersPrismaController } from './transfers-prisma.controller';
     DisciplinePrismaService,
     DocumentsPrismaService,
     TransfersPrismaService,
+    // Module 1 - Matricule Global & Cartes Scolaires
+    StudentIdentifierService,
+    StudentIdCardService,
+    StudentsOrionService,
   ],
   exports: [
     StudentsService,
@@ -51,6 +66,10 @@ import { TransfersPrismaController } from './transfers-prisma.controller';
     DisciplinePrismaService,
     DocumentsPrismaService,
     TransfersPrismaService,
+    // Module 1 - Matricule Global & Cartes Scolaires
+    StudentIdentifierService,
+    StudentIdCardService,
+    StudentsOrionService,
   ],
 })
 export class StudentsModule {}

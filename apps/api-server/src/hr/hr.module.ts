@@ -12,6 +12,10 @@ import { AttendancePrismaService } from './attendance-prisma.service';
 import { EvaluationsPrismaService } from './evaluations-prisma.service';
 import { PayrollPrismaService } from './payroll-prisma.service';
 import { CNSSPrismaService } from './cnss-prisma.service';
+import { TaxService } from './services/tax.service';
+import { PayrollTaxService } from './services/payroll-tax.service';
+import { PayrollPdfService } from './services/payroll-pdf.service';
+import { HROrionService } from './services/hr-orion.service';
 import { StaffPrismaController } from './staff-prisma.controller';
 import { ContractsPrismaController } from './contracts-prisma.controller';
 import { AttendancePrismaController } from './attendance-prisma.controller';
@@ -28,6 +32,10 @@ import { CNSSPrismaController } from './cnss-prisma.controller';
     EvaluationsPrismaService,
     PayrollPrismaService,
     CNSSPrismaService,
+    TaxService,
+    PayrollTaxService,
+    PayrollPdfService,
+    HROrionService,
   ],
   controllers: [
     StaffPrismaController,
@@ -44,6 +52,10 @@ import { CNSSPrismaController } from './cnss-prisma.controller';
     EvaluationsPrismaService,
     PayrollPrismaService,
     CNSSPrismaService,
+    TaxService,
+    PayrollTaxService,
+    PayrollPdfService,
+    HROrionService,
   ],
 })
 export class HRModule {}
