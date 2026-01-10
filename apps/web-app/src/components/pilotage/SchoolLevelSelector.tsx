@@ -66,7 +66,7 @@ export default function SchoolLevelSelector() {
                   }}
                   className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
                     level.id === currentLevel.id
-                      ? 'bg-navy-50 text-navy-900 font-medium'
+                      ? 'bg-blue-50 text-blue-900 font-medium'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >

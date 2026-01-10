@@ -246,16 +246,645 @@ export class OrionAlertsService {
   }
 
   /**
+   * Génère des alertes basées sur les examens et notes (Module 3)
+   */
+  async generateExamAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
+    const alerts: any[] = [];
+
+    // Alerte : Examens sans notes saisies
+    const examsWithoutScores = await this.prisma.exam.findMany({
+      where: {
+        tenantId,
+        ...(academicYearId && { academicYearId }),
+        examScores: {
+          none: {},
+        },
+      },
+      include: {
+        subject: { select: { name: true } },
+        quarter: { select: { name: true } },
+      },
+      take: 10,
+    });
+
+    if (examsWithoutScores.length > 0) {
+      alerts.push({
+        type: OrionAlertType.PEDAGOGICAL,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${examsWithoutScores.length} examen(s) sans notes`,
+        description: `Des examens ont été créés mais aucune note n'a encore été saisie.`,
+        recommendation: 'Saisir les notes pour ces examens ou vérifier leur pertinence.',
+        metadata: {
+          source: 'EXAMS_WITHOUT_SCORES',
+          count: examsWithoutScores.length,
+          exams: examsWithoutScores.map((e) => ({
+            id: e.id,
+            name: e.name,
+            subject: e.subject?.name,
+            examDate: e.examDate,
+          })),
+        },
+      });
+    }
+
+    // Alerte : Notes non validées depuis plus de 7 jours
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const pendingScores = await this.prisma.examScore.findMany({
+      where: {
+        tenantId,
+        ...(academicYearId && { academicYearId }),
+        isValidated: false,
+        createdAt: { lt: sevenDaysAgo },
+      },
+      include: {
+        exam: { select: { name: true, examDate: true } },
+        student: { select: { firstName: true, lastName: true } },
+      },
+      take: 20,
+    });
+
+    if (pendingScores.length > 0) {
+      alerts.push({
+        type: OrionAlertType.PEDAGOGICAL,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${pendingScores.length} note(s) en attente de validation depuis plus de 7 jours`,
+        description: `Des notes ont été saisies mais ne sont pas encore validées, ce qui bloque le calcul des moyennes.`,
+        recommendation: 'Valider les notes en attente pour permettre le calcul des bulletins.',
+        metadata: {
+          source: 'PENDING_SCORES_OLD',
+          count: pendingScores.length,
+          scores: pendingScores.map((s) => ({
+            id: s.id,
+            student: `${s.student?.firstName} ${s.student?.lastName}`,
+            exam: s.exam?.name,
+            score: s.score,
+            createdAt: s.createdAt,
+          })),
+        },
+      });
+    }
+
+    // Alerte : Bulletins non générés pour une période
+    if (academicYearId) {
+      const quarters = await this.prisma.quarter.findMany({
+        where: {
+          tenantId,
+          academicYearId,
+        },
+      });
+
+      for (const quarter of quarters) {
+        const studentsWithScores = await this.prisma.examScore.findMany({
+          where: {
+            tenantId,
+            academicYearId,
+            isValidated: true,
+            exam: {
+              quarterId: quarter.id,
+            },
+          },
+          distinct: ['studentId'],
+        });
+
+        const studentsWithReportCards = await this.prisma.reportCard.findMany({
+          where: {
+            tenantId,
+            academicYearId,
+            quarterId: quarter.id,
+          },
+          distinct: ['studentId'],
+        });
+
+        const missingCount = studentsWithScores.length - studentsWithReportCards.length;
+
+        if (missingCount > 0) {
+          alerts.push({
+            type: OrionAlertType.PEDAGOGICAL,
+            severity: OrionAlertSeverity.INFO,
+            title: `${missingCount} bulletin(s) non généré(s) pour ${quarter.name}`,
+            description: `Des élèves ont des notes validées mais n'ont pas encore de bulletin pour cette période.`,
+            recommendation: `Générer les bulletins manquants pour ${quarter.name}.`,
+            metadata: {
+              source: 'MISSING_REPORT_CARDS',
+              quarterId: quarter.id,
+              quarterName: quarter.name,
+              count: missingCount,
+            },
+          });
+        }
+      }
+    }
+
+    // Alerte : Incohérences statistiques (moyennes anormalement basses ou élevées)
+    const reportCards = await this.prisma.reportCard.findMany({
+      where: {
+        tenantId,
+        ...(academicYearId && { academicYearId }),
+        status: { in: ['VALIDATED', 'PUBLISHED'] },
+      },
+      take: 100,
+    });
+
+    const veryLowAverages = reportCards.filter((rc) => rc.overallAverage < 5);
+    const veryHighAverages = reportCards.filter((rc) => rc.overallAverage > 19);
+
+    if (veryLowAverages.length > 5) {
+      alerts.push({
+        type: OrionAlertType.PEDAGOGICAL,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${veryLowAverages.length} moyenne(s) très faible(s) détectée(s)`,
+        description: `Plusieurs bulletins présentent des moyennes inférieures à 5/20, ce qui peut indiquer un problème pédagogique.`,
+        recommendation: 'Analyser les causes des moyennes très faibles et mettre en place un accompagnement.',
+        metadata: {
+          source: 'VERY_LOW_AVERAGES',
+          count: veryLowAverages.length,
+          threshold: 5,
+        },
+      });
+    }
+
+    if (veryHighAverages.length > 10) {
+      alerts.push({
+        type: OrionAlertType.PEDAGOGICAL,
+        severity: OrionAlertSeverity.INFO,
+        title: `${veryHighAverages.length} moyenne(s) exceptionnelle(s)`,
+        description: `Plusieurs bulletins présentent des moyennes supérieures à 19/20.`,
+        recommendation: 'Vérifier la cohérence des notes et la difficulté des examens.',
+        metadata: {
+          source: 'VERY_HIGH_AVERAGES',
+          count: veryHighAverages.length,
+          threshold: 19,
+        },
+      });
+    }
+
+    return alerts;
+  }
+
+  /**
    * Génère toutes les alertes ORION pour un tenant
    */
+  /**
+   * Génère des alertes financières (Module 4)
+   */
+  async generateFinancialAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
+    const alerts: any[] = [];
+    const where: any = { tenantId, ...(academicYearId && { academicYearId }) };
+
+    // 1. Alertes pour impayés critiques
+    const criticalArrears = await this.prisma.feeArrear.findMany({
+      where: {
+        ...where,
+        arrearsLevel: 'CRITICAL',
+      },
+      include: {
+        student: { select: { firstName: true, lastName: true, studentCode: true } },
+        studentFee: {
+          include: {
+            feeDefinition: { select: { label: true } },
+          },
+        },
+      },
+      take: 20,
+    });
+
+    if (criticalArrears.length > 0) {
+      const totalCriticalAmount = criticalArrears.reduce(
+        (sum, a) => sum + Number(a.balanceDue),
+        0
+      );
+
+      alerts.push({
+        type: OrionAlertType.FINANCIAL,
+        severity: OrionAlertSeverity.CRITICAL,
+        title: `${criticalArrears.length} impayé(s) critique(s)`,
+        description: `Montant total en impayés critiques : ${totalCriticalAmount.toLocaleString('fr-FR')} XOF`,
+        recommendation: 'Traiter immédiatement les impayés critiques via le module Recouvrement.',
+        metadata: {
+          source: 'CRITICAL_ARREARS',
+          count: criticalArrears.length,
+          totalAmount: totalCriticalAmount,
+          arrears: criticalArrears.map((a) => ({
+            id: a.id,
+            student: `${a.student.firstName} ${a.student.lastName}`,
+            studentCode: a.student.studentCode,
+            fee: a.studentFee.feeDefinition.label,
+            balanceDue: Number(a.balanceDue),
+            lastPaymentDate: a.lastPaymentDate,
+          })),
+        },
+      });
+    }
+
+    // 2. Alertes pour promesses de paiement non tenues
+    const brokenPromises = await this.prisma.paymentPromise.findMany({
+      where: {
+        ...where,
+        status: 'BROKEN',
+        promisedDate: { lt: new Date() },
+      },
+      include: {
+        feeArrear: {
+          include: {
+            student: { select: { firstName: true, lastName: true } },
+          },
+        },
+      },
+      take: 20,
+    });
+
+    if (brokenPromises.length > 0) {
+      alerts.push({
+        type: OrionAlertType.FINANCIAL,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${brokenPromises.length} promesse(s) de paiement non tenue(s)`,
+        description: `Des promesses de paiement ont été rompues, nécessitant un suivi renforcé.`,
+        recommendation: 'Contacter les parents concernés et mettre à jour le plan de recouvrement.',
+        metadata: {
+          source: 'BROKEN_PROMISES',
+          count: brokenPromises.length,
+          promises: brokenPromises.map((p) => ({
+            id: p.id,
+            student: `${p.feeArrear.student.firstName} ${p.feeArrear.student.lastName}`,
+            promisedAmount: Number(p.promisedAmount),
+            promisedDate: p.promisedDate,
+            brokenAt: p.updatedAt,
+          })),
+        },
+      });
+    }
+
+    // 3. Alertes pour taux de recouvrement faible
+    const allArrears = await this.prisma.feeArrear.findMany({
+      where,
+      select: {
+        totalDue: true,
+        totalPaid: true,
+        balanceDue: true,
+      },
+    });
+
+    if (allArrears.length > 0) {
+      const totalExpected = allArrears.reduce((sum, a) => sum + Number(a.totalDue), 0);
+      const totalPaid = allArrears.reduce((sum, a) => sum + Number(a.totalPaid), 0);
+      const collectionRate = totalExpected > 0 ? (totalPaid / totalExpected) * 100 : 0;
+
+      if (collectionRate < 70) {
+        alerts.push({
+          type: OrionAlertType.FINANCIAL,
+          severity: collectionRate < 50 ? OrionAlertSeverity.CRITICAL : OrionAlertSeverity.WARNING,
+          title: `Taux de recouvrement faible : ${collectionRate.toFixed(1)}%`,
+          description: `Le taux de recouvrement est en dessous du seuil acceptable (70%).`,
+          recommendation: 'Renforcer les actions de recouvrement et analyser les causes des impayés.',
+          metadata: {
+            source: 'LOW_COLLECTION_RATE',
+            collectionRate: parseFloat(collectionRate.toFixed(2)),
+            totalExpected,
+            totalPaid,
+            totalBalanceDue: allArrears.reduce((sum, a) => sum + Number(a.balanceDue), 0),
+          },
+        });
+      }
+    }
+
+    // 4. Alertes pour clôtures journalières non validées
+    const unvalidatedClosures = await this.prisma.dailyClosure.findMany({
+      where: {
+        ...where,
+        validated: false,
+        date: {
+          lt: new Date(new Date().setHours(0, 0, 0, 0)), // Avant aujourd'hui
+        },
+      },
+      orderBy: { date: 'desc' },
+      take: 10,
+    });
+
+    if (unvalidatedClosures.length > 0) {
+      alerts.push({
+        type: OrionAlertType.FINANCIAL,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${unvalidatedClosures.length} clôture(s) journalière(s) non validée(s)`,
+        description: `Des clôtures journalières attendent validation depuis plusieurs jours.`,
+        recommendation: 'Valider les clôtures en attente pour maintenir la traçabilité financière.',
+        metadata: {
+          source: 'UNVALIDATED_CLOSURES',
+          count: unvalidatedClosures.length,
+          closures: unvalidatedClosures.map((c) => ({
+            id: c.id,
+            date: c.date,
+            totalCollected: Number(c.totalCollected),
+            totalSpent: Number(c.totalSpent),
+          })),
+        },
+      });
+    }
+
+    // 5. Alertes pour dépenses non approuvées depuis plus de 7 jours
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const pendingExpenses = await this.prisma.expense.findMany({
+      where: {
+        ...where,
+        status: 'pending',
+        createdAt: { lt: sevenDaysAgo },
+      },
+      include: {
+        creator: { select: { firstName: true, lastName: true } },
+      },
+      take: 20,
+    });
+
+    if (pendingExpenses.length > 0) {
+      const totalPendingAmount = pendingExpenses.reduce(
+        (sum, e) => sum + Number(e.amount),
+        0
+      );
+
+      alerts.push({
+        type: OrionAlertType.FINANCIAL,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${pendingExpenses.length} dépense(s) en attente d'approbation (> 7 jours)`,
+        description: `Montant total en attente : ${totalPendingAmount.toLocaleString('fr-FR')} XOF`,
+        recommendation: 'Traiter les demandes de dépenses en attente pour maintenir la fluidité opérationnelle.',
+        metadata: {
+          source: 'PENDING_EXPENSES',
+          count: pendingExpenses.length,
+          totalAmount: totalPendingAmount,
+          expenses: pendingExpenses.map((e) => ({
+            id: e.id,
+            description: e.description,
+            amount: Number(e.amount),
+            expenseDate: e.expenseDate,
+            createdBy: e.creator ? `${e.creator.firstName} ${e.creator.lastName}` : null,
+          })),
+        },
+      });
+    }
+
+    // 6. Alertes pour risques de trésorerie (dépenses > recettes sur 30 jours)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [recentPayments, recentExpenses] = await Promise.all([
+      this.prisma.payment.findMany({
+        where: {
+          ...where,
+          paymentDate: { gte: thirtyDaysAgo },
+        },
+        select: { amount: true },
+      }),
+      this.prisma.expense.findMany({
+        where: {
+          ...where,
+          status: 'approved',
+          expenseDate: { gte: thirtyDaysAgo },
+        },
+        select: { amount: true },
+      }),
+    ]);
+
+    const totalIncome = recentPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalExpenses = recentExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
+    const netCashFlow = totalIncome - totalExpenses;
+
+    if (netCashFlow < 0) {
+      alerts.push({
+        type: OrionAlertType.FINANCIAL,
+        severity: Math.abs(netCashFlow) > totalIncome * 0.3 ? OrionAlertSeverity.CRITICAL : OrionAlertSeverity.WARNING,
+        title: `Risque de trésorerie détecté`,
+        description: `Sur les 30 derniers jours, les dépenses (${totalExpenses.toLocaleString('fr-FR')} XOF) dépassent les recettes (${totalIncome.toLocaleString('fr-FR')} XOF).`,
+        recommendation: 'Analyser les dépenses et optimiser les recettes pour rétablir l\'équilibre financier.',
+        metadata: {
+          source: 'CASH_FLOW_RISK',
+          period: '30_DAYS',
+          totalIncome,
+          totalExpenses,
+          netCashFlow,
+          deficit: Math.abs(netCashFlow),
+        },
+      });
+    }
+
+    return alerts;
+  }
+
+  /**
+   * Génère des alertes RH basées sur la masse salariale, absences critiques et performance (Module 5)
+   */
+  async generateHRAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
+    const alerts: any[] = [];
+    const where: any = { tenantId };
+    if (academicYearId) {
+      where.academicYearId = academicYearId;
+    }
+
+    // 1. Alertes pour absences critiques
+    const criticalAbsences = await this.prisma.staffAttendance.findMany({
+      where: {
+        ...where,
+        status: 'ABSENT',
+        date: {
+          gte: new Date(new Date().setDate(new Date().getDate() - 30)), // 30 derniers jours
+        },
+      },
+      include: {
+        staff: { select: { firstName: true, lastName: true, employeeNumber: true } },
+      },
+      take: 20,
+    });
+
+    // Compter les absences par personnel
+    const absenceCounts = criticalAbsences.reduce((acc, attendance) => {
+      const staffId = attendance.staffId;
+      acc[staffId] = (acc[staffId] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const highAbsenceStaff = Object.entries(absenceCounts)
+      .filter(([_, count]) => count >= 5) // 5+ absences en 30 jours
+      .map(([staffId]) => {
+        const attendance = criticalAbsences.find(a => a.staffId === staffId);
+        return {
+          staffId,
+          staff: attendance?.staff,
+          absenceCount: absenceCounts[staffId],
+        };
+      });
+
+    if (highAbsenceStaff.length > 0) {
+      alerts.push({
+        type: OrionAlertType.RH,
+        severity: OrionAlertSeverity.WARNING,
+        title: `${highAbsenceStaff.length} membre(s) du personnel avec absences répétées`,
+        description: `Certains membres du personnel ont un taux d'absence élevé sur les 30 derniers jours.`,
+        recommendation: 'Examiner les causes des absences et prendre les mesures appropriées.',
+        metadata: {
+          source: 'HR_CRITICAL_ABSENCES',
+          count: highAbsenceStaff.length,
+          staff: highAbsenceStaff,
+        },
+      });
+    }
+
+    // 2. Alertes pour masse salariale élevée
+    const payrolls = await this.prisma.payroll.findMany({
+      where: {
+        ...where,
+        status: 'VALIDATED',
+        month: {
+          gte: new Date().toISOString().slice(0, 7), // Mois en cours ou récents
+        },
+      },
+      include: {
+        items: true,
+      },
+      take: 3,
+    });
+
+    if (payrolls.length > 0) {
+      const totalPayroll = payrolls.reduce((sum, payroll) => {
+        return sum + Number(payroll.totalAmount);
+      }, 0);
+
+      const averagePayroll = totalPayroll / payrolls.length;
+
+      // Alerte si la masse salariale dépasse un seuil (exemple: 10M XOF/mois)
+      if (averagePayroll > 10000000) {
+        alerts.push({
+          type: OrionAlertType.RH,
+          severity: OrionAlertSeverity.WARNING,
+          title: `Masse salariale élevée : ${(averagePayroll / 1000000).toFixed(1)}M XOF/mois`,
+          description: `La masse salariale moyenne dépasse le seuil de 10M XOF par mois.`,
+          recommendation: 'Analyser la structure des salaires et optimiser les coûts RH si nécessaire.',
+          metadata: {
+            source: 'HR_HIGH_PAYROLL',
+            averagePayroll,
+            threshold: 10000000,
+          },
+        });
+      }
+    }
+
+    // 3. Alertes pour contrats expirant bientôt
+    const upcomingExpirations = await this.prisma.contract.findMany({
+      where: {
+        tenantId,
+        status: 'ACTIVE',
+        endDate: {
+          gte: new Date(),
+          lte: new Date(new Date().setMonth(new Date().getMonth() + 3)), // 3 prochains mois
+        },
+      },
+      include: {
+        staff: { select: { firstName: true, lastName: true, employeeNumber: true } },
+      },
+      take: 10,
+    });
+
+    if (upcomingExpirations.length > 0) {
+      alerts.push({
+        type: OrionAlertType.RH,
+        severity: OrionAlertSeverity.INFO,
+        title: `${upcomingExpirations.length} contrat(s) expirant dans les 3 prochains mois`,
+        description: `Des contrats de travail arrivent à échéance et nécessitent un renouvellement ou une décision.`,
+        recommendation: 'Planifier le renouvellement ou la fin des contrats concernés.',
+        metadata: {
+          source: 'HR_CONTRACT_EXPIRATIONS',
+          count: upcomingExpirations.length,
+          contracts: upcomingExpirations.map(c => ({
+            id: c.id,
+            staff: `${c.staff.firstName} ${c.staff.lastName}`,
+            endDate: c.endDate,
+            contractType: c.contractType,
+          })),
+        },
+      });
+    }
+
+    // 4. Alertes pour non-conformité CNSS
+    const cnssDeclarations = await this.prisma.cNSSDeclaration.findMany({
+      where: {
+        ...where,
+        status: { in: ['LATE', 'DRAFT'] },
+      },
+      take: 5,
+    });
+
+    if (cnssDeclarations.length > 0) {
+      alerts.push({
+        type: OrionAlertType.RH,
+        severity: OrionAlertSeverity.CRITICAL,
+        title: `${cnssDeclarations.length} déclaration(s) CNSS en retard ou non déclarée(s)`,
+        description: `Des déclarations CNSS sont en attente de déclaration ou en retard.`,
+        recommendation: 'Déclarer immédiatement les déclarations CNSS en retard pour éviter des pénalités.',
+        metadata: {
+          source: 'HR_CNSS_NON_COMPLIANCE',
+          count: cnssDeclarations.length,
+          declarations: cnssDeclarations.map(d => ({
+            id: d.id,
+            month: d.month,
+            status: d.status,
+            totalAmount: d.totalAmount,
+          })),
+        },
+      });
+    }
+
+    // 5. Alertes pour employés déclarés CNSS sans déclaration
+    const employeesCNSS = await this.prisma.employeeCNSS.findMany({
+      where: {
+        tenantId,
+        isActive: true,
+      },
+      include: {
+        staff: { select: { firstName: true, lastName: true } },
+      },
+    });
+
+    if (employeesCNSS.length > 0 && academicYearId) {
+      const currentMonth = new Date().toISOString().slice(0, 7);
+      const currentDeclaration = await this.prisma.cNSSDeclaration.findFirst({
+        where: {
+          tenantId,
+          academicYearId,
+          month: currentMonth,
+        },
+      });
+
+      if (!currentDeclaration || currentDeclaration.status === 'DRAFT') {
+        alerts.push({
+          type: OrionAlertType.RH,
+          severity: OrionAlertSeverity.WARNING,
+          title: `${employeesCNSS.length} employé(s) CNSS sans déclaration pour le mois en cours`,
+          description: `Des employés sont déclarés CNSS mais aucune déclaration n'a été générée pour le mois en cours.`,
+          recommendation: 'Générer la déclaration CNSS du mois en cours pour assurer la conformité.',
+          metadata: {
+            source: 'HR_CNSS_MISSING_DECLARATION',
+            employeeCount: employeesCNSS.length,
+            currentMonth,
+          },
+        });
+      }
+    }
+
+    return alerts;
+  }
+
   async generateAllAlerts(tenantId: string, academicYearId?: string): Promise<any[]> {
-    const [qhsAlerts, riskAlerts, kpiAlerts] = await Promise.all([
+    const [qhsAlerts, riskAlerts, kpiAlerts, examAlerts, financialAlerts, hrAlerts] = await Promise.all([
       this.generateQhsAlerts(tenantId, academicYearId),
       this.generateRiskAlerts(tenantId, academicYearId),
       this.generateKpiAlerts(tenantId, academicYearId),
+      this.generateExamAlerts(tenantId, academicYearId),
+      this.generateFinancialAlerts(tenantId, academicYearId),
+      this.generateHRAlerts(tenantId, academicYearId),
     ]);
 
-    const allAlerts = [...qhsAlerts, ...riskAlerts, ...kpiAlerts];
+    const allAlerts = [...qhsAlerts, ...riskAlerts, ...kpiAlerts, ...examAlerts, ...financialAlerts, ...hrAlerts];
 
     // Sauvegarder les alertes dans la table orion_alerts
     if (allAlerts.length > 0) {

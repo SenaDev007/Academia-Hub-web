@@ -7,6 +7,7 @@ import { AuditLogsService } from '../audit-logs/audit-logs.service';
 import { AcademicTracksService } from '../academic-tracks/academic-tracks.service';
 import { AcademicTracksRepository } from '../academic-tracks/academic-tracks.repository';
 import { AcademicTrackCode } from '../academic-tracks/entities/academic-track.entity';
+import { BilingualValidationService } from './bilingual-validation.service';
 
 /**
  * Pricing rules pour les features
@@ -26,6 +27,7 @@ export class TenantFeaturesService {
     private readonly auditLogsService: AuditLogsService,
     private readonly academicTracksService: AcademicTracksService,
     private readonly academicTracksRepository: AcademicTracksRepository,
+    private readonly bilingualValidationService: BilingualValidationService,
   ) {}
 
   /**
@@ -228,11 +230,16 @@ export class TenantFeaturesService {
     switch (featureCode) {
       case FeatureCode.BILINGUAL_TRACK:
         // Vérifier s'il existe des données EN
-        const enTrack = await this.academicTracksRepository.findByCode(AcademicTrackCode.EN, tenantId);
-        if (enTrack) {
-          // Vérifier s'il y a des classes, matières, examens, notes EN
-          // TODO: Implémenter les vérifications de dépendances
-          // Pour l'instant, on permet la désactivation mais on avertit
+        const hasEnglishData = await this.bilingualValidationService.hasEnglishTrackData(tenantId);
+        if (hasEnglishData) {
+          const summary = await this.bilingualValidationService.getEnglishTrackDataSummary(tenantId);
+          throw new BadRequestException(
+            `Cannot disable bilingual feature: English track data exists. ` +
+            `Found: ${summary.subjects} subjects, ${summary.exams} exams, ${summary.grades} grades, ` +
+            `${summary.examScores} exam scores, ${summary.reportCards} report cards, ` +
+            `${summary.gradeCalculations} grade calculations. ` +
+            `Please archive or remove all English track data before disabling.`,
+          );
         }
         break;
       default:

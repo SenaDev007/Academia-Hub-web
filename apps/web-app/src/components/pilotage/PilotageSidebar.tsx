@@ -12,6 +12,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -34,6 +35,7 @@ import {
   ShieldCheck,
   Radio,
   ShoppingBag,
+  AlertCircle,
 } from 'lucide-react';
 import type { User } from '@/types';
 import { useSchoolLevel } from '@/hooks/useSchoolLevel';
@@ -48,15 +50,62 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
   const pathname = usePathname();
   const { currentLevel } = useSchoolLevel();
   const isSuperDirector = user?.role === 'SUPER_DIRECTOR';
+  const [errorCount, setErrorCount] = useState(0);
+
+  // Détecter les erreurs React et console
+  useEffect(() => {
+    const originalError = console.error;
+    const originalWarn = console.warn;
+    let count = 0;
+
+    const errorHandler = (...args: any[]) => {
+      count++;
+      setErrorCount(count);
+      originalError.apply(console, args);
+    };
+
+    const warnHandler = (...args: any[]) => {
+      // Compter seulement les warnings critiques
+      if (args.some(arg => typeof arg === 'string' && arg.includes('Error'))) {
+        count++;
+        setErrorCount(count);
+      }
+      originalWarn.apply(console, args);
+    };
+
+    console.error = errorHandler;
+    console.warn = warnHandler;
+
+    // Écouter les erreurs non capturées
+    const handleError = (event: ErrorEvent) => {
+      count++;
+      setErrorCount(count);
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      count++;
+      setErrorCount(count);
+    };
+
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    return () => {
+      console.error = originalError;
+      console.warn = originalWarn;
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
+  }, []);
 
   // Modules principaux (domaines métier)
   const mainModules = [
     { path: '/app', label: 'Tableau de pilotage', icon: LayoutDashboard },
     { path: '/app/students', label: 'Élèves & Scolarité', icon: Users },
     { path: '/app/finance', label: 'Finances & Économat', icon: Calculator },
-    { path: '/app/exams', label: 'Examens & Évaluation', icon: BookOpen },
-    { path: '/app/planning', label: 'Planification & Études', icon: Building },
-    { path: '/app/hr', label: 'Personnel & RH', icon: UserCheck },
+    { path: '/app/exams-grades', label: 'Examens, Notes & Bulletins', icon: BookOpen },
+    { path: '/app/pedagogy', label: 'Organisation Pédagogique', icon: Building },
+    { path: '/app/hr', label: 'Personnel, RH & Paie', icon: UserCheck },
     { path: '/app/communication', label: 'Communication', icon: MessageSquare },
   ];
 
@@ -88,19 +137,19 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
 
   return (
     <aside
-      className={`fixed left-0 top-0 h-full bg-navy-900 text-white transition-all duration-300 z-40 ${
+      className={`fixed left-0 top-0 h-full bg-blue-900 text-white transition-all duration-300 z-40 ${
         isOpen ? 'w-64' : 'w-16'
       }`}
     >
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-navy-700">
+        <div className="flex items-center justify-between p-4 border-b border-blue-800">
           {isOpen && (
-            <h2 className="text-lg font-bold">Academia Hub</h2>
+            <h2 className="text-lg font-bold text-white">Academia Hub</h2>
           )}
           <button
             onClick={onToggle}
-            className="p-2 rounded-md hover:bg-navy-700 transition-colors"
+            className="p-2 rounded-md hover:bg-blue-800 transition-colors text-white"
             aria-label="Toggle sidebar"
           >
             {isOpen ? (
@@ -116,7 +165,7 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
           {/* Modules Principaux */}
           <div className="mb-6">
             {isOpen && (
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+              <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2 px-2">
                 Modules principaux
               </p>
             )}
@@ -130,8 +179,8 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
                   href={item.path}
                   className={`flex items-center space-x-3 px-3 py-2.5 rounded-md transition-colors ${
                     active
-                      ? 'bg-navy-700 text-white'
-                      : 'text-gray-300 hover:bg-navy-800 hover:text-white'
+                      ? 'bg-blue-700 text-white'
+                      : 'text-gray-200 hover:bg-blue-800 hover:text-white'
                   }`}
                   title={!isOpen ? item.label : undefined}
                 >
@@ -148,7 +197,7 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
           {generalModule && (
             <div className="mb-6">
               {isOpen && (
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+                <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2 px-2">
                   Direction
                 </p>
               )}
@@ -156,8 +205,8 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
                 href={generalModule.path}
                 className={`flex items-center space-x-3 px-3 py-2.5 rounded-md transition-colors border-l-2 ${
                   isActive(generalModule.path)
-                    ? 'bg-navy-700 text-white border-soft-gold'
-                    : 'text-gray-300 hover:bg-navy-800 hover:text-white border-transparent'
+                    ? 'bg-blue-700 text-white border-gold-500'
+                    : 'text-gray-200 hover:bg-blue-800 hover:text-white border-transparent'
                 }`}
                 title={!isOpen ? generalModule.label : undefined}
               >
@@ -172,7 +221,7 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
           {/* Modules Supplémentaires */}
           <div className="mb-6">
             {isOpen && (
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-2">
+              <p className="text-xs font-semibold text-gray-300 uppercase tracking-wider mb-2 px-2">
                 Modules supplémentaires
               </p>
             )}
@@ -186,8 +235,8 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
                   href={item.path}
                   className={`flex items-center space-x-3 px-3 py-2.5 rounded-md transition-colors ${
                     active
-                      ? 'bg-navy-700 text-white'
-                      : 'text-gray-300 hover:bg-navy-800 hover:text-white'
+                      ? 'bg-blue-700 text-white'
+                      : 'text-gray-200 hover:bg-blue-800 hover:text-white'
                   }`}
                   title={!isOpen ? item.label : undefined}
                 >
@@ -206,8 +255,8 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
               href={settingsModule.path}
               className={`flex items-center space-x-3 px-3 py-2.5 rounded-md transition-colors ${
                 isActive(settingsModule.path)
-                  ? 'bg-navy-700 text-white'
-                  : 'text-gray-300 hover:bg-navy-800 hover:text-white'
+                  ? 'bg-blue-700 text-white'
+                  : 'text-gray-200 hover:bg-blue-800 hover:text-white'
               }`}
               title={!isOpen ? settingsModule.label : undefined}
             >
@@ -219,17 +268,34 @@ export default function PilotageSidebar({ isOpen, onToggle, user }: PilotageSide
           </div>
         </nav>
 
-        {/* Footer - Contexte */}
-        {isOpen && currentLevel && (
-          <div className="p-4 border-t border-navy-700">
-            <p className="text-xs text-gray-400 mb-1">Niveau actif</p>
-            <p className="text-sm font-medium text-white">
-              {currentLevel.code === 'MATERNELLE' ? 'Maternelle' :
-               currentLevel.code === 'PRIMAIRE' ? 'Primaire' :
-               currentLevel.code === 'SECONDAIRE' ? 'Secondaire' : currentLevel.code}
-            </p>
-          </div>
-        )}
+        {/* Footer - Contexte & Erreurs */}
+        <div className="mt-auto border-t border-blue-800">
+          {isOpen && currentLevel && (
+            <div className="p-4 border-b border-blue-800">
+              <p className="text-xs text-gray-300 mb-1">Niveau actif</p>
+              <p className="text-sm font-medium text-white">
+                {currentLevel.code === 'MATERNELLE' ? 'Maternelle' :
+                 currentLevel.code === 'PRIMAIRE' ? 'Primaire' :
+                 currentLevel.code === 'SECONDAIRE' ? 'Secondaire' : currentLevel.code}
+              </p>
+            </div>
+          )}
+          {errorCount > 0 && (
+            <div className="p-3">
+              <button
+                onClick={() => {
+                  setErrorCount(0);
+                  console.clear();
+                }}
+                className="w-full flex items-center justify-center space-x-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors text-sm font-medium"
+                title="Cliquer pour effacer les erreurs"
+              >
+                <AlertCircle className="w-4 h-4" />
+                {isOpen && <span>{errorCount} erreur{errorCount > 1 ? 's' : ''}</span>}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </aside>
   );

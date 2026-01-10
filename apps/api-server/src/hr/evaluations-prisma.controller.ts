@@ -1,0 +1,87 @@
+/**
+ * ============================================================================
+ * EVALUATIONS PRISMA CONTROLLER - MODULE 5
+ * ============================================================================
+ */
+
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { EvaluationsPrismaService } from './evaluations-prisma.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TenantGuard } from '../common/guards/tenant.guard';
+import { GetTenant } from '../common/decorators/get-tenant.decorator';
+
+@Controller('api/hr/evaluations')
+@UseGuards(JwtAuthGuard, TenantGuard)
+export class EvaluationsPrismaController {
+  constructor(private readonly evaluationsService: EvaluationsPrismaService) {}
+
+  @Post()
+  async createEvaluation(@GetTenant() tenant: any, @Body() data: any) {
+    return this.evaluationsService.createEvaluation({
+      ...data,
+      tenantId: tenant.id,
+    });
+  }
+
+  @Get()
+  async findAllEvaluations(
+    @GetTenant() tenant: any,
+    @Query('academicYearId') academicYearId?: string,
+    @Query('staffId') staffId?: string,
+    @Query('evaluatorId') evaluatorId?: string,
+  ) {
+    return this.evaluationsService.findAllEvaluations(tenant.id, {
+      academicYearId,
+      staffId,
+      evaluatorId,
+    });
+  }
+
+  @Get('statistics')
+  async getEvaluationStatistics(
+    @GetTenant() tenant: any,
+    @Query('academicYearId') academicYearId: string,
+  ) {
+    return this.evaluationsService.getEvaluationStatistics(tenant.id, academicYearId);
+  }
+
+  @Get(':id')
+  async findEvaluationById(@GetTenant() tenant: any, @Param('id') id: string) {
+    return this.evaluationsService.findEvaluationById(id, tenant.id);
+  }
+
+  @Put(':id')
+  async updateEvaluation(@GetTenant() tenant: any, @Param('id') id: string, @Body() data: any) {
+    return this.evaluationsService.updateEvaluation(id, tenant.id, data);
+  }
+
+  // Trainings
+  @Post('trainings')
+  async createTraining(@GetTenant() tenant: any, @Body() data: any) {
+    return this.evaluationsService.createTraining({
+      ...data,
+      tenantId: tenant.id,
+    });
+  }
+
+  @Get('trainings/staff/:staffId')
+  async findStaffTrainings(@GetTenant() tenant: any, @Param('staffId') staffId: string) {
+    return this.evaluationsService.findStaffTrainings(staffId, tenant.id);
+  }
+
+  @Get('trainings/:id')
+  async findTrainingById(@GetTenant() tenant: any, @Param('id') id: string) {
+    return this.evaluationsService.findTrainingById(id, tenant.id);
+  }
+
+  @Put('trainings/:id')
+  async updateTraining(@GetTenant() tenant: any, @Param('id') id: string, @Body() data: any) {
+    return this.evaluationsService.updateTraining(id, tenant.id, data);
+  }
+
+  @Delete('trainings/:id')
+  async deleteTraining(@GetTenant() tenant: any, @Param('id') id: string) {
+    return this.evaluationsService.deleteTraining(id, tenant.id);
+  }
+}
+

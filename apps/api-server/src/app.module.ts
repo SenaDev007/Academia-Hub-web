@@ -37,6 +37,10 @@ import { PaymentFlowsModule } from './payment-flows/payment-flows.module';
 import { OrionBilingualModule } from './orion/orion-bilingual.module';
 import { QhsModule } from './qhs/qhs.module';
 import { KpiObjectivesModule } from './kpi-objectives/kpi-objectives.module';
+import { PedagogyModule } from './pedagogy/pedagogy.module';
+import { ExamsGradesModule } from './exams-grades/exams-grades.module';
+import { FinanceModule } from './finance/finance.module';
+import { HRModule } from './hr/hr.module';
 import { CommunicationModule } from './communication/communication.module';
 import { GeneralModule } from './modules/general/general.module';
 import { ModulesModule } from './modules/modules.module';
@@ -83,6 +87,16 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     TeachersModule,
     DepartmentsModule,
     RoomsModule,
+    PedagogyModule,
+    
+    // Exams & Grades module (Module 3)
+    ExamsGradesModule,
+    
+    // Finance & Économat module (Module 4)
+    FinanceModule,
+    
+    // Personnel, RH & Paie module (Module 5)
+    HRModule,
     
     // Attendance & Discipline
     AbsencesModule,

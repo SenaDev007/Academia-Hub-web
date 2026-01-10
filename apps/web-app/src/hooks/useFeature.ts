@@ -5,6 +5,9 @@
 import { useState, useEffect } from 'react';
 import { isFeatureEnabled, FeatureCode } from '@/lib/features/tenant-features.service';
 
+// Ré-exporter FeatureCode pour simplifier les imports côté composants
+export { FeatureCode } from '@/lib/features/tenant-features.service';
+
 export function useFeature(featureCode: FeatureCode) {
   const [isEnabled, setIsEnabled] = useState(false);
   const [loading, setLoading] = useState(true);

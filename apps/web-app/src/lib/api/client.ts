@@ -70,3 +70,26 @@ apiClient.interceptors.response.use(
 
 export default apiClient;
 
+/**
+ * Facade API minimale, utilisée par certains wrappers (ex: electron-compat)
+ *
+ * ⚠️ Pour l’instant, on expose uniquement la structure nécessaire ou on laisse
+ * des méthodes factices qui lèvent une erreur explicite si utilisées sans implémentation.
+ */
+export const api: any = {
+  finance: {
+    async getPayments() {
+      throw new Error('api.finance.getPayments is not implemented in web client yet');
+    },
+    async createPayment() {
+      throw new Error('api.finance.createPayment is not implemented in web client yet');
+    },
+    async updatePayment() {
+      throw new Error('api.finance.updatePayment is not implemented in web client yet');
+    },
+    async deletePayment() {
+      throw new Error('api.finance.deletePayment is not implemented in web client yet');
+    },
+  },
+};
+

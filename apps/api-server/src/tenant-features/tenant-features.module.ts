@@ -6,16 +6,19 @@ import { TenantFeaturesRepository } from './tenant-features.repository';
 import { TenantFeature } from './entities/tenant-feature.entity';
 import { AuditLogsModule } from '../audit-logs/audit-logs.module';
 import { AcademicTracksModule } from '../academic-tracks/academic-tracks.module';
+import { DatabaseModule } from '../database/database.module';
+import { BilingualValidationService } from './bilingual-validation.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([TenantFeature]),
     AuditLogsModule,
     AcademicTracksModule,
+    DatabaseModule, // Pour PrismaService
   ],
   controllers: [TenantFeaturesController],
-  providers: [TenantFeaturesService, TenantFeaturesRepository],
-  exports: [TenantFeaturesService, TenantFeaturesRepository],
+  providers: [TenantFeaturesService, TenantFeaturesRepository, BilingualValidationService],
+  exports: [TenantFeaturesService, TenantFeaturesRepository, BilingualValidationService],
 })
 export class TenantFeaturesModule {}
 

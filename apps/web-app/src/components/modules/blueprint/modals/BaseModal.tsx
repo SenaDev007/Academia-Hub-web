@@ -1,0 +1,193 @@
+/**
+ * ============================================================================
+ * BASE MODAL - COMPOSANT DE BASE POUR TOUS LES MODALS
+ * ============================================================================
+ * 
+ * Modal de base avec :
+ * - Structure standardisée (Header, Body, Footer)
+ * - Accessibilité (focus trap, ARIA)
+ * - Gestion du contexte (année, niveau, langue)
+ * - Support offline-first
+ * 
+ * ============================================================================
+ */
+
+'use client';
+
+import { ReactNode, useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useModuleContext } from '@/hooks/useModuleContext';
+
+export interface BaseModalProps {
+  /** Titre du modal */
+  title: string;
+  /** Sous-titre métier (optionnel) */
+  subtitle?: string;
+  /** Contenu principal */
+  children: ReactNode;
+  /** Ouvert/fermé */
+  isOpen: boolean;
+  /** Callback de fermeture */
+  onClose: () => void;
+  /** Footer (boutons) */
+  footer?: ReactNode;
+  /** Taille */
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
+  /** Désactiver la fermeture par ESC (pour modals critiques) */
+  disableEscClose?: boolean;
+  /** Désactiver la fermeture par clic sur overlay (pour modals critiques) */
+  disableOverlayClose?: boolean;
+  /** Afficher le contexte (année, niveau, langue) */
+  showContext?: boolean;
+  /** Style personnalisé */
+  className?: string;
+}
+
+export default function BaseModal({
+  title,
+  subtitle,
+  children,
+  isOpen,
+  onClose,
+  footer,
+  size = 'md',
+  disableEscClose = false,
+  disableOverlayClose = false,
+  showContext = true,
+  className,
+}: BaseModalProps) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const { academicYear, schoolLevel, isBilingualEnabled } = useModuleContext();
+
+  // Focus trap
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    // Focus sur le modal
+    const focusableElements = modal.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstElement = focusableElements[0];
+    if (firstElement) {
+      firstElement.focus();
+    }
+
+    // Gestion ESC
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !disableEscClose) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEsc);
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = '';
+    };
+  }, [isOpen, disableEscClose, onClose]);
+
+  if (!isOpen) return null;
+
+  const sizeClasses = {
+    sm: 'max-w-md',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+    full: 'max-w-full mx-4',
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto">
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+        onClick={disableOverlayClose ? undefined : onClose}
+        aria-hidden="true"
+      />
+
+      {/* Modal */}
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          ref={modalRef}
+          className={cn(
+            'relative bg-white rounded-lg shadow-xl w-full',
+            sizeClasses[size],
+            className
+          )}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+          aria-describedby={subtitle ? 'modal-subtitle' : undefined}
+        >
+          {/* Header */}
+          <div className="flex items-start justify-between px-6 py-4 border-b border-gray-200">
+            <div className="flex-1 min-w-0">
+              <h2
+                id="modal-title"
+                className="text-lg font-semibold text-gray-900"
+              >
+                {title}
+              </h2>
+              {subtitle && (
+                <p
+                  id="modal-subtitle"
+                  className="text-sm text-gray-600 mt-1"
+                >
+                  {subtitle}
+                </p>
+              )}
+              {/* Contexte (année, niveau, langue) */}
+              {showContext && (academicYear || schoolLevel) && (
+                <div className="flex items-center space-x-3 mt-2 text-xs text-gray-500">
+                  {academicYear && (
+                    <span>Année: {academicYear.label}</span>
+                  )}
+                  {schoolLevel && (
+                    <>
+                      <span>•</span>
+                      <span>Niveau: {schoolLevel.label}</span>
+                    </>
+                  )}
+                  {isBilingualEnabled && (
+                    <>
+                      <span>•</span>
+                      <span>Bilingue activé</span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+            {!disableEscClose && (
+              <button
+                onClick={onClose}
+                className="ml-4 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                aria-label="Fermer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Body */}
+          <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
+            {children}
+          </div>
+
+          {/* Footer */}
+          {footer && (
+            <div className="flex items-center justify-end space-x-3 px-6 py-4 border-t border-gray-200 bg-gray-50">
+              {footer}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+

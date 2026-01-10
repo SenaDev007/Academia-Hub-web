@@ -11,6 +11,7 @@
 import { redirect } from 'next/navigation';
 import { getServerSession } from '@/lib/auth';
 import PilotageLayout from '@/components/pilotage/PilotageLayout';
+import { ModalProvider } from '@/components/modules/blueprint/modals/ModalProvider';
 import type { User, Tenant } from '@/types';
 
 export default async function AppLayout({
@@ -37,8 +38,10 @@ export default async function AppLayout({
   };
 
   return (
-    <PilotageLayout user={user} tenant={tenant}>
-      {children}
-    </PilotageLayout>
+    <ModalProvider>
+      <PilotageLayout user={user} tenant={tenant}>
+        {children}
+      </PilotageLayout>
+    </ModalProvider>
   );
 }

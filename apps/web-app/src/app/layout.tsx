@@ -22,9 +22,12 @@ export const metadata: Metadata = {
   creator: 'YEHI OR Tech',
   publisher: 'Academia Hub',
   icons: {
-    icon: '/images/logo-Academia-Hub.ico',
+    icon: [
+      { url: '/images/logo-Academia-Hub.ico', sizes: 'any' },
+      { url: '/images/logo-Academia Hub.png', sizes: '512x512', type: 'image/png' },
+    ],
     shortcut: '/images/logo-Academia-Hub.ico',
-    apple: '/images/logo-Academia-Hub.ico',
+    apple: '/images/logo-Academia Hub.png',
   },
   manifest: '/manifest.json',
   openGraph: {
@@ -54,8 +57,9 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <head>
-        <link rel="icon" href="/images/logo-Academia-Hub.ico" type="image/x-icon" />
-        <link rel="shortcut icon" href="/images/logo-Academia-Hub.ico" type="image/x-icon" />
+        <link rel="icon" href="/images/logo-Academia Hub.png" type="image/png" sizes="512x512" />
+        <link rel="shortcut icon" href="/images/logo-Academia Hub.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/images/logo-Academia Hub.png" sizes="512x512" />
       </head>
       <body className={inter.className}>
         <ElectronCompatProvider>
