@@ -127,6 +127,8 @@ model Tenant {
   paymentSummaries  PaymentSummary[]
   feeArrears        FeeArrear[]
   admissions       Admission[]
+  portalSessions    PortalSession[]
+  orionAccessLogs   OrionAccessLog[]
   transferRequests TransferRequest[]
   classStudents    ClassStudent[]
   classTransfers   ClassTransfer[]
@@ -629,6 +631,8 @@ model User {
   tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   schools School[]
   userRoles UserRole[]
+  portalSessions PortalSession[] @relation("PortalSessionUser")
+  orionAccessLogs OrionAccessLog[] @relation("OrionAccessLogUser")
   createdAbsences Absence[] @relation("AbsenceCreator")
   justifiedAbsences Absence[] @relation("AbsenceJustifier")
   createdDiscipline Discipline[] @relation("DisciplineCreator")
@@ -1614,6 +1618,73 @@ model TenantFeature {
   @@id([tenantId, featureCode])
   @@index([tenantId, status])
   @@map("tenant_features")
+}
+
+// ============================================================================
+// PORTAL ACCESS & MULTI-TENANT AUTHENTICATION
+// ============================================================================
+
+/**
+ * Sessions de portail - Contexte d'accès sécurisé
+ * Détermine le tenant, le rôle, la méthode d'authentification
+ */
+model PortalSession {
+  id          String   @id @default(uuid())
+  userId      String?
+  tenantId    String
+  portalType  String   // SCHOOL | TEACHER | PARENT
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User?    @relation("PortalSessionUser", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([portalType])
+  @@index([createdAt])
+  @@map("portal_sessions")
+}
+
+/**
+ * Logs de recherche d'écoles (public, sécurisé)
+ * Anti-scraping + audit
+ */
+model SchoolSearchLog {
+  id           String   @id @default(uuid())
+  searchTerm   String
+  ipAddress    String?
+  resultsCount Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([searchTerm])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@map("school_search_logs")
+}
+
+/**
+ * Logs d'accès ORION - Initialisation à la connexion
+ */
+model OrionAccessLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  userId      String
+  portalType  String   // SCHOOL | TEACHER | PARENT
+  triggeredAt DateTime @default(now())
+  kpisGenerated Boolean @default(false)
+  alertsGenerated Boolean @default(false)
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User     @relation("OrionAccessLogUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([portalType])
+  @@index([triggeredAt])
+  @@map("orion_access_logs")
 }
 
 // ============================================================================

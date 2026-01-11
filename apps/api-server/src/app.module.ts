@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
@@ -45,6 +46,7 @@ import { ExamsGradesModule } from './exams-grades/exams-grades.module';
 import { FinanceModule } from './finance/finance.module';
 import { HRModule } from './hr/hr.module';
 import { CommunicationModule } from './communication/communication.module';
+import { PortalModule } from './portal/portal.module';
 import { GeneralModule } from './modules/general/general.module';
 import { ModulesModule } from './modules/modules.module';
 import { ContextModule } from './common/context/context.module';
@@ -69,6 +71,25 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
       isGlobal: true,
       envFilePath: '.env',
     }),
+
+    // Rate Limiting
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000, // 1 seconde
+        limit: 10, // 10 requêtes par seconde
+      },
+      {
+        name: 'medium',
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requêtes par minute
+      },
+      {
+        name: 'long',
+        ttl: 3600000, // 1 heure
+        limit: 1000, // 1000 requêtes par heure
+      },
+    ]),
 
     // Database
     DatabaseModule,
@@ -210,6 +231,10 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     {
       provide: APP_GUARD,
       useClass: AcademicYearEnforcementGuard, // Enforcement academic_year_id obligatoire (DIMENSION OBLIGATOIRE)
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Rate limiting global
     },
     {
       provide: APP_INTERCEPTOR,

@@ -23,7 +23,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException();
     }
 
-    // Attach tenantId, roles, and permissions to user object for use in guards/interceptors
+    // Attach tenantId, roles, permissions, and portalType to user object for use in guards/interceptors
     return {
       id: user.id,
       email: user.email,
@@ -31,6 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       isSuperAdmin: user.isSuperAdmin,
       roles: user.roles || [],
       permissions: this.extractPermissions(user.roles || []),
+      portalType: payload.portalType || null, // Type de portail depuis le token JWT
     };
   }
 

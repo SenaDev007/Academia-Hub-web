@@ -71,9 +71,9 @@ apiClient.interceptors.response.use(
 export default apiClient;
 
 /**
- * Facade API minimale, utilisée par certains wrappers (ex: electron-compat)
+ * Facade API minimale
  *
- * ⚠️ Pour l’instant, on expose uniquement la structure nécessaire ou on laisse
+ * ⚠️ Pour l'instant, on expose uniquement la structure nécessaire ou on laisse
  * des méthodes factices qui lèvent une erreur explicite si utilisées sans implémentation.
  */
 export const api: any = {

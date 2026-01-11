@@ -100,7 +100,7 @@ export default function PremiumHeader() {
             ))}
             <div className="ml-8 pl-8 border-l border-gray-200 flex-shrink-0 flex items-center space-x-3">
               <Link
-                href="/login"
+                href="/portal"
                 prefetch={true}
                 className={cn(
                   'bg-blue-600 text-white px-6 py-2.5 rounded-md',
@@ -109,7 +109,7 @@ export default function PremiumHeader() {
                   'inline-flex items-center space-x-2'
                 )}
               >
-                <span>Se Connecter</span>
+                <span>Accéder à un portail</span>
                 <AppIcon name="login" size="submenu" className="text-white" />
               </Link>
             </div>
@@ -166,7 +166,7 @@ export default function PremiumHeader() {
             ))}
             <div className="pt-4 mt-4 border-t border-gray-200 space-y-2">
               <Link
-                href="/login"
+                href="/portal"
                 onClick={() => setIsMenuOpen(false)}
                 className={cn(
                   'bg-blue-600 text-white w-full py-3 rounded-md',
@@ -175,7 +175,7 @@ export default function PremiumHeader() {
                   'inline-flex items-center justify-center space-x-2'
                 )}
               >
-                <span>Se Connecter</span>
+                <span>Accéder à un portail</span>
                 <AppIcon name="login" size="submenu" className="text-white" />
               </Link>
             </div>

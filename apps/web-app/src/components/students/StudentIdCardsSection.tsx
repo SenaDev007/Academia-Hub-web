@@ -170,7 +170,7 @@ export default function StudentIdCardsSection() {
   const handleDownloadCard = async (cardId: string) => {
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/students/id-cards/${cardId}/download`);
+      const response = await fetch(`/api/students/id-cards/card/${cardId}/download`);
       
       if (response.ok) {
         const blob = await response.blob();
@@ -202,7 +202,7 @@ export default function StudentIdCardsSection() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(`/api/students/id-cards/${selectedCard.id}/revoke`, {
+      const response = await fetch(`/api/students/id-cards/card/${selectedCard.id}/revoke`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: revokeReason }),

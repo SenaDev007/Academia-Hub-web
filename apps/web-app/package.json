@@ -11,7 +11,7 @@
     "optimize-images": "node scripts/optimize-images.js",
     "check-seo": "node scripts/check-seo.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
-    "prebuild": "npm run optimize-images && npm run check-seo || true",
+    "prebuild": "npm run optimize-images || true",
     "lighthouse": "lighthouse http://localhost:3001 --view --output=html --output-path=./lighthouse-report.html"
   },
   "dependencies": {

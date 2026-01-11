@@ -62,8 +62,8 @@ interface Student {
   studentGuardians?: Array<{
     id: string;
     guardian: {
-      firstName: string;
-      lastName: string;
+  firstName: string;
+  lastName: string;
       phone?: string;
       email?: string;
     };
@@ -111,11 +111,11 @@ export default function StudentsModulePage() {
   // HANDLERS
   // ============================================================================
 
-  const loadStudents = async () => {
+    const loadStudents = async () => {
     if (!academicYear || !schoolLevel) return;
 
-    setIsLoading(true);
-    try {
+      setIsLoading(true);
+      try {
       const params = new URLSearchParams({
         academicYearId: academicYear.id,
         schoolLevelId: schoolLevel.id,
@@ -125,16 +125,16 @@ export default function StudentsModulePage() {
       });
 
       const response = await fetch(`/api/students?${params}`);
-      if (response.ok) {
-        const data = await response.json();
-        setStudents(data);
+        if (response.ok) {
+          const data = await response.json();
+          setStudents(data);
+        }
+      } catch (error) {
+        console.error('Failed to load students:', error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Failed to load students:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
   const loadStatistics = async () => {
     if (!academicYear || !schoolLevel) return;
@@ -222,7 +222,7 @@ export default function StudentsModulePage() {
       if (response.ok) {
         setIsDeleteModalOpen(false);
         setSelectedStudent(null);
-        loadStudents();
+    loadStudents();
         loadStatistics();
       }
     } catch (error) {
@@ -274,7 +274,7 @@ export default function StudentsModulePage() {
   // ============================================================================
 
   if (contextLoading) {
-    return (
+      return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
@@ -341,15 +341,15 @@ export default function StudentsModulePage() {
             <div className="flex items-center space-x-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    type="text"
-                    placeholder="Rechercher un élève..."
-                    value={filters.search}
-                    onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Rechercher un élève..."
+                  value={filters.search}
+                  onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
+                />
+              </div>
               </div>
               <select
                 value={filters.status}
@@ -370,39 +370,39 @@ export default function StudentsModulePage() {
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
                 {students.length} élève{students.length > 1 ? 's' : ''} trouvé{students.length > 1 ? 's' : ''}
+          </div>
               </div>
-            </div>
           ),
           isLoading,
           emptyMessage: students.length === 0 ? 'Aucun élève trouvé' : undefined,
           children: (
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Code
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nom & Prénom
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Classe
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Statut
-                  </th>
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Classe
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Statut
+                      </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
                 {students.map((student) => (
                   <tr key={student.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
                       {student.studentCode || 'N/A'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
                           <User className="w-5 h-5 text-gray-600" />
@@ -415,22 +415,22 @@ export default function StudentsModulePage() {
                             <div className="text-sm text-gray-500">
                               {new Date(student.dateOfBirth).toLocaleDateString('fr-FR')}
                             </div>
-                          )}
-                        </div>
-                      </div>
-                    </td>
+                            )}
+                          </div>
+                          </div>
+                        </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {getCurrentClass(student)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                          student.status
-                        )}`}
-                      >
-                        {getStatusLabel(student.status)}
-                      </span>
-                    </td>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                              student.status
+                            )}`}
+                          >
+                            {getStatusLabel(student.status)}
+                          </span>
+                        </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
@@ -458,10 +458,10 @@ export default function StudentsModulePage() {
                         )}
                       </div>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
           ),
         }}
       />
@@ -567,7 +567,7 @@ export default function StudentsModulePage() {
               defaultValue={selectedStudent?.nationality || ''}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-          </div>
+              </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Langue principale
@@ -654,11 +654,11 @@ export default function StudentsModulePage() {
                           Type: {enrollment.enrollmentType} | Statut: {enrollment.status}
                         </p>
                       </div>
-                    </div>
-                  </div>
+              </div>
+              </div>
                 ))}
               </div>
-            </div>
+              </div>
 
             {/* Responsables légaux */}
             {selectedStudent.studentGuardians && selectedStudent.studentGuardians.length > 0 && (
@@ -668,7 +668,7 @@ export default function StudentsModulePage() {
                   {selectedStudent.studentGuardians.map((sg) => (
                     <div key={sg.id} className="bg-gray-50 rounded-md p-3">
                       <div className="flex items-center justify-between">
-                        <div>
+              <div>
                           <p className="text-sm font-medium text-gray-900">
                             {sg.guardian.firstName} {sg.guardian.lastName}
                             {sg.isPrimary && (
@@ -680,14 +680,14 @@ export default function StudentsModulePage() {
                             {sg.guardian.phone && ` | ${sg.guardian.phone}`}
                             {sg.guardian.email && ` | ${sg.guardian.email}`}
                           </p>
-                        </div>
+              </div>
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-            )}
+            </div>
           </div>
+        )}
+      </div>
         )}
       </ReadOnlyModal>
 

@@ -10,7 +10,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ElectronCompatProvider } from '@/components/providers/ElectronCompatProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -62,9 +61,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/images/logo-Academia Hub.png" sizes="512x512" />
       </head>
       <body className={inter.className}>
-        <ElectronCompatProvider>
-          {children}
-        </ElectronCompatProvider>
+        {children}
       </body>
     </html>
   );
