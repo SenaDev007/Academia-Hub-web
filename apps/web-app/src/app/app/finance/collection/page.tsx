@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { AlertCircle, Bell, Handshake, Phone, Mail, MessageSquare, Plus } from 'lucide-react';
+import { AlertCircle, Bell, Handshake, Phone, Mail, MessageSquare, Plus, Eye } from 'lucide-react';
 import {
   ModuleContainer,
   ModuleHeader,
