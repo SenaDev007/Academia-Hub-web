@@ -14,6 +14,7 @@ import {
   ConfirmModal,
 } from '@/components/modules/blueprint';
 import { useModuleContext } from '@/hooks/useModuleContext';
+import StudentEnrollmentForm from '@/components/students/StudentEnrollmentForm';
 
 interface Enrollment {
   id: string;
@@ -191,32 +192,66 @@ export default function EnrollmentsPage() {
         title="Nouvelle inscription"
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
-        size="lg"
-        actions={
-          <>
-            <button
-              onClick={() => setIsCreateModalOpen(false)}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={() => {
-                // TODO: Implémenter la création
-                setIsCreateModalOpen(false);
-              }}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-            >
-              Enregistrer
-            </button>
-          </>
-        }
+        size="xl"
+        actions={null} // Les actions sont gérées par le formulaire
       >
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Formulaire d'inscription à implémenter
-          </p>
-        </div>
+        {academicYear && schoolLevel ? (
+          <StudentEnrollmentForm
+            academicYearId={academicYear.id}
+            schoolLevelId={schoolLevel.id}
+            onSubmit={async (data) => {
+              try {
+                // 1. Créer l'élève
+                const studentResponse = await fetch('/api/students', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    ...data.student,
+                    academicYearId: academicYear.id,
+                    schoolLevelId: schoolLevel.id,
+                  }),
+                });
+
+                if (!studentResponse.ok) {
+                  const error = await studentResponse.json();
+                  throw new Error(error.message || 'Erreur lors de la création de l\'élève');
+                }
+
+                const student = await studentResponse.json();
+
+                // 2. Créer le profil tarifaire
+                const profileResponse = await fetch('/api/finance/student-fee-profiles', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    studentId: student.id,
+                    academicYearId: academicYear.id,
+                    feeRegimeId: data.feeProfile.feeRegimeId,
+                    justification: data.feeProfile.justification,
+                  }),
+                });
+
+                if (!profileResponse.ok) {
+                  const error = await profileResponse.json();
+                  throw new Error(error.message || 'Erreur lors de la création du profil tarifaire');
+                }
+
+                // 3. Recharger les inscriptions
+                setIsCreateModalOpen(false);
+                loadEnrollments();
+              } catch (error: any) {
+                throw error;
+              }
+            }}
+            onCancel={() => setIsCreateModalOpen(false)}
+          />
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-sm text-gray-600">
+              Veuillez sélectionner une année scolaire et un niveau
+            </p>
+          </div>
+        )}
       </FormModal>
     </>
   );

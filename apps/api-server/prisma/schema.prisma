@@ -63,6 +63,7 @@ model Tenant {
   schools           School[]
   studentIdentifiers StudentIdentifier[]
   studentIdCards     StudentIdCard[]
+  publicVerificationTokens PublicVerificationToken[]
   tenantFeatures    TenantFeature[]
   paymentFlows      PaymentFlow[]
   auditLogs         AuditLog[]
@@ -397,6 +398,12 @@ model AcademicYear {
   medicalRecords MedicalRecord[]
   medications Medication[]
   shopProducts ShopProduct[]
+  // Module 1 - Vérification publique & Dossier scolaire
+  publicVerificationTokens PublicVerificationToken[]
+  studentAcademicRecords StudentAcademicRecord[] @relation("StudentAcademicRecordAcademicYear")
+  studentDisciplinarySummaries StudentDisciplinarySummary[] @relation("StudentDisciplinarySummaryAcademicYear")
+  // Module 4 - Recouvrement
+  collectionCases CollectionCase[] @relation("CollectionCaseAcademicYear")
   shopSales ShopSale[]
   educastContents EducastContent[]
   inspections Inspection[]
@@ -550,6 +557,7 @@ model SchoolLevel {
   canteenEnrollments CanteenEnrollment[] @relation("CanteenEnrollmentSchoolLevel")
   educastContents EducastContent[] @relation("EducastContentSchoolLevel")
   educastAccesses EducastAccess[] @relation("EducastAccessSchoolLevel")
+  studentAcademicRecords StudentAcademicRecord[] @relation("StudentAcademicRecordSchoolLevel")
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -636,6 +644,7 @@ model User {
   createdPaymentPromises PaymentPromise[] @relation("PaymentPromiseCreator")
   performedCollectionActions CollectionAction[] @relation("CollectionActionPerformer")
   staffEvaluations StaffEvaluation[] @relation("StaffEvaluator")
+  validatedFeeProfiles StudentFeeProfile[] @relation("StudentFeeProfileValidator")
   validatedOvertime OvertimeRecord[] @relation("OvertimeValidator")
   issuedSalarySlips SalarySlip[] @relation("SalarySlipIssuer")
   createdRooms Room[]
@@ -861,6 +870,8 @@ model Student {
   studentFees       StudentFee[]
   paymentSummaries  PaymentSummary[]
   feeArrears        FeeArrear[]
+  studentArrears    StudentArrear[]
+  feeProfiles       StudentFeeProfile[]
   medicalVisits MedicalVisit[]
   medications Medication[]
   orders Order[]
@@ -868,6 +879,10 @@ model Student {
   incidents Incident[]
   identifier        StudentIdentifier?
   idCards           StudentIdCard[]
+  publicVerificationTokens PublicVerificationToken[] @relation("PublicVerificationTokenStudent")
+  academicRecords   StudentAcademicRecord[] @relation("StudentAcademicRecordStudent")
+  disciplinarySummaries StudentDisciplinarySummary[] @relation("StudentDisciplinarySummaryStudent")
+  collectionCases   CollectionCase[] @relation("StudentCollectionCase")
 
   @@unique([tenantId, studentCode])
   @@index([tenantId, academicYearId, schoolLevelId])
@@ -937,6 +952,7 @@ model Class {
   canteenEnrollments CanteenEnrollment[] @relation("CanteenEnrollmentClass")
   educastContents EducastContent[] @relation("EducastContentClass")
   educastAccesses EducastAccess[] @relation("EducastAccessClass")
+  studentAcademicRecords StudentAcademicRecord[] @relation("StudentAcademicRecordClass")
 
   @@unique([tenantId, academicYearId, code])
   @@index([tenantId, academicYearId, schoolLevelId])
@@ -1263,6 +1279,8 @@ model Payment {
   studentFee       StudentFee?      @relation("StudentFeePayment", fields: [studentFeeId], references: [id], onDelete: SetNull)
   receipt          PaymentReceipt?
   studentFeeId     String?
+  paymentAllocations PaymentAllocation[]
+  notifications PaymentNotification[]
 
   @@index([tenantId, schoolLevelId])
   @@index([studentId])
@@ -2327,6 +2345,110 @@ model StudentIdCard {
   @@index([isActive, isRevoked])
   @@index([validUntil])
   @@map("student_id_cards")
+}
+
+// ============================================================================
+// MODULE 1 - VÉRIFICATION PUBLIQUE & DOSSIER SCOLAIRE NUMÉRIQUE
+// ============================================================================
+
+/**
+ * Token de vérification publique pour QR Code
+ * Permet de vérifier l'identité d'un élève sans exposer de données sensibles
+ */
+model PublicVerificationToken {
+  id              String   @id @default(uuid())
+  tenantId        String
+  entityType      String   @default("STUDENT") // STUDENT (extensible)
+  entityId        String   // student_id
+  tokenHash       String   @unique // Hash du token (non devinable)
+  token           String   @unique // Token original (stocké temporairement pour génération)
+  academicYearId  String
+  expiresAt       DateTime // Expiration automatique (fin année scolaire + 1 mois)
+  isActive        Boolean  @default(true)
+  verificationCount Int    @default(0) // Nombre de vérifications effectuées
+  lastVerifiedAt  DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  student      Student?      @relation("PublicVerificationTokenStudent", fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, academicYearId, entityId]) // Un token actif par élève par année
+  @@index([tokenHash])
+  @@index([entityId, academicYearId])
+  @@index([expiresAt, isActive])
+  @@map("public_verification_tokens")
+}
+
+/**
+ * Enregistrement académique par année scolaire
+ * Centralise le parcours scolaire de l'élève
+ */
+model StudentAcademicRecord {
+  id              String   @id @default(uuid())
+  tenantId        String
+  studentId       String
+  academicYearId  String
+  classId         String?
+  schoolLevelId   String
+  level           String?  // Niveau scolaire (ex: 6ème, 5ème, Terminale)
+  enrollmentStatus String  @default("ACTIVE") // ACTIVE, TRANSFERRED, GRADUATED, REPEAT
+  averageScore    Decimal? @db.Decimal(5, 2) // Moyenne générale
+  rank            Int?     // Rang dans la classe
+  totalAbsences   Int      @default(0)
+  totalIncidents  Int      @default(0)
+  totalSanctions  Int      @default(0)
+  notes           Json?    // Notes additionnelles
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student      Student      @relation("StudentAcademicRecordStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation("StudentAcademicRecordAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  class        Class?       @relation("StudentAcademicRecordClass", fields: [classId], references: [id], onDelete: SetNull)
+  schoolLevel  SchoolLevel  @relation("StudentAcademicRecordSchoolLevel", fields: [schoolLevelId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, academicYearId]) // Un enregistrement par élève par année
+  @@index([tenantId, academicYearId])
+  @@index([studentId])
+  @@index([classId])
+  @@map("student_academic_records")
+}
+
+/**
+ * Résumé disciplinaire par année scolaire
+ * Synthèse des absences, incidents et sanctions
+ */
+model StudentDisciplinarySummary {
+  id              String   @id @default(uuid())
+  tenantId        String
+  studentId       String
+  academicYearId  String
+  absencesCount   Int      @default(0) // Total absences
+  justifiedAbsences Int   @default(0) // Absences justifiées
+  unjustifiedAbsences Int @default(0) // Absences non justifiées
+  incidentsCount Int      @default(0) // Total incidents
+  minorIncidents  Int      @default(0) // Incidents mineurs
+  majorIncidents  Int      @default(0) // Incidents majeurs
+  sanctionsCount Int       @default(0) // Total sanctions
+  warningsCount  Int       @default(0) // Avertissements
+  suspensionsCount Int     @default(0) // Suspensions
+  expulsionsCount Int       @default(0) // Exclusions
+  lastIncidentDate DateTime?
+  lastSanctionDate DateTime?
+  notes           Json?    // Notes additionnelles
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student      Student      @relation("StudentDisciplinarySummaryStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation("StudentDisciplinarySummaryAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+
+  @@unique([studentId, academicYearId]) // Un résumé par élève par année
+  @@index([tenantId, academicYearId])
+  @@index([studentId])
+  @@map("student_disciplinary_summaries")
 }
 
 model Admission {
@@ -6871,10 +6993,149 @@ model FeeDefinition {
   feeCategory  FeeCategory  @relation(fields: [feeCategoryId], references: [id], onDelete: Restrict)
   creator      User?        @relation(fields: [createdBy], references: [id], onDelete: SetNull)
   studentFees  StudentFee[]
+  installments FeeInstallment[]
+
+  feeRegimeRules FeeRegimeRule[]
+  studentFeeProfiles StudentFeeProfile[]
 
   @@index([tenantId, academicYearId, schoolLevelId])
   @@index([feeCategoryId])
   @@map("fee_definitions")
+}
+
+// ----------------------------------------------------------------------------
+// RÉGIMES TARIFAIRES & PROFILS ÉLÈVES
+// ----------------------------------------------------------------------------
+
+/**
+ * Régimes tarifaires (STANDARD, ENFANT_ENSEIGNANT, REDUCTION)
+ * Permet de définir des barèmes différents par type d'élève
+ */
+model FeeRegime {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  schoolLevelId  String
+  code           String   // STANDARD | ENFANT_ENSEIGNANT | REDUCTION
+  label          String
+  description    String?
+  isDefault      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel  @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  rules        FeeRegimeRule[]
+  profiles     StudentFeeProfile[]
+
+  @@unique([tenantId, academicYearId, schoolLevelId, code])
+  @@index([tenantId, academicYearId, schoolLevelId])
+  @@index([code])
+  @@map("fee_regimes")
+}
+
+/**
+ * Règles de réduction par régime tarifaire
+ * Définit les réductions appliquées aux différents types de frais
+ */
+model FeeRegimeRule {
+  id            String   @id @default(uuid())
+  feeRegimeId   String
+  feeType       String   // INSCRIPTION | REINSCRIPTION | SCOLARITE
+  discountType  String   // FIXED | PERCENT
+  discountValue Decimal  @db.Decimal(10, 2) // Montant fixe ou pourcentage
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  feeRegime FeeRegime @relation(fields: [feeRegimeId], references: [id], onDelete: Cascade)
+
+  @@unique([feeRegimeId, feeType])
+  @@index([feeRegimeId])
+  @@map("fee_regime_rules")
+}
+
+/**
+ * Profil tarifaire d'un élève pour une année scolaire
+ * Définit le régime tarifaire appliqué à un élève
+ */
+model StudentFeeProfile {
+  id             String   @id @default(uuid())
+  studentId      String
+  academicYearId String
+  feeRegimeId    String
+  justification  String?  // Motif de la réduction (si applicable)
+  validatedBy    String?   // Directeur / Admin qui a validé
+  validatedAt    DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  student      Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  feeRegime    FeeRegime    @relation(fields: [feeRegimeId], references: [id], onDelete: Restrict)
+  validator    User?        @relation("StudentFeeProfileValidator", fields: [validatedBy], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, academicYearId])
+  @@index([studentId])
+  @@index([academicYearId])
+  @@index([feeRegimeId])
+  @@map("student_fee_profiles")
+}
+
+/**
+ * Arriérés inter-années
+ * Dettes reportées d'une année scolaire à l'autre
+ * Ligne immuable, jamais supprimée
+ */
+model StudentArrear {
+  id                String   @id @default(uuid())
+  tenantId          String
+  studentId         String
+  fromAcademicYearId String  // Année d'origine de la dette
+  toAcademicYearId  String   // Année de report
+  amountDue         Decimal  @db.Decimal(10, 2)
+  amountPaid        Decimal  @default(0) @db.Decimal(10, 2)
+  balanceDue        Decimal  @db.Decimal(10, 2)
+  status            String   @default("OPEN") // OPEN | PARTIAL | PAID
+  generatedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant            Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student           Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  fromAcademicYear  AcademicYear @relation("StudentArrearFromYear", fields: [fromAcademicYearId], references: [id], onDelete: Restrict)
+  toAcademicYear    AcademicYear @relation("StudentArrearToYear", fields: [toAcademicYearId], references: [id], onDelete: Restrict)
+  paymentAllocations PaymentAllocation[]
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([fromAcademicYearId])
+  @@index([toAcademicYearId])
+  @@index([status])
+  @@map("student_arrears")
+}
+
+/**
+ * Tranches de paiement pour les frais de scolarité
+ * Permet de diviser la scolarité en plusieurs échéances
+ */
+model FeeInstallment {
+  id                String   @id @default(uuid())
+  feeDefinitionId   String
+  installmentLabel  String   // "Tranche 1", "Tranche 2", etc.
+  amount            Decimal  @db.Decimal(10, 2)
+  dueDate           DateTime @db.Date
+  orderIndex        Int      // Ordre de priorité de paiement
+  isMandatory       Boolean  @default(true)
+  description       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  feeDefinition FeeDefinition @relation(fields: [feeDefinitionId], references: [id], onDelete: Cascade)
+
+  @@index([feeDefinitionId])
+  @@index([feeDefinitionId, orderIndex])
+  @@map("fee_installments")
 }
 
 // ----------------------------------------------------------------------------
@@ -6899,6 +7160,7 @@ model StudentFee {
   payments     Payment[]    @relation("StudentFeePayment")
   paymentSummary PaymentSummary?
   feeArrears   FeeArrear[]
+  paymentAllocations PaymentAllocation[]
 
   @@unique([studentId, feeDefinitionId, academicYearId])
   @@index([tenantId, academicYearId])
@@ -6907,21 +7169,89 @@ model StudentFee {
   @@map("student_fees")
 }
 
+/**
+ * Allocation automatique des paiements avec priorité
+ * Permet de tracer comment un paiement est alloué aux différents frais
+ * RÈGLE : Arriérés → Inscription/Réinscription → Scolarité par ordre de tranches
+ */
+model PaymentAllocation {
+  id             String   @id @default(uuid())
+  paymentId      String
+  targetType     String   // ARREAR | STUDENT_FEE (INSCRIPTION | REINSCRIPTION | SCOLARITE)
+  targetId       String   // ID de StudentArrear ou StudentFee (pour référence)
+  studentFeeId   String?  // Optionnel : pour compatibilité rétroactive (si targetType = STUDENT_FEE)
+  studentArrearId String? // Optionnel : pour relation Prisma (si targetType = ARREAR)
+  allocatedAmount Decimal  @db.Decimal(10, 2)
+  allocationOrder Int     // Ordre d'allocation (1 = priorité maximale : arriérés)
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  payment    Payment    @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  studentFee StudentFee? @relation(fields: [studentFeeId], references: [id], onDelete: Cascade)
+  studentArrear StudentArrear? @relation("PaymentAllocationArrear", fields: [studentArrearId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([targetType, targetId])
+  @@index([studentFeeId])
+  @@index([studentArrearId])
+  @@index([paymentId, allocationOrder])
+  @@map("payment_allocations")
+}
+
 model PaymentReceipt {
   id             String   @id @default(uuid())
   paymentId      String   @unique
   receiptNumber  String   @unique
   filePath       String?  // Chemin du PDF généré
+  verificationToken String? @unique // Token pour vérification publique QR Code
+  verificationTokenHash String? @unique // Hash du token pour recherche
   issuedAt       DateTime @default(now())
   issuedBy       String?
+  isDuplicate    Boolean  @default(false) // Si réimpression
+  duplicateOf    String?  // ID du reçu original si c'est un duplicata
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
   payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
   issuer  User?   @relation("PaymentReceiptIssuer", fields: [issuedBy], references: [id], onDelete: SetNull)
+  originalReceipt PaymentReceipt? @relation("ReceiptDuplicate", fields: [duplicateOf], references: [id], onDelete: SetNull)
+  duplicates PaymentReceipt[] @relation("ReceiptDuplicate")
+
+  notifications PaymentNotification[]
 
   @@index([receiptNumber])
+  @@index([verificationTokenHash])
   @@map("payment_receipts")
+}
+
+/**
+ * Notifications de reçus envoyées aux parents (SMS + WhatsApp)
+ * Traçabilité complète pour preuve légale
+ */
+model PaymentNotification {
+  id             String   @id @default(uuid())
+  paymentId      String
+  receiptId      String
+  channel        String   // SMS | WHATSAPP
+  recipientPhone String
+  messageSnapshot String // Message envoyé (preuve légale)
+  attachmentUrl  String?  // URL de l'image du reçu (WhatsApp)
+  status         String   @default("PENDING") // PENDING | SENT | FAILED
+  sentAt         DateTime?
+  errorMessage   String?
+  metadata       Json?    // Détails d'envoi (provider, cost, etc.)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  receipt PaymentReceipt @relation(fields: [receiptId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([receiptId])
+  @@index([channel])
+  @@index([status])
+  @@index([sentAt])
+  @@map("payment_notifications")
 }
 
 // ----------------------------------------------------------------------------
@@ -7060,20 +7390,56 @@ model PaymentPromise {
 
 model CollectionAction {
   id             String   @id @default(uuid())
-  feeArrearId    String
-  actionType     String   // CALL | MEETING | SUSPENSION | OTHER
+  feeArrearId    String?
+  collectionCaseId String?
+  actionType     String   // REMINDER | WARNING | BLOCK | CALL | MEETING | SUSPENSION | OTHER
+  channel        String?  // SMS | WHATSAPP | INTERNAL | EMAIL
+  message        String?  // Message snapshot
   notes          String?
   performedBy    String?
   performedAt    DateTime @default(now())
   createdAt      DateTime @default(now())
 
-  feeArrear FeeArrear @relation(fields: [feeArrearId], references: [id], onDelete: Cascade)
+  feeArrear FeeArrear? @relation(fields: [feeArrearId], references: [id], onDelete: Cascade)
+  collectionCase CollectionCase? @relation(fields: [collectionCaseId], references: [id], onDelete: Cascade)
   performer User?     @relation("CollectionActionPerformer", fields: [performedBy], references: [id], onDelete: SetNull)
 
   @@index([feeArrearId])
+  @@index([collectionCaseId])
   @@index([actionType])
   @@index([performedAt])
   @@map("collection_actions")
+}
+
+/**
+ * Dossier de recouvrement par élève / année scolaire
+ * Vue synthétique de tous les impayés d'un élève
+ */
+model CollectionCase {
+  id              String   @id @default(uuid())
+  tenantId        String
+  studentId       String
+  academicYearId  String
+  totalDue        Decimal  @db.Decimal(10, 2) // Total dû pour l'année
+  totalPaid       Decimal  @default(0) @db.Decimal(10, 2) // Total payé
+  outstandingAmount Decimal @db.Decimal(10, 2) // Solde restant
+  status          String   @default("ON_TIME") // ON_TIME | LATE | CRITICAL | BLOCKED
+  escalationLevel Int      @default(0) // 0 = aucune escalade, 1-4 = niveaux d'escalade
+  lastActionAt    DateTime?
+  blockedUntil    DateTime? // Date jusqu'à laquelle le blocage est actif
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant       Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  student      Student      @relation("StudentCollectionCase", fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation("CollectionCaseAcademicYear", fields: [academicYearId], references: [id], onDelete: Restrict)
+  actions      CollectionAction[]
+
+  @@unique([studentId, academicYearId])
+  @@index([tenantId, academicYearId])
+  @@index([studentId])
+  @@index([status])
+  @@map("collection_cases")
 }
 
 // ============================================================================

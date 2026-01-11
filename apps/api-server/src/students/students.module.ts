@@ -24,6 +24,11 @@ import { StudentsOrionService } from './services/students-orion.service';
 import { StudentIdentifierController } from './controllers/student-identifier.controller';
 import { StudentIdCardController } from './controllers/student-id-card.controller';
 import { StudentsOrionController } from './controllers/students-orion.controller';
+// Module 1 - Vérification Publique & Dossier Scolaire
+import { PublicVerificationService } from './services/public-verification.service';
+import { StudentDossierService } from './services/student-dossier.service';
+import { PublicVerificationController } from './controllers/public-verification.controller';
+import { StudentDossierController } from './controllers/student-dossier.controller';
 
 @Module({
   imports: [
@@ -43,6 +48,9 @@ import { StudentsOrionController } from './controllers/students-orion.controller
     StudentIdentifierController,
     StudentIdCardController,
     StudentsOrionController,
+    // Module 1 - Vérification Publique & Dossier Scolaire
+    PublicVerificationController,
+    StudentDossierController,
   ],
   providers: [
     StudentsService,
@@ -57,6 +65,9 @@ import { StudentsOrionController } from './controllers/students-orion.controller
     StudentIdentifierService,
     StudentIdCardService,
     StudentsOrionService,
+    // Module 1 - Vérification Publique & Dossier Scolaire
+    PublicVerificationService,
+    StudentDossierService,
   ],
   exports: [
     StudentsService,
@@ -70,6 +81,9 @@ import { StudentsOrionController } from './controllers/students-orion.controller
     StudentIdentifierService,
     StudentIdCardService,
     StudentsOrionService,
+    // Module 1 - Vérification Publique & Dossier Scolaire
+    PublicVerificationService,
+    StudentDossierService,
   ],
 })
 export class StudentsModule {}
