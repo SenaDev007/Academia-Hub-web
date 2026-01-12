@@ -21,11 +21,6 @@ const nextConfig = {
 
   // Compression et optimisation
   compress: true,
-  
-  // Optimisation des bundles
-  experimental: {
-    // optimizeCss: true, // Désactivé temporairement (critters manquant)
-  },
 
   // Multi-tenant: Support des sous-domaines
   async headers() {
