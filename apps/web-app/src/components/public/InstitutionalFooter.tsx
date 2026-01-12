@@ -204,10 +204,6 @@ export default function InstitutionalFooter() {
                       className="h-full w-auto object-contain"
                       loading="lazy"
                       sizes="32px"
-                      onError={(e) => {
-                        // Fallback si l'image n'existe pas
-                        e.currentTarget.style.display = 'none';
-                      }}
                     />
                   </div>
                   <span className={cn(typo('base'), 'text-white font-semibold')}>

@@ -24,7 +24,7 @@ const nextConfig = {
   
   // Optimisation des bundles
   experimental: {
-    optimizeCss: true,
+    // optimizeCss: true, // Désactivé temporairement (critters manquant)
   },
 
   // Multi-tenant: Support des sous-domaines

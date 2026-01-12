@@ -12,7 +12,7 @@
 'use client';
 
 import { ReactNode } from 'react';
-import { AppIcon } from '@/components/ui/AppIcon';
+import AppIcon from '@/components/ui/AppIcon';
 
 export interface ModuleKPI {
   label: string;

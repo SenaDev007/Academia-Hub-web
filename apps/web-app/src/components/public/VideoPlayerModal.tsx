@@ -90,11 +90,6 @@ export default function VideoPlayerModal({
                   className="object-cover"
                   priority
                   unoptimized
-                  onError={(e) => {
-                    // Fallback si l'image ne charge pas
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                  }}
                 />
                 <div className="absolute inset-0 bg-black/30" />
               </div>

@@ -211,10 +211,6 @@ export default function CompleteLandingPage() {
             priority
             quality={85}
             sizes="100vw"
-            onError={(e) => {
-              // Erreur silencieuse : l'image n'est pas disponible
-              console.warn('Background image not found, using fallback');
-            }}
           />
           {/* Subtle overlay for text readability */}
           <div className="absolute inset-0 bg-blue-900/50 backdrop-blur-[1px]" />

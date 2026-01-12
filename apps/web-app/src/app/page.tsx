@@ -51,6 +51,9 @@ export const metadata: Metadata = {
   },
 };
 
+// Force dynamic rendering to avoid build timeouts
+export const dynamic = 'force-dynamic';
+
 export default function HomePage() {
   return (
     <>

@@ -8,6 +8,9 @@ import PremiumHeader from '@/components/layout/PremiumHeader';
 import InstitutionalFooter from '@/components/public/InstitutionalFooter';
 import { bgColor, textColor, typo } from '@/lib/design-tokens';
 
+// Force dynamic rendering to avoid build timeouts
+export const dynamic = 'force-dynamic';
+
 export default function LegalNoticesPage() {
   return (
     <>
