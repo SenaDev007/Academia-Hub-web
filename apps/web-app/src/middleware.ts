@@ -9,8 +9,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import type { SubscriptionStatus } from './types';
 import { createClient } from '@/utils/supabase/middleware';
-
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { getApiBaseUrl, getAppBaseUrl } from '@/lib/utils/urls';
 
 function extractSubdomainFromRequest(request: NextRequest): string | null {
   const host = request.headers.get('host') || request.headers.get('x-forwarded-host');
@@ -33,7 +32,8 @@ function extractSubdomainFromRequest(request: NextRequest): string | null {
 
 async function resolveTenant(subdomain: string): Promise<{ id: string; slug: string; status: string; subscriptionStatus?: SubscriptionStatus } | null> {
   try {
-    const response = await fetch(`${API_URL}/tenants/by-subdomain/${subdomain}`, {
+    const apiUrl = getApiBaseUrl();
+    const response = await fetch(`${apiUrl}/tenants/by-subdomain/${subdomain}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (subdomain && !pathname.startsWith('/app') && !pathname.startsWith('/admin')) {
-      const mainDomain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+      const mainDomain = getAppBaseUrl();
       return NextResponse.redirect(new URL(pathname, mainDomain));
     }
   }
@@ -140,7 +140,7 @@ export async function middleware(request: NextRequest) {
   // Routes app (nécessitent un subdomain)
   if (pathname.startsWith('/app')) {
     if (!subdomain) {
-      const mainDomain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+      const mainDomain = getAppBaseUrl();
       return NextResponse.redirect(new URL('/login', mainDomain));
     }
 
@@ -148,7 +148,7 @@ export async function middleware(request: NextRequest) {
       const tenant = await resolveTenant(subdomain);
 
       if (!tenant) {
-        const mainDomain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+        const mainDomain = getAppBaseUrl();
         return NextResponse.redirect(new URL('/tenant-not-found', mainDomain));
       }
 
@@ -166,7 +166,7 @@ export async function middleware(request: NextRequest) {
       return tenantResponse;
     } catch (error) {
       console.error('Error resolving tenant in middleware:', error);
-      const mainDomain = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+      const mainDomain = getAppBaseUrl();
       return NextResponse.redirect(new URL('/tenant-not-found', mainDomain));
     }
   }

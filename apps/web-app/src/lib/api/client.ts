@@ -6,8 +6,9 @@
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { getClientToken } from '@/lib/auth/session-client';
+import { getApiBaseUrl } from '@/lib/utils/urls';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = getApiBaseUrl();
 
 /**
  * Instance Axios configurée

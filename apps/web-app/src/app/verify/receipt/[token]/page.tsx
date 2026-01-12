@@ -47,8 +47,9 @@ export default function PublicReceiptVerificationPage() {
   const verifyReceipt = async () => {
     try {
       setLoading(true);
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/receipts/public/verify/${token}`
+        `${apiUrl}/receipts/public/verify/${token}`
       );
 
       if (!response.ok) {

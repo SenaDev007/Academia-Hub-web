@@ -15,6 +15,7 @@ import { useState } from 'react';
 import { Building2, GraduationCap, Users, Search, ArrowRight, Shield, CheckCircle } from 'lucide-react';
 import PremiumHeader from '@/components/layout/PremiumHeader';
 import SchoolSearch from '@/components/portal/SchoolSearch';
+import { getTenantRedirectUrl } from '@/lib/utils/urls';
 
 type PortalType = 'SCHOOL' | 'TEACHER' | 'PARENT' | null;
 
@@ -49,7 +50,7 @@ export default function PortalPage() {
     // Rediriger vers le sous-domaine avec le portail
     const subdomain = selectedSchool.slug;
     const portalParam = selectedPortal.toLowerCase();
-    const redirectUrl = `https://${subdomain}.academia-hub.com/login?portal=${portalParam}`;
+    const redirectUrl = getTenantRedirectUrl(subdomain, '/login', { portal: portalParam });
     
     window.location.href = redirectUrl;
   };
