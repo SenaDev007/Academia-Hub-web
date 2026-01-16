@@ -16,6 +16,7 @@ import { ExpensesPrismaController } from './expenses-prisma.controller';
 import { CollectionPrismaController } from './collection-prisma.controller';
 import { TreasuryPrismaController } from './treasury-prisma.controller';
 import { DatabaseModule } from '../database/database.module';
+import { SettingsModule } from '../settings/settings.module';
 // Module 4 - Frais & Priorité de Paiement
 import { PaymentAllocationService } from './payment-allocation.service';
 import { FeeInstallmentService } from './fee-installment.service';
@@ -42,7 +43,7 @@ import { StudentFeeProfileController } from './student-fee-profile.controller';
 import { StudentArrearController } from './student-arrear.controller';
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, SettingsModule],
   controllers: [
     FeesPrismaController,
     PaymentsPrismaController,

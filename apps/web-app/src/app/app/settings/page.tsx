@@ -9,8 +9,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings, Globe, Shield, Brain, MessageSquare, CloudOff, History, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Settings, Globe, Shield, Brain, MessageSquare, CloudOff, History, ToggleLeft, ToggleRight, Seal } from 'lucide-react';
 import { ModuleContainer, ModuleHeader } from '@/components/modules/blueprint';
+import AdministrativeSealsManagement from '@/components/settings/AdministrativeSealsManagement';
+import ElectronicSignaturesManagement from '@/components/settings/ElectronicSignaturesManagement';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<string>('general');
@@ -41,6 +43,7 @@ export default function SettingsPage() {
     { id: 'general', label: 'Général & Identité', icon: Globe },
     { id: 'features', label: 'Modules & Fonctionnalités', icon: ToggleLeft },
     { id: 'security', label: 'Sécurité & Conformité', icon: Shield },
+    { id: 'seals', label: 'Cachets & Signatures', icon: Seal },
     { id: 'orion', label: 'IA ORION', icon: Brain },
     { id: 'atlas', label: 'IA ATLAS', icon: MessageSquare },
     { id: 'offline', label: 'Synchronisation Offline', icon: CloudOff },
@@ -275,6 +278,37 @@ export default function SettingsPage() {
                     Enregistrer
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'seals':
+        return (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="border-b border-gray-200">
+                <div className="flex">
+                  <button
+                    onClick={() => setActiveTab('seals')}
+                    className="px-6 py-4 text-sm font-medium text-blue-600 border-b-2 border-blue-600"
+                  >
+                    Cachets Administratifs
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('signatures')}
+                    className="px-6 py-4 text-sm font-medium text-gray-600 hover:text-gray-800"
+                  >
+                    Signatures Électroniques
+                  </button>
+                </div>
+              </div>
+              <div className="p-6">
+                {activeTab === 'seals' ? (
+                  <AdministrativeSealsManagement />
+                ) : (
+                  <ElectronicSignaturesManagement />
+                )}
               </div>
             </div>
           </div>

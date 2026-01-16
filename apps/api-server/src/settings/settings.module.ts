@@ -7,7 +7,11 @@ import { OrionSettingsService } from './services/orion-settings.service';
 import { AtlasSettingsService } from './services/atlas-settings.service';
 import { OfflineSyncSettingsService } from './services/offline-sync-settings.service';
 import { SettingsHistoryService } from './services/settings-history.service';
+import { AdministrativeSealsService } from './services/administrative-seals.service';
+import { ElectronicSignaturesService } from './services/electronic-signatures.service';
+import { SealGenerationService } from './services/seal-generation.service';
 import { DatabaseModule } from '../database/database.module';
+import { OrionModule } from '../orion/orion.module';
 
 /**
  * Module Paramètres — Centre de contrôle stratégique d'Academia Hub
@@ -22,7 +26,7 @@ import { DatabaseModule } from '../database/database.module';
  * - Historique & audit
  */
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, OrionModule],
   controllers: [SettingsController],
   providers: [
     GeneralSettingsService,
@@ -32,6 +36,9 @@ import { DatabaseModule } from '../database/database.module';
     AtlasSettingsService,
     OfflineSyncSettingsService,
     SettingsHistoryService,
+    AdministrativeSealsService,
+    ElectronicSignaturesService,
+    SealGenerationService,
   ],
   exports: [
     GeneralSettingsService,
@@ -41,6 +48,9 @@ import { DatabaseModule } from '../database/database.module';
     AtlasSettingsService,
     OfflineSyncSettingsService,
     SettingsHistoryService,
+    AdministrativeSealsService,
+    ElectronicSignaturesService,
+    SealGenerationService,
   ],
 })
 export class SettingsModule {}

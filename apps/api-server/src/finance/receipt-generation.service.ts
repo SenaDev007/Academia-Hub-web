@@ -12,6 +12,8 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/database/prisma.service';
 import { ReceiptNotificationService } from './receipt-notification.service';
+import { AdministrativeSealsService } from '../settings/services/administrative-seals.service';
+import { ElectronicSignaturesService } from '../settings/services/electronic-signatures.service';
 import { Decimal } from '@prisma/client/runtime/library';
 import * as crypto from 'crypto';
 import * as puppeteer from 'puppeteer';
@@ -26,6 +28,8 @@ export class ReceiptGenerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationService: ReceiptNotificationService,
+    private readonly sealsService: AdministrativeSealsService,
+    private readonly signaturesService: ElectronicSignaturesService,
   ) {
     // Créer le dossier de stockage s'il n'existe pas
     this.ensureReceiptsDirectory();
@@ -152,7 +156,7 @@ export class ReceiptGenerationService {
   /**
    * Génère le PDF du reçu avec Puppeteer
    */
-  private async generateReceiptPDF(receipt: any, payment: any): Promise<string> {
+  private async generateReceiptPDF(receipt: any, payment: any, sealVersion?: any): Promise<string> {
     const student = payment.student;
     const enrollment = student.studentEnrollments?.[0];
     const institution = student.tenant.schools?.[0]?.name || student.tenant.name;
@@ -190,6 +194,10 @@ export class ReceiptGenerationService {
       qrCodeUrl: receipt.verificationToken
         ? `${process.env.PUBLIC_URL || 'https://verify.academiahub.africa'}/receipt/${receipt.verificationToken}`
         : null,
+      sealVersion: sealVersion ? {
+        fileUrl: sealVersion.generatedFileUrl,
+        position: 'bottom-right',
+      } : null,
     };
 
     // Générer le HTML du reçu
@@ -278,6 +286,40 @@ export class ReceiptGenerationService {
       font-weight: bold;
       font-size: 16px;
     }
+    .seal-container {
+      position: absolute;
+      width: 150px;
+      height: 150px;
+    }
+    .seal-bottom-right {
+      bottom: 20px;
+      right: 20px;
+    }
+    .seal-bottom-left {
+      bottom: 20px;
+      left: 20px;
+    }
+    .seal-top-right {
+      top: 20px;
+      right: 20px;
+    }
+    .seal-top-left {
+      top: 20px;
+      left: 20px;
+    }
+    .seal-center {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    .seal-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    body {
+      position: relative;
+    }
   </style>
 </head>
 <body>
@@ -348,6 +390,12 @@ export class ReceiptGenerationService {
     ${data.qrCodeUrl ? `<p>QR Code de vérification: ${data.qrCodeUrl}</p>` : ''}
     <p>Mention légale: Reçu officiel - Non modifiable</p>
   </div>
+
+  ${data.sealVersion ? `
+  <div class="seal-container seal-${data.sealVersion.position || 'bottom-right'}">
+    <img src="${data.sealVersion.fileUrl}" alt="Cachet administratif" class="seal-image" />
+  </div>
+  ` : ''}
 </body>
 </html>
     `;
