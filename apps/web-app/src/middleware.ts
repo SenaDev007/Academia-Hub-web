@@ -137,17 +137,73 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Routes app (nécessitent un subdomain)
+  // Routes app (nécessitent un subdomain ou tenant_id)
   if (pathname.startsWith('/app')) {
-    if (!subdomain) {
+    // En local, vérifier le paramètre tenant dans l'URL
+    const isLocal = process.env.NODE_ENV === 'development';
+    const tenantParam = request.nextUrl.searchParams.get('tenant');
+    
+    // Si pas de subdomain ET pas de tenant param → redirection vers portail
+    if (!subdomain && !tenantParam) {
       const mainDomain = getAppBaseUrl();
-      return NextResponse.redirect(new URL('/login', mainDomain));
+      
+      // Logger la tentative d'accès sans tenant
+      try {
+        const logUrl = `${getApiBaseUrl()}/portal/access-log`;
+        fetch(logUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path: pathname,
+            reason: 'NO_TENANT',
+            ipAddress: request.ip || request.headers.get('x-forwarded-for'),
+            userAgent: request.headers.get('user-agent'),
+            timestamp: new Date().toISOString(),
+          }),
+          keepalive: true,
+        }).catch(() => {}); // Ne pas bloquer sur erreur de logging
+      } catch {}
+      
+      return NextResponse.redirect(new URL('/portal', mainDomain));
+    }
+
+    // Résoudre le tenant (subdomain ou param)
+    const tenantIdentifier = subdomain || tenantParam;
+    
+    if (!tenantIdentifier) {
+      const mainDomain = getAppBaseUrl();
+      return NextResponse.redirect(new URL('/portal', mainDomain));
     }
 
     try {
-      const tenant = await resolveTenant(subdomain);
+      const tenant = await resolveTenant(tenantIdentifier);
 
       if (!tenant) {
+        const mainDomain = getAppBaseUrl();
+        
+        // Logger la tentative d'accès à un tenant inexistant
+        try {
+          const logUrl = `${getApiBaseUrl()}/portal/access-log`;
+          fetch(logUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              path: pathname,
+              tenantIdentifier,
+              reason: 'TENANT_NOT_FOUND',
+              ipAddress: request.ip || request.headers.get('x-forwarded-for'),
+              userAgent: request.headers.get('user-agent'),
+              timestamp: new Date().toISOString(),
+            }),
+            keepalive: true,
+          }).catch(() => {});
+        } catch {}
+        
+        return NextResponse.redirect(new URL('/tenant-not-found', mainDomain));
+      }
+
+      // Vérifier que le tenant est actif
+      if (tenant.subscriptionStatus === 'PENDING' || tenant.subscriptionStatus === 'TERMINATED') {
         const mainDomain = getAppBaseUrl();
         return NextResponse.redirect(new URL('/tenant-not-found', mainDomain));
       }
@@ -162,6 +218,26 @@ export async function middleware(request: NextRequest) {
       if (user) {
         tenantResponse.headers.set('X-User-ID', user.id);
       }
+
+      // Logger l'accès réussi
+      try {
+        const logUrl = `${getApiBaseUrl()}/portal/access-log`;
+        fetch(logUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            path: pathname,
+            tenantId: tenant.id,
+            tenantSlug: tenant.slug,
+            reason: 'SUCCESS',
+            ipAddress: request.ip || request.headers.get('x-forwarded-for'),
+            userAgent: request.headers.get('user-agent'),
+            userId: user?.id,
+            timestamp: new Date().toISOString(),
+          }),
+          keepalive: true,
+        }).catch(() => {});
+      } catch {}
 
       return tenantResponse;
     } catch (error) {

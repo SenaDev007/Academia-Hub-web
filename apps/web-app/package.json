@@ -12,7 +12,7 @@
     "check-seo": "node scripts/check-seo.js",
     "generate-sitemap": "node scripts/generate-sitemap.js",
     "prebuild": "npm run optimize-images || true",
-    "lighthouse": "lighthouse http://localhost:3001 --view --output=html --output-path=./lighthouse-report.html"
+    "lighthouse": "lighthouse ${NEXT_PUBLIC_APP_URL:-http://localhost:3001} --view --output=html --output-path=./lighthouse-report.html"
   },
   "dependencies": {
     "@supabase/ssr": "^0.5.2",

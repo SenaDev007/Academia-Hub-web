@@ -1,0 +1,145 @@
+# ============================================================================
+# ENVIRONMENT CONFIGURATION - ACADEMIA HUB
+# ============================================================================
+# 
+# ⚠️ IMPORTANT: Ce fichier contient des informations sensibles
+# Ne jamais commiter ce fichier (déjà dans .gitignore)
+# 
+# INSTRUCTIONS:
+# Copiez ce contenu dans votre fichier .env.local
+# 
+# ============================================================================
+
+# ============================================================================
+# 1. ENVIRONMENT IDENTIFICATION
+# ============================================================================
+# 
+# Définit l'environnement actuel :
+# - local : Développement local (localhost)
+# - preview : Vercel Preview (URLs temporaires)
+# - production : Production (domaine public)
+# 
+# ⚠️ Ne pas modifier cette valeur manuellement en local
+# Elle est détectée automatiquement depuis le hostname
+# ============================================================================
+
+NEXT_PUBLIC_ENV=local
+
+# ============================================================================
+# 2. APPLICATION URLs - LOCAL (localhost)
+# ============================================================================
+# 
+# Configuration pour le développement local
+# Ces valeurs sont utilisées quand NEXT_PUBLIC_ENV=local
+# 
+# ⚠️ IMPORTANT:
+# - Pas de trailing slash (/) à la fin des URLs
+# - NEXT_PUBLIC_BASE_DOMAIN ne doit PAS contenir le protocole (http://)
+# ============================================================================
+
+# URL complète de l'application (avec protocole)
+NEXT_PUBLIC_APP_URL=http://localhost:3001
+
+# Domaine de base (sans protocole, sans trailing slash)
+NEXT_PUBLIC_BASE_DOMAIN=localhost:3001
+
+# URL de l'API Backend (avec protocole, avec /api à la fin)
+NEXT_PUBLIC_API_URL=http://localhost:3000/api
+
+# ============================================================================
+# 3. SUPABASE CONFIGURATION
+# ============================================================================
+# 
+# Configuration Supabase pour l'authentification et la base de données
+# 
+# ⚠️ Ces valeurs sont identiques pour tous les environnements
+# (local, preview, production)
+# 
+# Obtenez ces valeurs depuis:
+# https://app.supabase.com/project/[PROJECT_ID]/settings/api
+# 
+# ============================================================================
+
+# URL du projet Supabase (public - safe to expose)
+NEXT_PUBLIC_SUPABASE_URL=https://ankbtgwlofidxtafdueu.supabase.co
+
+# Clé publique Supabase (public - safe to expose)
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_1XCM6w3jm4368f-P36BaKw_XrCoHmZy
+
+# ============================================================================
+# 4. DATABASE CONNECTION (SERVER-SIDE ONLY)
+# ============================================================================
+# 
+# ⚠️ IMPORTANT: Ces variables sont SERVER-SIDE ONLY
+# NE JAMAIS ajouter NEXT_PUBLIC_ devant ces variables
+# 
+# Ces variables sont utilisées par:
+# - Prisma (migrations, queries)
+# - Server Components
+# - API Routes
+# 
+# ⚠️ Le mot de passe doit être encodé en URL:
+# - @ → %40
+# - ! → %21
+# - # → %23
+# - etc.
+# 
+# ⚠️ En production, utilisez connection pooling (port 6543) pour DATABASE_URL
+# DIRECT_URL doit toujours pointer vers le port 5432 (direct connection)
+# 
+# ============================================================================
+
+# URL de connexion principale (pour Prisma)
+# Format: postgresql://user:password@host:port/database
+DATABASE_URL=postgresql://postgres:C%40ptain.Yehioracadhub202%21@db.ankbtgwlofidxtafdueu.supabase.co:5432/postgres
+
+# URL de connexion directe (pour migrations Prisma uniquement)
+# Toujours utiliser le port 5432 (pas le pooler)
+DIRECT_URL=postgresql://postgres:C%40ptain.Yehioracadhub202%21@db.ankbtgwlofidxtafdueu.supabase.co:5432/postgres
+
+# ============================================================================
+# 5. PLATFORM CONFIGURATION
+# ============================================================================
+# 
+# Identifie la plateforme de déploiement
+# 
+# ============================================================================
+
+NEXT_PUBLIC_PLATFORM=web
+
+# ============================================================================
+# NOTES IMPORTANTES
+# ============================================================================
+# 
+# 1. LOCAL (Développement):
+#    - Ce fichier est déjà configuré pour localhost
+#    - Les valeurs Supabase sont déjà remplies
+#    - Lancez `npm run dev` pour démarrer
+# 
+# 2. PREVIEW (Vercel):
+#    - Configurez les variables dans Vercel Dashboard > Settings > Environment Variables
+#    - Sélectionnez l'environnement "Preview"
+#    - Les URLs sont automatiquement détectées via VERCEL_URL
+#    - Exemple:
+#      NEXT_PUBLIC_ENV=preview
+#      NEXT_PUBLIC_APP_URL=https://academia-hub-abc123.vercel.app
+#      NEXT_PUBLIC_BASE_DOMAIN=academia-hub-abc123.vercel.app
+# 
+# 3. PRODUCTION (Vercel):
+#    - Configurez les variables dans Vercel Dashboard > Settings > Environment Variables
+#    - Sélectionnez l'environnement "Production"
+#    - Définissez:
+#      NEXT_PUBLIC_ENV=production
+#      NEXT_PUBLIC_APP_URL=https://academia-hub.com
+#      NEXT_PUBLIC_BASE_DOMAIN=academia-hub.com
+#      NEXT_PUBLIC_API_URL=https://api.academia-hub.com/api
+#    - Utilisez connection pooling (port 6543) pour DATABASE_URL:
+#      DATABASE_URL=postgresql://postgres.xxx:[PASSWORD]@aws-0-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+#    - DIRECT_URL reste sur port 5432 (direct connection)
+# 
+# 4. SUPABASE:
+#    - Les mêmes valeurs pour tous les environnements
+#    - DATABASE_URL et DIRECT_URL identiques pour local/preview
+#    - En production, utilisez connection pooling pour DATABASE_URL (performance)
+# 
+# ============================================================================

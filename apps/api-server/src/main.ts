@@ -21,15 +21,25 @@ async function bootstrap() {
   );
 
   // CORS configuration
+  // ⚠️ IMPORTANT : Ne jamais utiliser localhost en dur
+  // FRONTEND_URL doit être défini dans les variables d'environnement
+  const frontendUrl = process.env.FRONTEND_URL;
+  if (!frontendUrl) {
+    console.warn('⚠️  FRONTEND_URL not set. CORS may not work correctly in production.');
+  }
+  
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: frontendUrl || '*', // En développement uniquement, utiliser * si non défini
     credentials: true,
   });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  console.log(`🚀 Academia Hub API Server is running on: http://localhost:${port}/api`);
+  // Logger l'URL sans hardcoder localhost
+  const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+  const host = process.env.HOST || 'localhost';
+  console.log(`🚀 Academia Hub API Server is running on: ${protocol}://${host}:${port}/api`);
 }
 
 bootstrap();

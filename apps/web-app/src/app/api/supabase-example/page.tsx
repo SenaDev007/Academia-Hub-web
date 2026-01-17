@@ -6,6 +6,7 @@
  */
 
 import { createClient } from '@/utils/supabase/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import { cookies } from 'next/headers';
 
 export default async function SupabaseExamplePage() {

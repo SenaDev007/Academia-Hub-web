@@ -53,44 +53,81 @@ export function getAppEnvironment(): AppEnvironment {
 /**
  * Récupère l'URL de base de l'application
  * 
- * @returns URL de base (ex: http://localhost:3001 ou https://academia-hub.com)
+ * ⚠️ IMPORTANT : Ne jamais utiliser localhost en dur
+ * Utilise uniquement les variables d'environnement
+ * 
+ * @returns URL de base (ex: https://academia-hub.com)
+ * @throws Error si NEXT_PUBLIC_APP_URL n'est pas défini en production
  */
 export function getAppBaseUrl(): string {
-  const env = getAppEnvironment();
-  
-  // Utiliser la variable d'environnement si définie
+  // PRIORITÉ 1 : Variable d'environnement explicite (TOUJOURS UTILISÉE SI DÉFINIE)
   const envUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (envUrl) {
     return envUrl;
   }
   
-  // Fallback selon l'environnement
-  switch (env) {
-    case 'local':
-      return 'http://localhost:3001';
-    case 'preview':
-      // En preview Vercel, utiliser l'URL fournie par Vercel
-      if (typeof window !== 'undefined') {
-        return `${window.location.protocol}//${window.location.host}`;
-      }
-      return process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}`
-        : 'http://localhost:3001';
-    case 'production':
-      // En production, utiliser le domaine de base
-      const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN || 'academia-hub.com';
-      return `https://${baseDomain}`;
-    default:
-      return 'http://localhost:3001';
+  const env = getAppEnvironment();
+  
+  // PRIORITÉ 2 : En preview/production, construire depuis le domaine
+  if (env === 'preview' || env === 'production') {
+    // En preview Vercel, utiliser l'URL fournie par Vercel
+    if (typeof window !== 'undefined') {
+      return `${window.location.protocol}//${window.location.host}`;
+    }
+    
+    // Côté serveur, utiliser VERCEL_URL si disponible
+    if (process.env.VERCEL_URL) {
+      return `https://${process.env.VERCEL_URL}`;
+    }
+    
+    // Sinon, construire depuis NEXT_PUBLIC_BASE_DOMAIN
+    const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
+    if (baseDomain) {
+      // Si le domaine contient déjà le protocole, le retirer
+      const cleanDomain = baseDomain.replace(/^https?:\/\//, '');
+      return `https://${cleanDomain}`;
+    }
+    
+    // En production sans config, erreur explicite
+    if (env === 'production') {
+      throw new Error(
+        'NEXT_PUBLIC_APP_URL or NEXT_PUBLIC_BASE_DOMAIN must be set in production. ' +
+        'Please configure your environment variables.'
+      );
+    }
   }
+  
+  // PRIORITÉ 3 : Local uniquement (fallback pour développement)
+  // ⚠️ Ce fallback ne devrait jamais être utilisé si NEXT_PUBLIC_APP_URL est configuré
+  if (env === 'local') {
+    // En local, essayer de détecter depuis window si disponible
+    if (typeof window !== 'undefined') {
+      return `${window.location.protocol}//${window.location.host}`;
+    }
+    
+    // Dernier recours : utiliser le port par défaut Next.js
+    // ⚠️ Ceci est un fallback de développement uniquement
+    const port = process.env.PORT || '3001';
+    return `http://localhost:${port}`;
+  }
+  
+  // Ne devrait jamais arriver ici
+  throw new Error(
+    'Unable to determine app base URL. Please set NEXT_PUBLIC_APP_URL or NEXT_PUBLIC_BASE_DOMAIN.'
+  );
 }
 
 /**
  * Récupère l'URL de base de l'API
  * 
- * @returns URL de l'API (ex: http://localhost:3000/api)
+ * ⚠️ IMPORTANT : Ne jamais utiliser localhost en dur
+ * Utilise uniquement les variables d'environnement
+ * 
+ * @returns URL de l'API (ex: https://api.academia-hub.com/api)
+ * @throws Error si NEXT_PUBLIC_API_URL n'est pas défini en production
  */
 export function getApiBaseUrl(): string {
+  // PRIORITÉ 1 : Variable d'environnement explicite (TOUJOURS UTILISÉE SI DÉFINIE)
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
   if (envUrl) {
     return envUrl;
@@ -98,55 +135,105 @@ export function getApiBaseUrl(): string {
   
   const env = getAppEnvironment();
   
-  switch (env) {
-    case 'local':
-      return 'http://localhost:3000/api';
-    case 'preview':
-    case 'production':
-      // En preview/prod, l'API est sur le même domaine ou un sous-domaine API
-      const appUrl = getAppBaseUrl();
-      // Si l'API est sur un sous-domaine différent
-      const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
-      if (apiDomain) {
-        return `https://${apiDomain}/api`;
-      }
-      // Sinon, utiliser le même domaine
-      return `${appUrl}/api`;
-    default:
-      return 'http://localhost:3000/api';
+  // PRIORITÉ 2 : En preview/production, construire depuis le domaine
+  if (env === 'preview' || env === 'production') {
+    // Si l'API est sur un sous-domaine différent
+    const apiDomain = process.env.NEXT_PUBLIC_API_DOMAIN;
+    if (apiDomain) {
+      const cleanDomain = apiDomain.replace(/^https?:\/\//, '');
+      return `https://${cleanDomain}/api`;
+    }
+    
+    // Sinon, utiliser le même domaine que l'app
+    const appUrl = getAppBaseUrl();
+    return `${appUrl}/api`;
   }
+  
+  // PRIORITÉ 3 : Local uniquement (fallback pour développement)
+  // ⚠️ Ce fallback ne devrait jamais être utilisé si NEXT_PUBLIC_API_URL est configuré
+  if (env === 'local') {
+    // En local, essayer de détecter depuis window si disponible
+    if (typeof window !== 'undefined') {
+      // Si on est sur le même port, utiliser /api
+      const currentHost = window.location.host;
+      return `${window.location.protocol}//${currentHost}/api`;
+    }
+    
+    // Dernier recours : utiliser le port par défaut API
+    // ⚠️ Ceci est un fallback de développement uniquement
+    const port = process.env.API_PORT || '3000';
+    return `http://localhost:${port}/api`;
+  }
+  
+  // Ne devrait jamais arriver ici
+  throw new Error(
+    'Unable to determine API base URL. Please set NEXT_PUBLIC_API_URL or NEXT_PUBLIC_API_DOMAIN.'
+  );
 }
 
 /**
  * Récupère le domaine de base (sans protocole)
  * 
- * @returns Domaine de base (ex: localhost:3001 ou academia-hub.com)
+ * ⚠️ IMPORTANT : Ne jamais utiliser localhost en dur
+ * Utilise uniquement les variables d'environnement
+ * 
+ * @returns Domaine de base (ex: academia-hub.com)
+ * @throws Error si NEXT_PUBLIC_BASE_DOMAIN n'est pas défini en production
  */
 export function getBaseDomain(): string {
+  // PRIORITÉ 1 : Variable d'environnement explicite
   const baseDomain = process.env.NEXT_PUBLIC_BASE_DOMAIN;
   if (baseDomain) {
-    return baseDomain;
+    // Retirer le protocole si présent
+    return baseDomain.replace(/^https?:\/\//, '');
   }
   
   const env = getAppEnvironment();
   
-  switch (env) {
-    case 'local':
-      return 'localhost:3001';
-    case 'preview':
-      if (typeof window !== 'undefined') {
-        return window.location.host;
-      }
-      return process.env.VERCEL_URL || 'localhost:3001';
-    case 'production':
-      return 'academia-hub.com';
-    default:
-      return 'localhost:3001';
+  // PRIORITÉ 2 : En preview/production, extraire depuis l'URL actuelle
+  if (env === 'preview' || env === 'production') {
+    if (typeof window !== 'undefined') {
+      return window.location.host;
+    }
+    
+    // Côté serveur, utiliser VERCEL_URL si disponible
+    if (process.env.VERCEL_URL) {
+      return process.env.VERCEL_URL;
+    }
+    
+    // En production sans config, erreur explicite
+    if (env === 'production') {
+      throw new Error(
+        'NEXT_PUBLIC_BASE_DOMAIN must be set in production. ' +
+        'Please configure your environment variables.'
+      );
+    }
   }
+  
+  // PRIORITÉ 3 : Local uniquement (fallback pour développement)
+  // ⚠️ Ce fallback ne devrait jamais être utilisé si NEXT_PUBLIC_BASE_DOMAIN est configuré
+  if (env === 'local') {
+    if (typeof window !== 'undefined') {
+      return window.location.host;
+    }
+    
+    // Dernier recours : utiliser le port par défaut Next.js
+    // ⚠️ Ceci est un fallback de développement uniquement
+    const port = process.env.PORT || '3001';
+    return `localhost:${port}`;
+  }
+  
+  // Ne devrait jamais arriver ici
+  throw new Error(
+    'Unable to determine base domain. Please set NEXT_PUBLIC_BASE_DOMAIN.'
+  );
 }
 
 /**
  * Construit l'URL de redirection vers un tenant (sous-domaine)
+ * 
+ * @deprecated Utiliser getTenantRedirectUrl de tenant-redirect.ts à la place
+ * Cette fonction est conservée pour compatibilité ascendante
  * 
  * @param tenantSlug - Slug du tenant (ex: "college-x")
  * @param path - Chemin optionnel (ex: "/login")
@@ -158,34 +245,13 @@ export function getTenantRedirectUrl(
   path: string = '/app',
   queryParams?: Record<string, string>
 ): string {
-  const env = getAppEnvironment();
-  const baseDomain = getBaseDomain();
-  
-  // En local, utiliser un paramètre de requête au lieu d'un sous-domaine
-  if (env === 'local') {
-    const url = new URL(path, getAppBaseUrl());
-    url.searchParams.set('tenant', tenantSlug);
-    if (queryParams) {
-      Object.entries(queryParams).forEach(([key, value]) => {
-        url.searchParams.set(key, value);
-      });
-    }
-    return url.toString();
-  }
-  
-  // En preview/production, utiliser le sous-domaine
-  const protocol = env === 'local' ? 'http' : 'https';
-  const subdomain = tenantSlug;
-  const domain = `${subdomain}.${baseDomain}`;
-  
-  const url = new URL(path, `${protocol}://${domain}`);
-  if (queryParams) {
-    Object.entries(queryParams).forEach(([key, value]) => {
-      url.searchParams.set(key, value);
-    });
-  }
-  
-  return url.toString();
+  // Utiliser la nouvelle implémentation
+  const { getTenantRedirectUrl: newGetTenantRedirectUrl } = require('./tenant-redirect');
+  return newGetTenantRedirectUrl({
+    tenantSlug,
+    path,
+    queryParams,
+  });
 }
 
 /**

@@ -16,7 +16,8 @@ import type {
   DirectionKpiSummary,
 } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { getApiBaseUrl } from '@/lib/utils/urls';
+const API_URL = getApiBaseUrl();
 
 /**
  * Charge les KPI financiers mensuels depuis kpi_financial_monthly

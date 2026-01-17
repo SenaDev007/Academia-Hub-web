@@ -50,8 +50,8 @@ $$;
 -- ----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION auth.tenant_id()
-RETURNS UUID AS $$
-  SELECT (current_setting('app.current_tenant_id', TRUE))::UUID;
+RETURNS TEXT AS $$
+  SELECT current_setting('app.current_tenant_id', TRUE);
 $$ LANGUAGE SQL STABLE;
 
 -- Fonction pour vérifier si l'utilisateur est super admin
@@ -94,7 +94,7 @@ CREATE POLICY user_tenant_isolation ON users
   FOR ALL
   USING (
     auth.is_super_admin() OR
-    (tenant_id IS NOT NULL AND tenant_id = auth.tenant_id())
+    ("tenantId" IS NOT NULL AND "tenantId" = auth.tenant_id())
   );
 
 -- Students (isolation par tenant)
@@ -105,7 +105,7 @@ CREATE POLICY student_tenant_isolation ON students
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 CREATE POLICY student_parent_access ON students
@@ -114,9 +114,10 @@ CREATE POLICY student_parent_access ON students
     -- Un parent peut voir ses enfants via la table student_guardians
     EXISTS (
       SELECT 1 FROM student_guardians sg
-      JOIN guardians g ON sg.guardian_id = g.id
-      WHERE sg.student_id = students.id
-      AND g.user_id = (current_setting('app.current_user_id', TRUE))::UUID
+      JOIN guardians g ON sg."guardianId" = g.id
+      WHERE sg."studentId" = students.id
+      -- TODO: Ajouter liaison User-Guardian via email ou autre identifiant
+      AND g."tenantId" = auth.tenant_id()
     )
   );
 
@@ -128,7 +129,7 @@ CREATE POLICY academic_year_tenant_isolation ON academic_years
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- SchoolLevel (isolation par tenant)
@@ -139,7 +140,7 @@ CREATE POLICY school_level_tenant_isolation ON school_levels
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Classes (isolation par tenant)
@@ -150,7 +151,7 @@ CREATE POLICY class_tenant_isolation ON classes
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Teachers (isolation par tenant)
@@ -161,7 +162,7 @@ CREATE POLICY teacher_tenant_isolation ON teachers
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Payments (isolation par tenant)
@@ -172,7 +173,7 @@ CREATE POLICY payment_tenant_isolation ON payments
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- StudentFees (isolation par tenant)
@@ -183,7 +184,7 @@ CREATE POLICY student_fee_tenant_isolation ON student_fees
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- FeeDefinitions (isolation par tenant)
@@ -194,7 +195,7 @@ CREATE POLICY fee_definition_tenant_isolation ON fee_definitions
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Expenses (isolation par tenant)
@@ -205,7 +206,7 @@ CREATE POLICY expense_tenant_isolation ON expenses
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Exams (isolation par tenant)
@@ -216,7 +217,7 @@ CREATE POLICY exam_tenant_isolation ON exams
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Grades (isolation par tenant)
@@ -227,7 +228,7 @@ CREATE POLICY grade_tenant_isolation ON grades
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Guardians (isolation par tenant + accès parent)
@@ -238,8 +239,7 @@ CREATE POLICY guardian_tenant_isolation ON guardians
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id()) OR
-    (user_id = (current_setting('app.current_user_id', TRUE))::UUID)
+    ("tenantId" = auth.tenant_id())
   );
 
 -- StudentGuardians (isolation par tenant)
@@ -252,8 +252,8 @@ CREATE POLICY student_guardian_tenant_isolation ON student_guardians
     auth.is_orion() OR
     EXISTS (
       SELECT 1 FROM students s
-      WHERE s.id = student_guardians.student_id
-      AND s.tenant_id = auth.tenant_id()
+      WHERE s.id = student_guardians."studentId"
+      AND s."tenantId" = auth.tenant_id()
     )
   );
 
@@ -265,7 +265,7 @@ CREATE POLICY message_tenant_isolation ON messages
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Staff (isolation par tenant)
@@ -276,7 +276,7 @@ CREATE POLICY staff_tenant_isolation ON staff
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Payrolls (isolation par tenant)
@@ -287,7 +287,7 @@ CREATE POLICY payroll_tenant_isolation ON payrolls
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- Meetings (isolation par tenant)
@@ -298,7 +298,7 @@ CREATE POLICY meeting_tenant_isolation ON meetings
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- AuditLogs (lecture seule, isolation par tenant)
@@ -309,7 +309,7 @@ CREATE POLICY audit_log_tenant_isolation ON audit_logs
   USING (
     auth.is_super_admin() OR
     auth.is_orion() OR
-    (tenant_id = auth.tenant_id())
+    ("tenantId" = auth.tenant_id())
   );
 
 -- ORION Tables (lecture seule globale pour ORION)
@@ -320,19 +320,19 @@ ALTER TABLE orion_reports ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY orion_read_global ON kpi_definitions
   FOR SELECT
-  USING (auth.is_super_admin() OR auth.is_orion() OR (tenant_id = auth.tenant_id()));
+  USING (auth.is_super_admin() OR auth.is_orion() OR ("tenantId" = auth.tenant_id()));
 
 CREATE POLICY orion_read_global ON kpi_snapshots
   FOR SELECT
-  USING (auth.is_super_admin() OR auth.is_orion() OR (tenant_id = auth.tenant_id()));
+  USING (auth.is_super_admin() OR auth.is_orion() OR ("tenantId" = auth.tenant_id()));
 
 CREATE POLICY orion_read_global ON orion_alerts
   FOR SELECT
-  USING (auth.is_super_admin() OR auth.is_orion() OR (tenant_id = auth.tenant_id()));
+  USING (auth.is_super_admin() OR auth.is_orion() OR ("tenantId" = auth.tenant_id()));
 
 CREATE POLICY orion_read_global ON orion_reports
   FOR SELECT
-  USING (auth.is_super_admin() OR auth.is_orion() OR (tenant_id = auth.tenant_id()));
+  USING (auth.is_super_admin() OR auth.is_orion() OR ("tenantId" = auth.tenant_id()));
 
 -- ----------------------------------------------------------------------------
 -- 4. CONFIGURER SUPABASE AUTH REDIRECTS

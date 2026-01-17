@@ -9,9 +9,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import { generateSubdomain, generateUniqueSubdomain, validateSubdomain } from '@/lib/utils/subdomain';
 
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = getApiBaseUrl();
 
 interface OnboardingRequest {
   // Informations établissement
@@ -214,7 +215,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Vérifier la disponibilité
-  const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const API_URL = getApiBaseUrl();
   
   try {
     const response = await fetch(`${API_URL}/tenants/by-subdomain/${subdomain}`, {

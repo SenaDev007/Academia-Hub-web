@@ -8,7 +8,8 @@ export enum FeatureCode {
   BILINGUAL_TRACK = 'BILINGUAL_TRACK',
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { getApiBaseUrl } from '@/lib/utils/urls';
+const API_URL = getApiBaseUrl();
 
 /**
  * Vérifie si une feature est activée pour le tenant actuel

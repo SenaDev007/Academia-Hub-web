@@ -18,6 +18,8 @@
 import { useState, useEffect } from 'react';
 import PilotageTopBar from './PilotageTopBar';
 import PilotageSidebar from './PilotageSidebar';
+import { OfflineStatusBadge } from '@/components/offline/OfflineStatusBadge';
+import { SyncToast } from '@/components/offline/SyncToast';
 import type { User, Tenant } from '@/types';
 
 interface PilotageLayoutProps {
@@ -50,6 +52,12 @@ export default function PilotageLayout({ user, tenant, children }: PilotageLayou
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Badge Offline/Online Status */}
+      <OfflineStatusBadge />
+      
+      {/* Toast Synchronisation */}
+      <SyncToast />
+
       {/* Top Bar */}
       <PilotageTopBar user={user} tenant={tenant} />
 

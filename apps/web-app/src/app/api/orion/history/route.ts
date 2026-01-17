@@ -5,9 +5,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import type { OrionAnalysisHistory } from '@/types';
 
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const API_URL = getApiBaseUrl();
 
 /**
  * GET /api/orion/history

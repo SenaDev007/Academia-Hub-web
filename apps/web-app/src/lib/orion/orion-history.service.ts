@@ -11,7 +11,8 @@
 
 import type { OrionAnalysisHistory, OrionResponse, OrionMonthlySummary } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { getApiBaseUrl } from '@/lib/utils/urls';
+const API_URL = getApiBaseUrl();
 
 /**
  * Journalise une requête ORION

@@ -5,9 +5,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import { getServerSession } from 'next-auth';
 
-const API_BASE_URL = process.env.API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = getApiBaseUrlForRoutes();
 
 export async function POST(
   request: NextRequest,

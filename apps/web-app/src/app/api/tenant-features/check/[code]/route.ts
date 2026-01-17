@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import type { NextRequest } from 'next/server';
 
 // Endpoint mock pour les features par tenant.

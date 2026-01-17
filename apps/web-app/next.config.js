@@ -48,10 +48,15 @@ const nextConfig = {
   // Variables d'environnement
   // Note: NEXT_PUBLIC_* sont automatiquement exposées côté client
   // Les autres variables sont uniquement côté serveur
+  // ⚠️ IMPORTANT : Ne pas utiliser de fallback localhost en dur
+  // Les variables d'environnement DOIVENT être définies dans .env.local / Vercel
   env: {
-    API_URL: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api',
+    // API_URL : Utiliser uniquement les variables d'environnement
+    // En production, ces variables DOIVENT être définies
+    API_URL: process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || undefined,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || undefined,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || undefined,
+    NEXT_PUBLIC_BASE_DOMAIN: process.env.NEXT_PUBLIC_BASE_DOMAIN || undefined,
     NEXT_PUBLIC_PLATFORM: process.env.NEXT_PUBLIC_PLATFORM || 'web',
   },
   

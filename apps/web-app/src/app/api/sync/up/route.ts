@@ -8,10 +8,12 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import type { SyncUpRequest, SyncUpResponse, OutboxEvent } from '@/types';
 import { getServerSession } from '@/lib/auth/session';
 
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
+const API_URL = getApiBaseUrlForRoutes();
 
 /**
  * POST /api/sync/up

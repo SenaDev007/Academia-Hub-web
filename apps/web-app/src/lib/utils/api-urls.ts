@@ -1,0 +1,39 @@
+/**
+ * ============================================================================
+ * API URL HELPER - ROUTES API NEXT.JS
+ * ============================================================================
+ * 
+ * Helper pour obtenir l'URL de l'API dans les routes API Next.js
+ * Utilise le helper centralisé getApiBaseUrl()
+ * 
+ * ⚠️ IMPORTANT : Ne jamais utiliser localhost en dur
+ * 
+ * ============================================================================
+ */
+
+import { getApiBaseUrl } from './urls';
+
+/**
+ * Récupère l'URL de base de l'API pour les routes API Next.js
+ * 
+ * Cette fonction est optimisée pour être utilisée dans les routes API
+ * où process.env est disponible mais window ne l'est pas.
+ * 
+ * @returns URL de base de l'API (ex: https://api.academia-hub.com/api)
+ */
+export function getApiBaseUrlForRoutes(): string {
+  // Utiliser le helper centralisé
+  return getApiBaseUrl();
+}
+
+/**
+ * Construit une URL API complète à partir d'un chemin
+ * 
+ * @param path - Chemin relatif (ex: "/auth/login")
+ * @returns URL complète de l'API
+ */
+export function getApiUrlForRoutes(path: string): string {
+  const baseUrl = getApiBaseUrlForRoutes();
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return new URL(normalizedPath, baseUrl).toString();
+}

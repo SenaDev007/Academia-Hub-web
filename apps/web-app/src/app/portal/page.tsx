@@ -15,7 +15,7 @@ import { useState } from 'react';
 import { Building2, GraduationCap, Users, Search, ArrowRight, Shield, CheckCircle } from 'lucide-react';
 import PremiumHeader from '@/components/layout/PremiumHeader';
 import SchoolSearch from '@/components/portal/SchoolSearch';
-import { getTenantRedirectUrl } from '@/lib/utils/urls';
+import { useTenantRedirect } from '@/lib/hooks/useTenantRedirect';
 
 type PortalType = 'SCHOOL' | 'TEACHER' | 'PARENT' | null;
 
@@ -33,6 +33,7 @@ export default function PortalPage() {
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const { redirectToTenant } = useTenantRedirect();
 
   const handlePortalSelect = (portal: PortalType) => {
     setSelectedPortal(portal);
@@ -44,15 +45,17 @@ export default function PortalPage() {
     setSelectedSchool(school);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!selectedSchool || !selectedPortal) return;
 
-    // Rediriger vers le sous-domaine avec le portail
-    const subdomain = selectedSchool.slug;
-    const portalParam = selectedPortal.toLowerCase();
-    const redirectUrl = getTenantRedirectUrl(subdomain, '/login', { portal: portalParam });
-    
-    window.location.href = redirectUrl;
+    // Rediriger vers le tenant avec logging automatique
+    await redirectToTenant({
+      tenantSlug: selectedSchool.slug,
+      tenantId: selectedSchool.id,
+      path: '/login',
+      portalType: selectedPortal,
+      queryParams: { portal: selectedPortal.toLowerCase() },
+    });
   };
 
   const handleBack = () => {

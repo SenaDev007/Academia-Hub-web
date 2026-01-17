@@ -14,6 +14,7 @@ import { OrionInitService } from './services/orion-init.service';
 import { PortalAuthService } from './services/portal-auth.service';
 import { PublicPortalController } from './controllers/public-portal.controller';
 import { PortalController } from './controllers/portal.controller';
+import { PortalLogController } from './controllers/portal-log.controller';
 import { PortalAuthController } from './controllers/portal-auth.controller';
 import { OrionModule } from '../orion/orion.module';
 
@@ -42,6 +43,7 @@ import { OrionModule } from '../orion/orion.module';
     PublicPortalController,
     PortalController,
     PortalAuthController,
+    PortalLogController,
   ],
   exports: [
     SchoolSearchService,

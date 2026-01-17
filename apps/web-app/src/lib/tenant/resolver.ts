@@ -8,7 +8,8 @@
 import { headers } from 'next/headers';
 import type { Tenant } from '@/types';
 
-const API_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+import { getApiBaseUrl } from '@/lib/utils/urls';
+const API_URL = getApiBaseUrl();
 
 /**
  * Extrait le sous-domaine depuis les headers

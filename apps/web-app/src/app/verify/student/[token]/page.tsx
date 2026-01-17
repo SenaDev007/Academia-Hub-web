@@ -52,7 +52,8 @@ export default function PublicVerificationPage() {
   const verifyToken = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+      const { getApiBaseUrl } = await import('@/lib/utils/urls');
+      const apiUrl = getApiBaseUrl();
       const response = await fetch(
         `${apiUrl}/public/verify/${token}`
       );

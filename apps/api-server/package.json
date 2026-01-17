@@ -28,6 +28,7 @@
     "migrate:sqlite:down": "ts-node scripts/sqlite-migration-manager.ts down",
     "validate:schema": "ts-node scripts/validate-schema-conformity.ts",
     "analyze:schema": "ts-node scripts/analyze-schema.ts",
+    "verify:rls": "ts-node scripts/verify-rls.ts",
     "migrate:generate-safe": "ts-node scripts/generate-safe-migrations.ts",
     "migrate:validate": "ts-node scripts/validate-migrations.ts",
     "migrate:status": "npx prisma migrate status --schema=prisma/schema.prisma",
@@ -105,5 +106,8 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
   }
 }

@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import type { OrionMonthlySummary } from '@/types';
 import {
   loadFinancialKpi,

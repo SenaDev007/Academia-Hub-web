@@ -7,20 +7,23 @@
 
 import apiClient from '@/lib/api/client';
 import type { Tenant } from '@/types';
-import { getTenantRedirectUrl } from '@/lib/utils/urls';
+import { redirectToTenant } from '@/lib/utils/tenant-redirect';
 
 /**
  * Change le tenant actif pour l'utilisateur connecté
- * Redirige vers le sous-domaine du nouveau tenant
+ * Redirige vers le sous-domaine du nouveau tenant avec logging
  */
 export async function switchTenant(tenantId: string, subdomain: string): Promise<void> {
   try {
     // Mettre à jour le tenant actif côté backend
     await apiClient.post('/auth/switch-tenant', { tenantId });
     
-    // Rediriger vers le sous-domaine du nouveau tenant
-    const redirectUrl = getTenantRedirectUrl(subdomain, '/app');
-    window.location.href = redirectUrl;
+    // Rediriger vers le sous-domaine du nouveau tenant avec logging
+    await redirectToTenant({
+      tenantId,
+      tenantSlug: subdomain,
+      path: '/app',
+    });
   } catch (error) {
     console.error('Error switching tenant:', error);
     throw new Error('Erreur lors du changement d\'établissement');

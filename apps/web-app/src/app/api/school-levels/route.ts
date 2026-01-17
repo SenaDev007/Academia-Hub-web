@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 
 // Endpoint mock pour retourner une liste de niveaux scolaires
 // Permet au dashboard de fonctionner en attendant l'API Nest réelle.

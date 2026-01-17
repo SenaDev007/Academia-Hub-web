@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import { login, LoginCredentials } from '@/services/auth.service';
 import { setServerSession } from '@/lib/auth/session';
 

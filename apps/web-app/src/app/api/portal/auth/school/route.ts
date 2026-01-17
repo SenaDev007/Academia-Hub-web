@@ -5,6 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
 import { getApiBaseUrl } from '@/lib/utils/urls';
 
 const API_BASE_URL = getApiBaseUrl();
