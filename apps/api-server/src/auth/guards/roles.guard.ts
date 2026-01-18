@@ -1,57 +1,50 @@
 /**
- * ============================================================================
- * ROLES GUARD - RBAC STRICT
- * ============================================================================
+ * Roles Guard
  * 
- * Guard pour vérifier que l'utilisateur a l'un des rôles requis
- * 
- * ============================================================================
+ * Guard pour vérifier les rôles des utilisateurs
  */
 
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private prisma: PrismaService
+  ) {}
 
-  canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (!requiredRoles || requiredRoles.length === 0) {
-      // Aucun rôle requis, autoriser l'accès
-      return true;
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const requiredRoles = this.reflector.get<string[]>('roles', context.getHandler());
+    
+    if (!requiredRoles) {
+      return true; // Pas de rôle requis
     }
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
     if (!user) {
-      throw new ForbiddenException('User not authenticated');
+      return false;
     }
 
-    // Super admin a accès à tout
-    if (user.isSuperAdmin) {
-      return true;
+    // Vérifier si l'utilisateur est Super Admin
+    if (requiredRoles.includes('SUPER_ADMIN')) {
+      const dbUser = await this.prisma.user.findUnique({
+        where: { id: user.id },
+        select: { isSuperAdmin: true, role: true },
+      });
+
+      return dbUser?.isSuperAdmin === true || dbUser?.role === 'SUPER_ADMIN';
     }
 
-    // Vérifier si l'utilisateur a l'un des rôles requis
-    const userRoles = user.roles || [];
-    const hasRequiredRole = requiredRoles.some(role => 
-      userRoles.some((userRole: any) => userRole.name === role || userRole === role)
-    );
+    // Vérifier les autres rôles
+    const dbUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: { role: true },
+    });
 
-    if (!hasRequiredRole) {
-      throw new ForbiddenException(
-        `Access denied. Required roles: ${requiredRoles.join(', ')}`
-      );
-    }
-
-    return true;
+    return requiredRoles.includes(dbUser?.role || '');
   }
 }
-

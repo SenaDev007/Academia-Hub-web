@@ -46,12 +46,14 @@ export function useAuth() {
   }, []);
 
   const logout = async () => {
+    // Utiliser le hook useSecureLogout pour le flow complet
+    // Cette fonction est conservée pour compatibilité mais devrait être remplacée
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
       setTenant(null);
       setIsAuthenticated(false);
-      router.push('/login');
+      router.push('/portal');
     } catch (error) {
       console.error('Error logging out:', error);
     }

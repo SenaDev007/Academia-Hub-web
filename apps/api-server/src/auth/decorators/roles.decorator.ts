@@ -1,19 +1,9 @@
 /**
- * ============================================================================
- * ROLES DECORATOR - RBAC STRICT
- * ============================================================================
+ * Roles Decorator
  * 
- * Decorator pour spécifier les rôles requis pour accéder à une route
- * 
- * Usage:
- * @Roles('admin', 'super_admin')
- * @Get()
- * async findAll() { ... }
- * 
- * ============================================================================
+ * Décorateur pour spécifier les rôles requis
  */
 
 import { SetMetadata } from '@nestjs/common';
 
-export const ROLES_KEY = 'roles';
-export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+export const Roles = (...roles: string[]) => SetMetadata('roles', roles);

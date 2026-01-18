@@ -243,6 +243,11 @@ model Tenant {
   // Module 8 - ORION
   orionInsights                    OrionInsight[]
   orionAuditLogs                   OrionAuditLog[]
+  // OTP & Device Tracking
+  userDevices                      UserDevice[]
+  otpCodes                         OtpCode[]
+  deviceSessions                   DeviceSession[]
+  authAuditLogs                    AuthAuditLog[]
 
   gedDocuments                GedDocument[]
   attendanceRecords           AttendanceRecord[]
@@ -813,9 +818,145 @@ model User {
   qhsRiskRegisterOwners     QhsRiskRegister[]     @relation("QhsRiskRegisterOwner")
   patronatUsers             PatronatUser[]        @relation("PatronatUserUser")
 
+  // Relations OTP & Devices
+  userDevices                                  UserDevice[]
+  otpCodes                                     OtpCode[]
+  deviceSessions                               DeviceSession[]
+  authAuditLogs                                AuthAuditLog[]
+  createdPatronatUsers                         PatronatUser[]              @relation("PatronatUserCreator")
+
   @@index([tenantId, role])
   @@index([email])
   @@map("users")
+}
+
+// ============================================================================
+// OTP & DEVICE TRACKING - Authentification Contextuelle
+// ============================================================================
+
+model UserDevice {
+  id           String    @id @default(uuid())
+  userId       String
+  tenantId     String
+  deviceHash   String    @unique
+  deviceName   String?
+  deviceType   String // 'desktop' | 'tablet' | 'mobile'
+  userAgent    String?
+  ipAddress    String?
+  isTrusted    Boolean   @default(false)
+  lastUsedAt   DateTime?
+  trustedAt    DateTime?
+  revokedAt    DateTime?
+  metadata     Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user                                    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant                                  Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  otpCodes                                OtpCode[]
+  deviceSessions                          DeviceSession[]
+  authAuditLogs                           AuthAuditLog[]
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([userId, tenantId])
+  @@index([isTrusted])
+  @@map("user_devices")
+}
+
+model OtpCode {
+  id          String    @id @default(uuid())
+  userId      String
+  tenantId    String
+  deviceId    String?
+  code        String
+  codeHash    String
+  purpose     String // 'LOGIN' | 'DEVICE_VERIFICATION' | 'SENSITIVE_ACTION'
+  phoneNumber String
+  isUsed      Boolean   @default(false)
+  isExpired   Boolean   @default(false)
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3)
+  expiresAt   DateTime
+  usedAt      DateTime?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  device       UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([deviceId])
+  @@index([codeHash])
+  @@index([expiresAt])
+  @@index([isUsed])
+  @@index([userId, tenantId])
+  @@map("otp_codes")
+}
+
+model DeviceSession {
+  id              String    @id @default(uuid())
+  userId          String
+  tenantId        String
+  academicYearId  String
+  deviceId        String
+  sessionToken    String    @unique
+  refreshToken   String?
+  ipAddress       String?
+  userAgent       String?
+  isActive        Boolean   @default(true)
+  expiresAt       DateTime
+  lastActivityAt  DateTime  @default(now())
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tenant            Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear      AcademicYear      @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  device            UserDevice        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  authAuditLogs     AuthAuditLog[]
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([deviceId])
+  @@index([academicYearId])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@index([userId, tenantId, academicYearId])
+  @@map("device_sessions")
+}
+
+model AuthAuditLog {
+  id          String   @id @default(uuid())
+  userId      String?
+  tenantId    String?
+  deviceId    String?
+  sessionId   String?
+  action      String // 'LOGIN' | 'LOGOUT' | 'OTP_SENT' | 'OTP_VERIFIED' | 'OTP_FAILED' | 'DEVICE_TRUSTED' | 'DEVICE_REVOKED' | 'SESSION_EXPIRED' | 'CONTEXT_CHANGED'
+  ipAddress   String?
+  userAgent   String?
+  status      String // 'SUCCESS' | 'FAILED' | 'BLOCKED'
+  reason      String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user        User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  tenant      Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  device      UserDevice?    @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  session     DeviceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@index([deviceId])
+  @@index([sessionId])
+  @@index([action])
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId, tenantId])
+  @@map("auth_audit_logs")
 }
 
 model Role {

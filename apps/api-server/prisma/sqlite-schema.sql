@@ -248,6 +248,148 @@ CREATE INDEX IF NOT EXISTS idx_student_documents_sync_status ON student_document
 CREATE INDEX IF NOT EXISTS idx_student_documents_local_updated_at ON student_documents(local_updated_at);
 
 -- ============================================================================
+-- TABLE 6: USER_DEVICES (OTP & Device Tracking)
+-- ============================================================================
+-- 
+-- Correspondance PostgreSQL : table "user_devices"
+-- Pas de colonnes techniques offline (table serveur uniquement)
+-- 
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS user_devices (
+  -- Colonnes métier (identiques à PostgreSQL)
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  tenantId TEXT NOT NULL,
+  deviceHash TEXT NOT NULL UNIQUE,
+  deviceName TEXT,
+  deviceType TEXT NOT NULL CHECK(deviceType IN ('desktop', 'tablet', 'mobile')),
+  userAgent TEXT,
+  ipAddress TEXT,
+  isTrusted INTEGER NOT NULL DEFAULT 0,  -- Boolean → INTEGER
+  lastUsedAt TEXT,  -- DateTime → TEXT
+  trustedAt TEXT,  -- DateTime → TEXT
+  revokedAt TEXT,  -- DateTime → TEXT
+  metadata TEXT,  -- Json → TEXT (JSON string)
+  createdAt TEXT DEFAULT (datetime('now')) NOT NULL,
+  updatedAt TEXT DEFAULT (datetime('now')) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_devices_userId ON user_devices(userId);
+CREATE INDEX IF NOT EXISTS idx_user_devices_tenantId ON user_devices(tenantId);
+CREATE INDEX IF NOT EXISTS idx_user_devices_userId_tenantId ON user_devices(userId, tenantId);
+CREATE INDEX IF NOT EXISTS idx_user_devices_isTrusted ON user_devices(isTrusted);
+CREATE INDEX IF NOT EXISTS idx_user_devices_deviceHash ON user_devices(deviceHash);
+
+-- ============================================================================
+-- TABLE 7: OTP_CODES (OTP & Device Tracking)
+-- ============================================================================
+-- 
+-- Correspondance PostgreSQL : table "otp_codes"
+-- Pas de colonnes techniques offline (table serveur uniquement)
+-- 
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS otp_codes (
+  -- Colonnes métier (identiques à PostgreSQL)
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  tenantId TEXT NOT NULL,
+  deviceId TEXT,
+  code TEXT NOT NULL,
+  codeHash TEXT NOT NULL,
+  purpose TEXT NOT NULL CHECK(purpose IN ('LOGIN', 'DEVICE_VERIFICATION', 'SENSITIVE_ACTION')),
+  phoneNumber TEXT NOT NULL,
+  isUsed INTEGER NOT NULL DEFAULT 0,  -- Boolean → INTEGER
+  isExpired INTEGER NOT NULL DEFAULT 0,  -- Boolean → INTEGER
+  attempts INTEGER NOT NULL DEFAULT 0,
+  maxAttempts INTEGER NOT NULL DEFAULT 3,
+  expiresAt TEXT NOT NULL,  -- DateTime → TEXT
+  usedAt TEXT,  -- DateTime → TEXT
+  metadata TEXT,  -- Json → TEXT (JSON string)
+  createdAt TEXT DEFAULT (datetime('now')) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_otp_codes_userId ON otp_codes(userId);
+CREATE INDEX IF NOT EXISTS idx_otp_codes_tenantId ON otp_codes(tenantId);
+CREATE INDEX IF NOT EXISTS idx_otp_codes_deviceId ON otp_codes(deviceId);
+CREATE INDEX IF NOT EXISTS idx_otp_codes_codeHash ON otp_codes(codeHash);
+CREATE INDEX IF NOT EXISTS idx_otp_codes_expiresAt ON otp_codes(expiresAt);
+CREATE INDEX IF NOT EXISTS idx_otp_codes_isUsed ON otp_codes(isUsed);
+CREATE INDEX IF NOT EXISTS idx_otp_codes_userId_tenantId ON otp_codes(userId, tenantId);
+
+-- ============================================================================
+-- TABLE 8: DEVICE_SESSIONS (OTP & Device Tracking)
+-- ============================================================================
+-- 
+-- Correspondance PostgreSQL : table "device_sessions"
+-- Pas de colonnes techniques offline (table serveur uniquement)
+-- 
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS device_sessions (
+  -- Colonnes métier (identiques à PostgreSQL)
+  id TEXT PRIMARY KEY,
+  userId TEXT NOT NULL,
+  tenantId TEXT NOT NULL,
+  academicYearId TEXT NOT NULL,
+  deviceId TEXT NOT NULL,
+  sessionToken TEXT NOT NULL UNIQUE,
+  refreshToken TEXT,
+  ipAddress TEXT,
+  userAgent TEXT,
+  isActive INTEGER NOT NULL DEFAULT 1,  -- Boolean → INTEGER
+  expiresAt TEXT NOT NULL,  -- DateTime → TEXT
+  lastActivityAt TEXT NOT NULL DEFAULT (datetime('now')),  -- DateTime → TEXT
+  metadata TEXT,  -- Json → TEXT (JSON string)
+  createdAt TEXT DEFAULT (datetime('now')) NOT NULL,
+  updatedAt TEXT DEFAULT (datetime('now')) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_device_sessions_userId ON device_sessions(userId);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_tenantId ON device_sessions(tenantId);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_deviceId ON device_sessions(deviceId);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_academicYearId ON device_sessions(academicYearId);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_isActive ON device_sessions(isActive);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_expiresAt ON device_sessions(expiresAt);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_sessionToken ON device_sessions(sessionToken);
+CREATE INDEX IF NOT EXISTS idx_device_sessions_userId_tenantId_academicYearId ON device_sessions(userId, tenantId, academicYearId);
+
+-- ============================================================================
+-- TABLE 9: AUTH_AUDIT_LOGS (OTP & Device Tracking)
+-- ============================================================================
+-- 
+-- Correspondance PostgreSQL : table "auth_audit_logs"
+-- Pas de colonnes techniques offline (table serveur uniquement)
+-- 
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS auth_audit_logs (
+  -- Colonnes métier (identiques à PostgreSQL)
+  id TEXT PRIMARY KEY,
+  userId TEXT,
+  tenantId TEXT,
+  deviceId TEXT,
+  sessionId TEXT,
+  action TEXT NOT NULL,
+  ipAddress TEXT,
+  userAgent TEXT,
+  status TEXT NOT NULL,
+  reason TEXT,
+  metadata TEXT,  -- Json → TEXT (JSON string)
+  createdAt TEXT DEFAULT (datetime('now')) NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_userId ON auth_audit_logs(userId);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_tenantId ON auth_audit_logs(tenantId);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_deviceId ON auth_audit_logs(deviceId);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_sessionId ON auth_audit_logs(sessionId);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_action ON auth_audit_logs(action);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_status ON auth_audit_logs(status);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_createdAt ON auth_audit_logs(createdAt);
+CREATE INDEX IF NOT EXISTS idx_auth_audit_logs_userId_tenantId ON auth_audit_logs(userId, tenantId);
+
+-- ============================================================================
 -- CORRESPONDANCE POSTGRESQL ↔ SQLITE
 -- ============================================================================
 
@@ -260,6 +402,10 @@ CREATE INDEX IF NOT EXISTS idx_student_documents_local_updated_at ON student_doc
 -- student_fee_profiles student_fee_profiles Colonnes techniques ajoutées
 -- collection_cases    collection_cases     Colonnes techniques ajoutées
 -- student_documents   student_documents    Colonnes techniques ajoutées
+-- user_devices        user_devices         Pas de colonnes techniques (serveur uniquement)
+-- otp_codes           otp_codes            Pas de colonnes techniques (serveur uniquement)
+-- device_sessions     device_sessions      Pas de colonnes techniques (serveur uniquement)
+-- auth_audit_logs     auth_audit_logs      Pas de colonnes techniques (serveur uniquement)
 -- 
 -- Colonnes techniques (uniquement SQLite) :
 -- - local_id TEXT UNIQUE              (ID temporaire offline)
