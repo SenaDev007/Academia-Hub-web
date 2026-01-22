@@ -9,7 +9,7 @@
  */
 
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../database/prisma.service';
 import { PaymentAllocationService } from './payment-allocation.service';
 import { Decimal } from '@prisma/client/runtime/library';
 

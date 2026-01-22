@@ -22,15 +22,31 @@ export class ClassesRepository {
     });
   }
 
-  async findAll(tenantId: string, academicYearId?: string): Promise<Class[]> {
+  async findAll(
+    tenantId: string,
+    pagination: { skip: number; take: number },
+    academicYearId?: string,
+  ): Promise<Class[]> {
+    const queryBuilder = this.repository.createQueryBuilder('class')
+      .where('class.tenantId = :tenantId', { tenantId })
+      .orderBy('class.name', 'ASC')
+      .skip(pagination.skip)
+      .take(pagination.take);
+    
+    if (academicYearId) {
+      queryBuilder.andWhere('class.academicYearId = :academicYearId', { academicYearId });
+      queryBuilder.leftJoinAndSelect('class.academicYear', 'academicYear');
+    }
+    
+    return queryBuilder.getMany();
+  }
+
+  async count(tenantId: string, academicYearId?: string): Promise<number> {
     const where: any = { tenantId };
     if (academicYearId) {
       where.academicYearId = academicYearId;
     }
-    return this.repository.find({
-      where,
-      order: { name: 'ASC' },
-    });
+    return this.repository.count({ where });
   }
 
   async update(id: string, tenantId: string, classData: Partial<Class>): Promise<Class> {

@@ -25,6 +25,7 @@ export class PaymentsRepository {
   async findAll(
     tenantId: string,
     schoolLevelId: string, // OBLIGATOIRE
+    pagination: { skip: number; take: number },
     studentId?: string,
     status?: string,
     startDate?: Date,
@@ -33,6 +34,7 @@ export class PaymentsRepository {
     const query = this.repository.createQueryBuilder('payment')
       .where('payment.tenantId = :tenantId', { tenantId })
       .andWhere('payment.schoolLevelId = :schoolLevelId', { schoolLevelId }) // OBLIGATOIRE
+      // Optimisation: charger seulement les relations nécessaires
       .leftJoinAndSelect('payment.student', 'student')
       .leftJoinAndSelect('payment.feeConfiguration', 'feeConfiguration');
     
@@ -49,7 +51,39 @@ export class PaymentsRepository {
       query.andWhere('payment.paymentDate <= :endDate', { endDate });
     }
     
-    return query.orderBy('payment.paymentDate', 'DESC').getMany();
+    return query
+      .orderBy('payment.paymentDate', 'DESC')
+      .skip(pagination.skip)
+      .take(pagination.take)
+      .getMany();
+  }
+
+  async count(
+    tenantId: string,
+    schoolLevelId: string,
+    studentId?: string,
+    status?: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<number> {
+    const query = this.repository.createQueryBuilder('payment')
+      .where('payment.tenantId = :tenantId', { tenantId })
+      .andWhere('payment.schoolLevelId = :schoolLevelId', { schoolLevelId });
+    
+    if (studentId) {
+      query.andWhere('payment.studentId = :studentId', { studentId });
+    }
+    if (status) {
+      query.andWhere('payment.status = :status', { status });
+    }
+    if (startDate) {
+      query.andWhere('payment.paymentDate >= :startDate', { startDate });
+    }
+    if (endDate) {
+      query.andWhere('payment.paymentDate <= :endDate', { endDate });
+    }
+    
+    return query.getCount();
   }
 
   async update(

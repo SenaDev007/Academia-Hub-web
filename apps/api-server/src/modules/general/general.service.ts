@@ -25,17 +25,18 @@ import { AbsencesService } from '../../absences/absences.service';
 import { SchoolLevelsService } from '../../school-levels/school-levels.service';
 import { AuditLogsService } from '../../audit-logs/audit-logs.service';
 
-interface LevelAggregation {
+export interface LevelAggregation {
   levelId: string;
   levelName: string;
   value: number;
 }
 
-interface CrossLevelAggregation {
+export interface CrossLevelAggregation {
   total: number;
   byLevel: LevelAggregation[];
   metadata: {
     calculationDate: Date;
+    academicYearId?: string;
     levelsIncluded: string[];
     calculationMethod: string;
   };
@@ -132,9 +133,8 @@ export class GeneralService {
       const payments = await this.paymentsService.findAll(
         tenantId,
         level.id,
-        academicYearId,
-        undefined,
-        'completed',
+        undefined, // studentId
+        'completed', // status
         startDate,
         endDate,
       );
@@ -205,14 +205,15 @@ export class GeneralService {
 
     for (const level of activeLevels) {
       // Calculer moyenne par niveau pour l'année scolaire donnée
+      // Note: gradesService.findAll ne prend pas academicYearId directement
+      // Il faut filtrer après ou utiliser une autre méthode
       const grades = await this.gradesService.findAll(
         tenantId,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        level.id,
-        academicYearId,
+        undefined, // studentId
+        undefined, // subjectId
+        undefined, // classId
+        undefined, // quarterId
+        undefined, // academicTrackId
       );
       const students = await this.studentsService.findAll(tenantId, level.id, academicYearId);
       

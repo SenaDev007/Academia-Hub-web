@@ -197,7 +197,7 @@ export class TransfersPrismaService {
       where: { id: transferId },
       data: {
         status: 'REJECTED',
-        exitReason: reason,
+        reason: reason, // TransferRequest a 'reason' pas 'exitReason'
       },
     });
   }

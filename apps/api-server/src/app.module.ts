@@ -62,7 +62,7 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
 import { ContextInterceptor } from './common/interceptors/context.interceptor';
 import { SchoolLevelEnforcementInterceptor } from './common/interceptors/school-level-enforcement.interceptor';
 import { AcademicYearEnforcementInterceptor } from './common/interceptors/academic-year-enforcement.interceptor';
-import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
+import { PerformanceLoggingInterceptor } from './common/interceptors/performance-logging.interceptor';
 
 @Module({
   imports: [
@@ -247,6 +247,10 @@ import { APP_INTERCEPTOR, APP_GUARD } from '@nestjs/core';
     {
       provide: APP_INTERCEPTOR,
       useClass: AcademicYearEnforcementInterceptor, // Enforcement academic_year_id obligatoire
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PerformanceLoggingInterceptor, // Profiling des routes (DOIT être avant AuditLog)
     },
     {
       provide: APP_INTERCEPTOR,

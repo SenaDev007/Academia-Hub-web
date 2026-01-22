@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../users/entities/user.entity';
+// UserRole n'existe plus, utiliser le type string directement
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('communication')
@@ -26,7 +26,7 @@ export class CommunicationController {
 
   // Announcements
   @Post('announcements')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   createAnnouncement(
     @Body() createDto: CreateAnnouncementDto,
     @TenantId() tenantId: string,
@@ -36,7 +36,7 @@ export class CommunicationController {
   }
 
   @Get('announcements')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER, UserRole.STUDENT, UserRole.PARENT)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT')
   findAllAnnouncements(
     @TenantId() tenantId: string,
     @Body() filters?: { schoolLevelId?: string; status?: AnnouncementStatus },
@@ -49,13 +49,13 @@ export class CommunicationController {
   }
 
   @Get('announcements/:id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER, UserRole.STUDENT, UserRole.PARENT)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT')
   findOneAnnouncement(@Param('id') id: string, @TenantId() tenantId: string) {
     return this.communicationService.findOneAnnouncement(id, tenantId);
   }
 
   @Patch('announcements/:id/publish')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   publishAnnouncement(
     @Param('id') id: string,
     @TenantId() tenantId: string,
@@ -66,7 +66,7 @@ export class CommunicationController {
 
   // Messages
   @Post('messages')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER, UserRole.STUDENT, UserRole.PARENT)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT')
   createMessage(
     @Body() createDto: CreateMessageDto,
     @TenantId() tenantId: string,
@@ -76,7 +76,7 @@ export class CommunicationController {
   }
 
   @Get('messages')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER, UserRole.STUDENT, UserRole.PARENT)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT')
   findAllMessages(
     @TenantId() tenantId: string,
     @CurrentUser() user: any,
@@ -85,7 +85,7 @@ export class CommunicationController {
   }
 
   @Patch('messages/:id/read')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER, UserRole.STUDENT, UserRole.PARENT)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT')
   markAsRead(
     @Param('id') id: string,
     @TenantId() tenantId: string,

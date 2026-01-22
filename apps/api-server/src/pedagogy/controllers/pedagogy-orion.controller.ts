@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { GetTenant } from '../../common/decorators/get-tenant.decorator';
+import { GetTenant } from '../../common/decorators/tenant.decorator';
 import { PedagogyOrionService } from '../services/pedagogy-orion.service';
 
 @Controller('api/pedagogy/orion')

@@ -26,6 +26,7 @@ import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../../auth/decorators/public.decorator';
 import { ALLOW_CROSS_LEVEL_KEY } from '../decorators/allow-cross-level.decorator';
+import { AuditLogsService } from '../../audit-logs/audit-logs.service';
 
 @Injectable()
 export class SchoolLevelIsolationGuard implements CanActivate {
@@ -52,8 +53,9 @@ export class SchoolLevelIsolationGuard implements CanActivate {
     ]);
 
     const request = context.switchToHttp().getRequest<Request>();
-    const tenantId = request['tenantId'] || request['user']?.tenantId;
-    const userId = request['user']?.id;
+    const user = request['user'] as any;
+    const tenantId = request['tenantId'] || user?.tenantId;
+    const userId = user?.id;
 
     // RÈGLE 1 : school_level_id est OBLIGATOIRE pour toutes les opérations métier
     const schoolLevelId = this.extractSchoolLevelId(request);

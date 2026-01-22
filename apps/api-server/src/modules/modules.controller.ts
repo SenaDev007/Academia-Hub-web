@@ -100,15 +100,15 @@ export class ModulesController {
 
   @Get(':id/dependencies')
   @Permissions('modules.read', 'modules.manage')
-  checkDependencies(
+  async checkDependencies(
     @Param('id') id: string,
     @TenantId() tenantId: string,
     @Query('schoolLevelId') schoolLevelId: string,
   ) {
-    const module = this.modulesService.findOne(id, tenantId);
+    const module = await this.modulesService.findOne(id, tenantId);
     return this.modulesService.checkDependencies(
       tenantId,
-      (await module).type,
+      module.type,
       schoolLevelId,
     );
   }

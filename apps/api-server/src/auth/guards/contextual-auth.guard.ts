@@ -19,7 +19,7 @@ import {
 import { DeviceSessionService } from '../services/device-session.service';
 import { DeviceTrackingService } from '../services/device-tracking.service';
 import { OtpService } from '../services/otp.service';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 
 @Injectable()
 export class ContextualAuthGuard implements CanActivate {

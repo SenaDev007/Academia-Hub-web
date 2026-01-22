@@ -8,7 +8,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards } fro
 import { MessagesPrismaService } from './messages-prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
-import { GetTenant } from '../common/decorators/get-tenant.decorator';
+import { GetTenant } from '../common/decorators/tenant.decorator';
 
 @Controller('api/communication/messages')
 @UseGuards(JwtAuthGuard, TenantGuard)

@@ -274,6 +274,12 @@ model Tenant {
   questionBankResources       QuestionBankResource[]      @relation("QuestionBankTenant")
   feeRegimes                  FeeRegime[]                 @relation("FeeRegimeTenant")
   schoolTenants               PatronatSchool[]            @relation("SchoolTenants")
+  // Module 2 - Matériel pédagogique
+  pedagogicalMaterials        PedagogicalMaterial[]
+  materialStocks               MaterialStock[]
+  materialMovements            MaterialMovement[]
+  teacherMaterialAssignments   TeacherMaterialAssignment[]
+  annualTeacherSupplies       AnnualTeacherSupply[]
 
   @@index([subdomain])
   @@index([slug])
@@ -355,6 +361,7 @@ model AcademicYear {
   gradeRulesVersions           GradeRulesVersion[]
   reportCards                  ReportCard[]
   rankings                     Ranking[]
+  deviceSessions               DeviceSession[]
   honorRolls                   HonorRoll[]
   classCouncils                ClassCouncil[]
   libraryLoans                 LibraryLoan[]
@@ -487,6 +494,11 @@ model AcademicYear {
   inspections                      Inspection[]                      @relation("InspectionAcademicYear")
   qhsDecisionLogs                  QhsDecisionLog[]                  @relation("QhsDecisionLogAcademicYear")
   questionBankResources            QuestionBankResource[]            @relation("QuestionBankAcademicYear")
+  // Module 2 - Matériel pédagogique
+  materialStocks                   MaterialStock[]
+  materialMovements                 MaterialMovement[]
+  teacherMaterialAssignments       TeacherMaterialAssignment[]
+  annualTeacherSupplies            AnnualTeacherSupply[]
 
   @@unique([tenantId, name])
   @@unique([tenantId, label])
@@ -630,6 +642,11 @@ model SchoolLevel {
   qhsRiskRegisters                 QhsRiskRegister[]                 @relation("QhsRiskRegisterSchoolLevel")
   feeDefinitions                   FeeDefinition[]                   @relation("FeeDefinitionSchoolLevel")
   feeRegimes                       FeeRegime[]                       @relation("FeeRegimeSchoolLevel")
+  // Module 2 - Matériel pédagogique
+  pedagogicalMaterials             PedagogicalMaterial[]
+  materialStocks                   MaterialStock[]
+  teacherMaterialAssignments       TeacherMaterialAssignment[]
+  annualTeacherSupplies            AnnualTeacherSupply[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -745,7 +762,6 @@ model User {
   examDocumentPublishers                    ExamDocument[]                    @relation("ExamDocumentPublisher")
   questionBankUploaders                     QuestionBankResource[]            @relation("QuestionBankUploader")
   resourceAccessUsers                       ResourceAccessLog[]               @relation("ResourceAccessUser")
-  patronatUserCreators                      PatronatUser[]                    @relation("PatronatUserCreator")
   // Module 7 - QHSE, Incidents & Conformité
   reportedIncidents                         Incident[]                        @relation("IncidentReportedBy")
   closedIncidents                           Incident[]                        @relation("IncidentClosedBy")
@@ -773,6 +789,9 @@ model User {
   settingsHistory                           SettingsHistory[]                 @relation("SettingsHistoryUser")
   enabledFeatures                           TenantFeature[]                   @relation("TenantFeatureEnabledBy")
   disabledFeatures                          TenantFeature[]                   @relation("TenantFeatureDisabledBy")
+  // Module 2 - Matériel pédagogique
+  materialMovements                         MaterialMovement[]                @relation("MaterialMovementPerformedBy")
+  teacherMaterialAssignmentSigners         TeacherMaterialAssignment[]        @relation("TeacherMaterialAssignmentSigner")
   // Module Réunions
   createdMeetings                           Meeting[]                         @relation("MeetingCreator")
   cancelledMeetings                         Meeting[]                         @relation("MeetingCancelledBy")
@@ -1186,6 +1205,10 @@ model Class {
   studentAcademicRecords StudentAcademicRecord[] @relation("StudentAcademicRecordClass")
   pedagogicalDocuments   PedagogicalDocument[]
   feeDefinitions         FeeDefinition[]         @relation("FeeDefinitionClass")
+  // Module 2 - Matériel pédagogique
+  materialStocks         MaterialStock[]         @relation("MaterialStockClass")
+  teacherMaterialAssignments TeacherMaterialAssignment[] @relation("TeacherMaterialAssignmentClass")
+  annualTeacherSupplies  AnnualTeacherSupply[]   @relation("AnnualTeacherSupplyClass")
 
   @@unique([tenantId, academicYearId, code])
   @@index([tenantId, academicYearId, schoolLevelId])
@@ -1226,6 +1249,8 @@ model Subject {
 
   staffAssignments     StaffAssignment[]
   pedagogicalDocuments PedagogicalDocument[]
+  // Module 2 - Matériel pédagogique
+  pedagogicalMaterials PedagogicalMaterial[]    @relation("PedagogicalMaterialSubject")
 
   @@unique([tenantId, academicYearId, schoolLevelId, code])
   @@index([tenantId, academicYearId, schoolLevelId])
@@ -1376,6 +1401,9 @@ model Teacher {
   dailyLogs               DailyLog[]
   pedagogicalDocuments    PedagogicalDocument[]
   weeklyDutyAssignments   WeeklyDutyAssignment[]
+  // Module 2 - Matériel pédagogique
+  materialAssignments     TeacherMaterialAssignment[]
+  annualSupplies          AnnualTeacherSupply[]
 
   @@map("teachers")
 }
@@ -8300,4 +8328,148 @@ model EducastSession {
   @@index([startTime])
   @@index([completed])
   @@map("educast_sessions")
+}
+
+// ============================================================================
+// MODULE 2 - MATÉRIEL & FOURNITURES PÉDAGOGIQUES
+// ============================================================================
+
+// Référentiel du matériel pédagogique
+model PedagogicalMaterial {
+  id              String   @id @default(uuid())
+  tenantId        String
+  code            String
+  name            String
+  category        String // BOOK | TEACHER_GUIDE | OFFICIAL_DOCUMENT | DIDACTIC_SUPPORT | LAB_MATERIAL | OTHER
+  description     String?  @db.Text
+  schoolLevelId   String
+  subjectId       String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant          Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  schoolLevel     SchoolLevel              @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  subject         Subject?                 @relation("PedagogicalMaterialSubject", fields: [subjectId], references: [id], onDelete: SetNull)
+  stocks          MaterialStock[]
+  movements       MaterialMovement[]
+  assignments     TeacherMaterialAssignment[]
+  annualSupplies  AnnualTeacherSupply[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, schoolLevelId])
+  @@index([category])
+  @@index([isActive])
+  @@map("pedagogical_materials")
+}
+
+// Stock pédagogique (vision consolidée par année scolaire)
+model MaterialStock {
+  id                String   @id @default(uuid())
+  tenantId          String
+  academicYearId    String
+  materialId        String
+  schoolLevelId     String
+  classId           String?
+  quantityTotal     Int      @default(0)
+  quantityAvailable Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear  AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  material      PedagogicalMaterial @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  schoolLevel   SchoolLevel         @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  class         Class?              @relation("MaterialStockClass", fields: [classId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, academicYearId, materialId, schoolLevelId, classId])
+  @@index([tenantId, academicYearId])
+  @@index([materialId])
+  @@index([schoolLevelId])
+  @@map("material_stocks")
+}
+
+// Mouvements de stock (traçabilité complète)
+model MaterialMovement {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  materialId     String
+  movementType   String // PURCHASE | ASSIGNMENT | RETURN | REPLACEMENT | DAMAGE | DECOMMISSION
+  quantity       Int
+  reference      String?
+  notes          String?  @db.Text
+  performedById  String
+  createdAt      DateTime @default(now())
+
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  material     PedagogicalMaterial @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  performedBy  User                @relation("MaterialMovementPerformedBy", fields: [performedById], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, academicYearId])
+  @@index([materialId])
+  @@index([movementType])
+  @@index([performedById])
+  @@index([createdAt])
+  @@map("material_movements")
+}
+
+// Attribution du matériel aux enseignants
+model TeacherMaterialAssignment {
+  id              String   @id @default(uuid())
+  tenantId        String
+  academicYearId  String
+  teacherId       String
+  materialId      String
+  schoolLevelId   String
+  classId         String?
+  quantity        Int
+  conditionAtIssue String // NEW | GOOD | USED | DAMAGED
+  signed          Boolean  @default(false)
+  signedAt        DateTime?
+  signedBy        String?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant        Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear  AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  teacher       Teacher             @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  material      PedagogicalMaterial @relation(fields: [materialId], references: [id], onDelete: Restrict)
+  schoolLevel   SchoolLevel         @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  class         Class?              @relation("TeacherMaterialAssignmentClass", fields: [classId], references: [id], onDelete: SetNull)
+  signer        User?               @relation("TeacherMaterialAssignmentSigner", fields: [signedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, academicYearId, teacherId])
+  @@index([materialId])
+  @@index([schoolLevelId])
+  @@index([signed])
+  @@map("teacher_material_assignments")
+}
+
+// Fournitures pédagogiques annuelles (vision responsabilité)
+model AnnualTeacherSupply {
+  id             String   @id @default(uuid())
+  tenantId       String
+  academicYearId String
+  teacherId      String
+  schoolLevelId  String
+  classId        String?
+  materialId     String
+  quantity       Int
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear        @relation(fields: [academicYearId], references: [id], onDelete: Restrict)
+  teacher      Teacher             @relation(fields: [teacherId], references: [id], onDelete: Restrict)
+  schoolLevel  SchoolLevel         @relation(fields: [schoolLevelId], references: [id], onDelete: Restrict)
+  class        Class?              @relation("AnnualTeacherSupplyClass", fields: [classId], references: [id], onDelete: SetNull)
+  material     PedagogicalMaterial @relation(fields: [materialId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, academicYearId, teacherId, materialId, classId])
+  @@index([tenantId, academicYearId, teacherId])
+  @@index([materialId])
+  @@map("annual_teacher_supplies")
 }

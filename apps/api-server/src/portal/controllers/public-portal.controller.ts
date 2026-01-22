@@ -5,7 +5,8 @@
  */
 
 import { Controller, Get, Query, Req } from '@nestjs/common';
-import { Public } from '@/auth/decorators/public.decorator';
+import { Throttle } from '@nestjs/throttler';
+import { Public } from '../../auth/decorators/public.decorator';
 import { SchoolSearchService } from '../services/school-search.service';
 
 @Controller('public/schools')

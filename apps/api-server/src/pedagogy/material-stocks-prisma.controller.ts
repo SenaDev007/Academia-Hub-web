@@ -1,0 +1,66 @@
+/**
+ * ============================================================================
+ * MATERIAL STOCKS PRISMA CONTROLLER - MODULE 2
+ * ============================================================================
+ */
+
+import {
+  Controller,
+  Get,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { MaterialStocksPrismaService } from './material-stocks-prisma.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TenantId } from '../common/decorators/tenant-id.decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
+
+@Controller('api/pedagogy/material-stocks')
+@UseGuards(JwtAuthGuard)
+export class MaterialStocksPrismaController {
+  constructor(private readonly materialStocksService: MaterialStocksPrismaService) {}
+
+  @Get()
+  async findAll(
+    @TenantId() tenantId: string,
+    @Query('academicYearId') academicYearId: string,
+    @Query() pagination: PaginationDto,
+    @Query('materialId') materialId?: string,
+    @Query('schoolLevelId') schoolLevelId?: string,
+    @Query('classId') classId?: string,
+  ) {
+    return this.materialStocksService.findAll(
+      tenantId,
+      academicYearId,
+      pagination,
+      {
+        materialId,
+        schoolLevelId,
+        classId,
+      },
+    );
+  }
+
+  @Get('by-material/:materialId')
+  async findByMaterial(
+    @Param('materialId') materialId: string,
+    @TenantId() tenantId: string,
+    @Query('academicYearId') academicYearId: string,
+    @Query('schoolLevelId') schoolLevelId?: string,
+    @Query('classId') classId?: string,
+  ) {
+    return this.materialStocksService.findByMaterial(
+      tenantId,
+      academicYearId,
+      materialId,
+      schoolLevelId,
+      classId,
+    );
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string, @TenantId() tenantId: string) {
+    return this.materialStocksService.findOne(id, tenantId);
+  }
+}

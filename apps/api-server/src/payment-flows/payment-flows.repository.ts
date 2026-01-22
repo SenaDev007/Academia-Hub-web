@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { PaymentFlow, PaymentFlowType, PaymentFlowStatus } from './entities/payment-flow.entity';
+import { PaymentFlow, PaymentFlowType, PaymentFlowStatus, PaymentDestination } from './entities/payment-flow.entity';
 import { SchoolPaymentAccount } from './entities/school-payment-account.entity';
 import { CreatePaymentFlowDto } from './dto/create-payment-flow.dto';
 
@@ -12,9 +12,17 @@ export class PaymentFlowsRepository {
     private readonly repository: Repository<PaymentFlow>,
   ) {}
 
-  async create(data: CreatePaymentFlowDto & { tenantId: string; destination: string; initiatedBy?: string }): Promise<PaymentFlow> {
-    const flow = this.repository.create(data);
-    return this.repository.save(flow);
+  async create(data: CreatePaymentFlowDto & { tenantId: string; destination: PaymentDestination; initiatedBy?: string; status?: PaymentFlowStatus }): Promise<PaymentFlow> {
+    const flow = this.repository.create({
+      ...data,
+      destination: data.destination as PaymentDestination, // S'assurer que c'est un enum
+    });
+    const saved = await this.repository.save(flow);
+    // TypeORM create peut retourner un tableau si on passe un tableau, sinon un seul élément
+    if (Array.isArray(saved)) {
+      return saved[0];
+    }
+    return saved;
   }
 
   async findAll(

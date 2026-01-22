@@ -26,9 +26,17 @@ export class LabService {
     const lab = await this.prisma.lab.findFirst({ where: { id: labId, tenantId } });
     if (!lab) throw new NotFoundException(`Lab with ID ${labId} not found`);
 
+    // Récupérer l'année scolaire active du lab
+    const academicYear = await this.prisma.academicYear.findFirst({
+      where: { tenantId, isActive: true },
+      orderBy: { startDate: 'desc' },
+    });
+    if (!academicYear) throw new NotFoundException('No active academic year found');
+
     return this.prisma.labEquipment.create({
       data: {
         labId,
+        academicYearId: academicYear.id,
         name: data.name,
         equipmentType: data.equipmentType,
         manufacturer: data.manufacturer,
@@ -69,15 +77,23 @@ export class LabService {
       throw new BadRequestException('Lab is already reserved for this time slot');
     }
 
+    // Récupérer l'année scolaire active
+    const academicYear = await this.prisma.academicYear.findFirst({
+      where: { tenantId, isActive: true },
+      orderBy: { startDate: 'desc' },
+    });
+    if (!academicYear) throw new NotFoundException('No active academic year found');
+
     return this.prisma.labReservation.create({
       data: {
         labId,
-        reservedBy,
+        academicYearId: academicYear.id,
+        reservedBy: reservedBy || undefined,
         reservationDate: new Date(data.reservationDate),
         startTime: data.startTime,
         endTime: data.endTime,
         purpose: data.purpose,
-        status: 'CONFIRMED',
+        status: data.status || 'CONFIRMED',
       },
     });
   }

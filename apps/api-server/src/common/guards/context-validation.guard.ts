@@ -47,9 +47,10 @@ export class ContextValidationGuard implements CanActivate {
     
     if (!contextData) {
       // Le contexte n'a pas été résolu, vérifier manuellement
+      const user = request['user'] as any;
       const tenantId = request['tenantId'] || 
                        request.headers['x-tenant-id'] ||
-                       request['user']?.tenantId;
+                       user?.tenantId;
 
       if (!tenantId) {
         throw new ForbiddenException(

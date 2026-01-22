@@ -4,6 +4,7 @@ import { Exam } from './entities/exam.entity';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { AcademicTracksService } from '../academic-tracks/academic-tracks.service';
+import { toDate } from '../common/helpers/date.helper';
 
 @Injectable()
 export class ExamsService {
@@ -23,12 +24,16 @@ export class ExamsService {
       await this.academicTracksService.findOne(academicTrackId, tenantId);
     }
 
-    return this.examsRepository.create({
+    const createData: any = {
       ...createExamDto,
       academicTrackId,
       tenantId,
       createdBy,
-    });
+    };
+    if (createExamDto.examDate) {
+      createData.examDate = toDate(createExamDto.examDate as any);
+    }
+    return this.examsRepository.create(createData);
   }
 
   async findAll(
@@ -51,7 +56,11 @@ export class ExamsService {
 
   async update(id: string, updateExamDto: UpdateExamDto, tenantId: string): Promise<Exam> {
     await this.findOne(id, tenantId);
-    return this.examsRepository.update(id, tenantId, updateExamDto);
+    const updateData: any = { ...updateExamDto };
+    if (updateExamDto.examDate !== undefined) {
+      updateData.examDate = updateExamDto.examDate ? toDate(updateExamDto.examDate as any) : null;
+    }
+    return this.examsRepository.update(id, tenantId, updateData);
   }
 
   async delete(id: string, tenantId: string): Promise<void> {

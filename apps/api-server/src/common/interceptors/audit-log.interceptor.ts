@@ -70,9 +70,10 @@ export class AuditLogInterceptor implements NestInterceptor {
     const changes = this.extractChanges(method, body, query);
 
     // Logger de manière asynchrone (ne pas bloquer la requête)
+    const userTyped = user as any;
     this.logAsync({
       tenantId,
-      userId: user?.id || null,
+      userId: userTyped?.id || null,
       action,
       resource,
       resourceId,
@@ -87,7 +88,7 @@ export class AuditLogInterceptor implements NestInterceptor {
           // Logger aussi les erreurs
           this.logAsync({
             tenantId,
-            userId: user?.id || null,
+            userId: userTyped?.id || null,
             action: `${action}_FAILED`,
             resource,
             resourceId,

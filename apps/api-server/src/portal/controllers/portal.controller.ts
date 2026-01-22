@@ -10,6 +10,7 @@ import {
   Body,
   Get,
   Param,
+  Query,
   UseGuards,
   Req,
 } from '@nestjs/common';

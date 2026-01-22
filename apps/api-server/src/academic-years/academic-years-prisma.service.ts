@@ -263,7 +263,7 @@ export class AcademicYearsPrismaService {
   async getAllAcademicYears(tenantId: string): Promise<any[]> {
     return this.prisma.academicYear.findMany({
       where: { tenantId },
-      orderBy: { startDate: 'DESC' },
+      orderBy: { startDate: 'desc' },
     });
   }
 }

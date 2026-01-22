@@ -21,7 +21,12 @@ export class StudentsRepository {
     });
   }
 
-  async findAll(tenantId: string, schoolLevelId: string, academicYearId?: string): Promise<Student[]> {
+  async findAll(
+    tenantId: string,
+    schoolLevelId: string,
+    pagination: { skip: number; take: number },
+    academicYearId?: string,
+  ): Promise<Student[]> {
     const where: any = { tenantId, schoolLevelId };
     if (academicYearId) {
       where.academicYearId = academicYearId;
@@ -29,7 +34,31 @@ export class StudentsRepository {
     return this.repository.find({
       where,
       order: { createdAt: 'DESC' },
+      skip: pagination.skip,
+      take: pagination.take,
+      // Optimisation: ne charger que les champs nécessaires
+      select: [
+        'id',
+        'fullName',
+        'firstName',
+        'lastName',
+        'dateOfBirth',
+        'gender',
+        'status',
+        'tenantId',
+        'schoolLevelId',
+        'academicYearId',
+        'createdAt',
+      ],
     });
+  }
+
+  async count(tenantId: string, schoolLevelId: string, academicYearId?: string): Promise<number> {
+    const where: any = { tenantId, schoolLevelId };
+    if (academicYearId) {
+      where.academicYearId = academicYearId;
+    }
+    return this.repository.count({ where });
   }
 
   async update(

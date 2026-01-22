@@ -33,7 +33,8 @@ export class TenantIsolationGuard implements CanActivate {
     }
 
     // Vérifier que l'utilisateur appartient au tenant
-    if (user && user.tenantId && user.tenantId !== tenantId) {
+    const userTyped = user as any;
+    if (userTyped && userTyped.tenantId && userTyped.tenantId !== tenantId) {
       throw new ForbiddenException(
         'User tenant mismatch. Access denied for security reasons.'
       );

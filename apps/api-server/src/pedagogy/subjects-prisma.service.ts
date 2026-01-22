@@ -114,9 +114,8 @@ export class SubjectsPrismaService {
         academicYear: true,
         academicTrack: true,
         teachers: {
-          include: {
-            teacher: true,
-          },
+          // TeacherSubject a une relation teacher, mais elle est déjà accessible via la relation
+          // Pas besoin d'include supplémentaire
         },
         classSubjects: {
           include: {

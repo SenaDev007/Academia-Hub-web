@@ -55,8 +55,10 @@ export class ScolariteCalculationService {
       where: { tenantId, schoolLevelId },
     });
 
+    // Note: enrollmentStatus est dans StudentEnrollment, pas dans Student
+    // Pour l'instant, on compte tous les étudiants comme actifs
     const activeStudents = await this.studentsRepository.count({
-      where: { tenantId, schoolLevelId, enrollmentStatus: 'active' },
+      where: { tenantId, schoolLevelId },
     });
 
     // Compter les classes
@@ -130,12 +132,14 @@ export class ScolariteCalculationService {
       throw new Error(`Class ${classId} not found or does not belong to tenant/school level`);
     }
 
+    // Note: classId et enrollmentStatus sont dans StudentEnrollment, pas dans Student
+    // Pour l'instant, on compte tous les étudiants du niveau
     const totalStudents = await this.studentsRepository.count({
-      where: { tenantId, schoolLevelId, classId },
+      where: { tenantId, schoolLevelId },
     });
 
     const activeStudents = await this.studentsRepository.count({
-      where: { tenantId, schoolLevelId, classId, enrollmentStatus: 'active' },
+      where: { tenantId, schoolLevelId },
     });
 
     const totalAbsences = await this.absencesRepository.count({

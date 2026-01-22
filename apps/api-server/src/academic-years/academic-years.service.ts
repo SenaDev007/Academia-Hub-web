@@ -3,6 +3,7 @@ import { AcademicYearsRepository } from './academic-years.repository';
 import { AcademicYear } from './entities/academic-year.entity';
 import { CreateAcademicYearDto } from './dto/create-academic-year.dto';
 import { UpdateAcademicYearDto } from './dto/update-academic-year.dto';
+import { toDate } from '../common/helpers/date.helper';
 
 @Injectable()
 export class AcademicYearsService {
@@ -18,6 +19,8 @@ export class AcademicYearsService {
     }
     return this.academicYearsRepository.create({
       ...createAcademicYearDto,
+      startDate: toDate(createAcademicYearDto.startDate as any) || new Date(),
+      endDate: toDate(createAcademicYearDto.endDate as any) || new Date(),
       tenantId,
       createdBy,
     });
@@ -50,7 +53,15 @@ export class AcademicYearsService {
       }
     }
     
-    return this.academicYearsRepository.update(id, tenantId, updateAcademicYearDto);
+    const updateData: any = { ...updateAcademicYearDto };
+    if (updateAcademicYearDto.startDate) {
+      updateData.startDate = toDate(updateAcademicYearDto.startDate as any);
+    }
+    if (updateAcademicYearDto.endDate) {
+      updateData.endDate = toDate(updateAcademicYearDto.endDate as any);
+    }
+    
+    return this.academicYearsRepository.update(id, tenantId, updateData);
   }
 
   async delete(id: string, tenantId: string): Promise<void> {

@@ -59,14 +59,15 @@ export class PaymentFlowsService {
     }
 
     // Créer le flux de paiement
-    const flow = await this.paymentFlowsRepository.create({
+    const flowData: any = {
       ...createDto,
       tenantId,
-      destination,
+      destination: destination as PaymentDestination,
       currency: createDto.currency || 'XOF',
       status: PaymentFlowStatus.INITIATED,
       initiatedBy: userId,
-    });
+    };
+    const flow = await this.paymentFlowsRepository.create(flowData);
 
     // Initier le paiement selon le PSP
     let paymentUrl: string | null = null;

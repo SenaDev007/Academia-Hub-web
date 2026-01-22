@@ -22,6 +22,17 @@ import { ClassDiariesPrismaService } from './class-diaries-prisma.service';
 import { ClassDiariesPrismaController } from './class-diaries-prisma.controller';
 import { RoomsPrismaService } from './rooms-prisma.service';
 import { RoomsPrismaController } from './rooms-prisma.controller';
+// Module 2 - Matériel & Fournitures Pédagogiques
+import { PedagogicalMaterialsPrismaService } from './pedagogical-materials-prisma.service';
+import { PedagogicalMaterialsPrismaController } from './pedagogical-materials-prisma.controller';
+import { MaterialMovementsPrismaService } from './material-movements-prisma.service';
+import { MaterialMovementsPrismaController } from './material-movements-prisma.controller';
+import { TeacherMaterialAssignmentsPrismaService } from './teacher-material-assignments-prisma.service';
+import { TeacherMaterialAssignmentsPrismaController } from './teacher-material-assignments-prisma.controller';
+import { MaterialStocksPrismaService } from './material-stocks-prisma.service';
+import { MaterialStocksPrismaController } from './material-stocks-prisma.controller';
+import { AnnualTeacherSuppliesPrismaService } from './annual-teacher-supplies-prisma.service';
+import { AnnualTeacherSuppliesPrismaController } from './annual-teacher-supplies-prisma.controller';
 // Module 2 - Système de Workflow Pédagogique
 import { PedagogicalDocumentService } from './services/pedagogical-document.service';
 import { PedagogicalWorkflowService } from './services/pedagogical-workflow.service';
@@ -43,6 +54,12 @@ import { PedagogyOrionController } from './controllers/pedagogy-orion.controller
     DailyLogsPrismaController,
     ClassDiariesPrismaController,
     RoomsPrismaController,
+    // Module 2 - Matériel & Fournitures Pédagogiques
+    PedagogicalMaterialsPrismaController,
+    MaterialMovementsPrismaController,
+    TeacherMaterialAssignmentsPrismaController,
+    MaterialStocksPrismaController,
+    AnnualTeacherSuppliesPrismaController,
     // Module 2 - Workflow Pédagogique
     PedagogicalTeacherController,
     PedagogicalDirectorController,
@@ -57,6 +74,12 @@ import { PedagogyOrionController } from './controllers/pedagogy-orion.controller
     DailyLogsPrismaService,
     ClassDiariesPrismaService,
     RoomsPrismaService,
+    // Module 2 - Matériel & Fournitures Pédagogiques
+    PedagogicalMaterialsPrismaService,
+    MaterialMovementsPrismaService,
+    TeacherMaterialAssignmentsPrismaService,
+    MaterialStocksPrismaService,
+    AnnualTeacherSuppliesPrismaService,
     // Module 2 - Workflow Pédagogique
     PedagogicalDocumentService,
     PedagogicalWorkflowService,
@@ -73,6 +96,12 @@ import { PedagogyOrionController } from './controllers/pedagogy-orion.controller
     DailyLogsPrismaService,
     ClassDiariesPrismaService,
     RoomsPrismaService,
+    // Module 2 - Matériel & Fournitures Pédagogiques
+    PedagogicalMaterialsPrismaService,
+    MaterialMovementsPrismaService,
+    TeacherMaterialAssignmentsPrismaService,
+    MaterialStocksPrismaService,
+    AnnualTeacherSuppliesPrismaService,
     // Module 2 - Workflow Pédagogique
     PedagogicalDocumentService,
     PedagogicalWorkflowService,

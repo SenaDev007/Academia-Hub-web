@@ -30,18 +30,19 @@ export class OrionInsightsService {
     const unpaidFees = await this.prisma.feeArrear.aggregate({
       where: {
         ...where,
-        status: 'UNPAID',
+        balanceDue: { gt: 0 },
       },
-      _sum: { amount: true },
+      _sum: { balanceDue: true },
       _count: true,
     });
 
-    if (unpaidFees._count > 0 && Number(unpaidFees._sum.amount) > 1000000) {
+    const totalUnpaid = Number(unpaidFees._sum.balanceDue || 0);
+    if (unpaidFees._count > 0 && totalUnpaid > 1000000) {
       insights.push({
         category: 'FINANCE',
         title: 'Impayés significatifs détectés',
-        content: `${unpaidFees._count} élève(s) ont des impayés totaux de ${(Number(unpaidFees._sum.amount) / 1000000).toFixed(1)}M XOF. Il est recommandé de mettre en place un plan de recouvrement actif.`,
-        priority: Number(unpaidFees._sum.amount) > 5000000 ? 'HIGH' : 'MEDIUM',
+        content: `${unpaidFees._count} élève(s) ont des impayés totaux de ${(totalUnpaid / 1000000).toFixed(1)}M XOF. Il est recommandé de mettre en place un plan de recouvrement actif.`,
+        priority: totalUnpaid > 5000000 ? 'HIGH' : 'MEDIUM',
       });
     }
 
@@ -55,21 +56,37 @@ export class OrionInsightsService {
       const classIds = classes.map(c => c.id);
 
       if (classIds.length > 0) {
-        const failingStudents = await this.prisma.grade.groupBy({
-          by: ['studentId'],
+        // Grade n'a pas classId directement, filtrer via student -> studentEnrollment
+        // Note: groupBy avec having cause des erreurs TypeScript circulaires
+        // Utiliser une approche alternative : récupérer les données puis filtrer
+        const failingGrades = await this.prisma.grade.findMany({
           where: {
             tenantId,
             academicYearId,
-            classId: { in: classIds },
-            value: { lt: 10 },
-          },
-          _count: true,
-          having: {
-            _count: {
-              studentId: { gt: 2 }, // Plus de 2 notes < 10
+            score: { lt: 10 },
+            student: {
+              studentEnrollments: {
+                some: {
+                  classId: { in: classIds },
+                  academicYearId,
+                },
+              },
             },
           },
+          select: {
+            studentId: true,
+          },
         });
+        
+        // Compter les étudiants avec plus de 2 notes < 10
+        const studentCounts = failingGrades.reduce((acc, grade) => {
+          acc[grade.studentId] = (acc[grade.studentId] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
+        
+        const failingStudents = Object.entries(studentCounts)
+          .filter(([_, count]) => count > 2)
+          .map(([studentId]) => ({ studentId }));
 
         if (failingStudents.length > 0) {
           insights.push({

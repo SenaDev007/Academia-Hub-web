@@ -3,17 +3,22 @@ import { ExpensesRepository } from './expenses.repository';
 import { Expense } from './entities/expense.entity';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { toDate } from '../common/helpers/date.helper';
 
 @Injectable()
 export class ExpensesService {
   constructor(private readonly expensesRepository: ExpensesRepository) {}
 
   async create(createExpenseDto: CreateExpenseDto, tenantId: string, createdBy?: string): Promise<Expense> {
-    return this.expensesRepository.create({
+    const createData: any = {
       ...createExpenseDto,
       tenantId,
       createdBy,
-    });
+    };
+    if (createExpenseDto.expenseDate) {
+      createData.expenseDate = toDate(createExpenseDto.expenseDate as any);
+    }
+    return this.expensesRepository.create(createData);
   }
 
   async findAll(tenantId: string, category?: string, status?: string, startDate?: Date, endDate?: Date): Promise<Expense[]> {
@@ -30,7 +35,11 @@ export class ExpensesService {
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto, tenantId: string): Promise<Expense> {
     await this.findOne(id, tenantId);
-    return this.expensesRepository.update(id, tenantId, updateExpenseDto);
+    const updateData: any = { ...updateExpenseDto };
+    if (updateExpenseDto.expenseDate !== undefined) {
+      updateData.expenseDate = updateExpenseDto.expenseDate ? toDate(updateExpenseDto.expenseDate as any) : null;
+    }
+    return this.expensesRepository.update(id, tenantId, updateData);
   }
 
   async approve(id: string, tenantId: string, approvedBy: string): Promise<Expense> {

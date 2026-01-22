@@ -21,7 +21,7 @@ import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { PaymentAllocationService } from './payment-allocation.service';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../database/prisma.service';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 @Controller('api/payments/allocation')

@@ -19,7 +19,7 @@ export class AuthService {
     // Create user
     const user = await this.usersService.create({
       ...registerDto,
-      password: hashedPassword,
+      passwordHash: hashedPassword,
     });
 
     // Generate tokens

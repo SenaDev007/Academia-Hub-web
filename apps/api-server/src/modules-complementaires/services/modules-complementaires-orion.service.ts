@@ -156,12 +156,15 @@ export class ModulesComplementairesOrionService {
 
     // Alerte EduCast : Engagement faible
     const educastStats = await this.educastService.getContentStats(tenantId, academicYearId);
-    if (educastStats.totalContents > 10 && educastStats.engagementRate < 30) {
+    const engagementRate = educastStats.totalAccesses > 0 
+      ? (educastStats.completedViews / educastStats.totalAccesses) * 100 
+      : 0;
+    if (educastStats.totalContents > 10 && engagementRate < 30) {
       alerts.push({
         module: 'EDUCAST',
         severity: 'INFO',
         title: 'Taux d\'engagement EduCast faible',
-        description: `Le taux d'engagement est de ${educastStats.engagementRate.toFixed(1)}%.`,
+        description: `Le taux d'engagement est de ${engagementRate.toFixed(1)}%.`,
         recommendation: 'Promouvoir les contenus pédagogiques et améliorer leur accessibilité.',
       });
     }

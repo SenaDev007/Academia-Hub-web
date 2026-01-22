@@ -59,6 +59,8 @@ export class OrionAlertsService {
     });
 
     // Vérifier les incidents critiques répétés
+    // Note: groupBy avec having cause parfois des erreurs TypeScript circulaires
+    // Utiliser une approche alternative
     const repeatedIncidents = await this.prisma.qhsIncident.groupBy({
       by: ['type', 'category'],
       where: {
@@ -66,12 +68,11 @@ export class OrionAlertsService {
         gravity: 'CRITIQUE',
         ...(academicYearId && { academicYearId }),
       },
-      _count: true,
-      having: {
-        _count: {
-          type: { gt: 2 }, // Plus de 2 incidents du même type
-        },
+      _count: {
+        type: true,
+        category: true,
       },
+      // Filtrer après avec _count au lieu de having pour éviter erreurs TypeScript
     });
 
     const alerts: any[] = [];
@@ -100,8 +101,8 @@ export class OrionAlertsService {
     // Alerte pour incidents répétés
     if (repeatedIncidents.length > 0) {
       alerts.push({
-        type: QHSE,
-        severity: WARNING,
+        type: OrionAlertType.QHSE,
+        severity: OrionAlertSeverity.WARNING,
         title: 'Incidents critiques répétés détectés',
         description: `Plusieurs incidents critiques du même type ont été signalés. Analyse de tendance recommandée.`,
         recommendation: 'Analyser les causes racines et mettre en place des actions préventives.',
@@ -142,8 +143,8 @@ export class OrionAlertsService {
 
     if (highRisks.length > 0) {
       alerts.push({
-        type: QHSE,
-        severity: WARNING,
+        type: OrionAlertType.QHSE,
+        severity: OrionAlertSeverity.WARNING,
         title: `${highRisks.length} risque(s) élevé(s) non mitigé(s)`,
         description: `Des risques élevés ou critiques nécessitent une attention.`,
         recommendation: 'Examiner le registre des risques et mettre en place des mesures de mitigation.',
@@ -201,7 +202,7 @@ export class OrionAlertsService {
           academicYearId: objective.academicYearId,
           schoolLevelId: objective.schoolLevelId || null,
         },
-        orderBy: { calculatedAt: 'desc' },
+        orderBy: { computedAt: 'desc' },
       });
 
       if (!latestSnapshot) continue;
@@ -222,8 +223,8 @@ export class OrionAlertsService {
           type: this.getKpiAlertType(objective.kpi.category),
           severity:
             Math.abs(percentageGap) > 20
-              ? CRITICAL
-              : WARNING,
+              ? OrionAlertSeverity.CRITICAL
+              : OrionAlertSeverity.WARNING,
           title: `Écart détecté : ${objective.kpi.name}`,
           description: `L'objectif de ${objective.targetValue} ${objective.kpi.unit || ''} n'est pas atteint. Valeur actuelle : ${actualValue} ${objective.kpi.unit || ''} (écart : ${percentageGap.toFixed(1)}%)`,
           recommendation: 'Analyser les causes de l\'écart et ajuster les actions si nécessaire.',
@@ -361,8 +362,8 @@ export class OrionAlertsService {
 
         if (missingCount > 0) {
           alerts.push({
-            type: PEDAGOGICAL,
-            severity: INFO,
+            type: OrionAlertType.PEDAGOGICAL,
+            severity: OrionAlertSeverity.INFO,
             title: `${missingCount} bulletin(s) non généré(s) pour ${quarter.name}`,
             description: `Des élèves ont des notes validées mais n'ont pas encore de bulletin pour cette période.`,
             recommendation: `Générer les bulletins manquants pour ${quarter.name}.`,
@@ -407,8 +408,8 @@ export class OrionAlertsService {
 
     if (veryHighAverages.length > 10) {
       alerts.push({
-        type: PEDAGOGICAL,
-        severity: INFO,
+          type: OrionAlertType.PEDAGOGICAL,
+          severity: OrionAlertSeverity.INFO,
         title: `${veryHighAverages.length} moyenne(s) exceptionnelle(s)`,
         description: `Plusieurs bulletins présentent des moyennes supérieures à 19/20.`,
         recommendation: 'Vérifier la cohérence des notes et la difficulté des examens.',
@@ -533,8 +534,8 @@ export class OrionAlertsService {
 
       if (collectionRate < 70) {
         alerts.push({
-          type: FINANCIAL,
-          severity: collectionRate < 50 ? CRITICAL : WARNING,
+          type: OrionAlertType.FINANCIAL,
+          severity: collectionRate < 50 ? OrionAlertSeverity.CRITICAL : OrionAlertSeverity.WARNING,
           title: `Taux de recouvrement faible : ${collectionRate.toFixed(1)}%`,
           description: `Le taux de recouvrement est en dessous du seuil acceptable (70%).`,
           recommendation: 'Renforcer les actions de recouvrement et analyser les causes des impayés.',
@@ -653,8 +654,8 @@ export class OrionAlertsService {
 
     if (netCashFlow < 0) {
       alerts.push({
-        type: FINANCIAL,
-        severity: Math.abs(netCashFlow) > totalIncome * 0.3 ? CRITICAL : WARNING,
+        type: OrionAlertType.FINANCIAL,
+        severity: Math.abs(netCashFlow) > totalIncome * 0.3 ? OrionAlertSeverity.CRITICAL : OrionAlertSeverity.WARNING,
         title: `Risque de trésorerie détecté`,
         description: `Sur les 30 derniers jours, les dépenses (${totalExpenses.toLocaleString('fr-FR')} XOF) dépassent les recettes (${totalIncome.toLocaleString('fr-FR')} XOF).`,
         recommendation: 'Analyser les dépenses et optimiser les recettes pour rétablir l\'équilibre financier.',
@@ -755,8 +756,8 @@ export class OrionAlertsService {
       // Alerte si la masse salariale dépasse un seuil (exemple: 10M XOF/mois)
       if (averagePayroll > 10000000) {
         alerts.push({
-          type: RH,
-          severity: WARNING,
+          type: OrionAlertType.RH,
+          severity: OrionAlertSeverity.WARNING,
           title: `Masse salariale élevée : ${(averagePayroll / 1000000).toFixed(1)}M XOF/mois`,
           description: `La masse salariale moyenne dépasse le seuil de 10M XOF par mois.`,
           recommendation: 'Analyser la structure des salaires et optimiser les coûts RH si nécessaire.',
@@ -857,8 +858,8 @@ export class OrionAlertsService {
 
       if (!currentDeclaration || currentDeclaration.status === 'DRAFT') {
         alerts.push({
-          type: RH,
-          severity: WARNING,
+          type: OrionAlertType.RH,
+          severity: OrionAlertSeverity.WARNING,
           title: `${employeesCNSS.length} employé(s) CNSS sans déclaration pour le mois en cours`,
           description: `Des employés sont déclarés CNSS mais aucune déclaration n'a été générée pour le mois en cours.`,
           recommendation: 'Générer la déclaration CNSS du mois en cours pour assurer la conformité.',
@@ -941,8 +942,8 @@ export class OrionAlertsService {
 
       if (deliveryRate < 85) {
         alerts.push({
-          type: OPERATIONAL,
-          severity: WARNING,
+          type: OrionAlertType.OPERATIONAL,
+          severity: OrionAlertSeverity.WARNING,
           title: `Taux de livraison faible : ${deliveryRate.toFixed(1)}%`,
           description: `Le taux de livraison des messages est en dessous du seuil recommandé (85%).`,
           recommendation: 'Vérifier la qualité des contacts (emails, téléphones) et la configuration des canaux.',

@@ -7,7 +7,7 @@
 import { Controller, Get, Post, Query, Param, Body, UseGuards } from '@nestjs/common';
 import { StudentArrearService } from './student-arrear.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { CurrentUser } from '@/auth/decorators/current-user.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 
 @Controller('api/finance/student-arrears')
@@ -40,9 +40,9 @@ export class StudentArrearController {
 
   @Get()
   async getAllArrears(
+    @CurrentUser() user: User,
     @Query('toAcademicYearId') toAcademicYearId: string,
     @Query('status') status?: string,
-    @CurrentUser() user: User,
   ) {
     return this.arrearService.getAllArrears(
       user.tenantId || '',

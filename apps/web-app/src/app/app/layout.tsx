@@ -9,7 +9,7 @@
  */
 
 import { redirect } from 'next/navigation';
-import { getServerSession } from '@/lib/auth';
+import { getServerSession } from '@/lib/auth/session';
 import PilotageLayout from '@/components/pilotage/PilotageLayout';
 import { ModalProvider } from '@/components/modules/blueprint/modals/ModalProvider';
 import AppLayoutClient from './layout-client';

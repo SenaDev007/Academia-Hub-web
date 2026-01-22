@@ -56,9 +56,10 @@ export class OfflineSyncService {
     );
 
     if (!schemaValidation.isValid) {
-      this.logger.warn(`[${syncId}] Schéma SQLite incompatible: ${schemaValidation.reason}`);
+      const errorMessage = schemaValidation.errors?.join(', ') || 'Schéma incompatible';
+      this.logger.warn(`[${syncId}] Schéma SQLite incompatible: ${errorMessage}`);
       throw new BadRequestException(
-        `Schéma SQLite incompatible: ${schemaValidation.reason}. Mise à jour de l'application requise.`,
+        `Schéma SQLite incompatible: ${errorMessage}. Mise à jour de l'application requise.`,
       );
     }
 

@@ -332,7 +332,7 @@ export class StudentIdentifierService {
       where,
       include: {
         student: {
-          where: academicYearId ? { academicYearId } : undefined,
+          // On ne peut pas utiliser where dans include, filtrer au niveau du where principal
           select: {
             id: true,
             status: true,

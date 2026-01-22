@@ -3,6 +3,9 @@ import { StudentsRepository } from './students.repository';
 import { Student } from './entities/student.entity';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
+import { toDate } from '../common/helpers/date.helper';
+import { PaginationDto, PaginatedResponse } from '../common/dto/pagination.dto';
+import { createPaginatedResponse } from '../common/helpers/pagination.helper';
 
 @Injectable()
 export class StudentsService {
@@ -14,16 +17,29 @@ export class StudentsService {
     schoolLevelId: string,
     createdBy?: string,
   ): Promise<Student> {
-    return this.studentsRepository.create({
+    const createData: any = {
       ...createStudentDto,
       tenantId,
       schoolLevelId, // OBLIGATOIRE
       createdBy,
-    });
+    };
+    if (createStudentDto.dateOfBirth) {
+      createData.dateOfBirth = toDate(createStudentDto.dateOfBirth as any);
+    }
+    return this.studentsRepository.create(createData);
   }
 
-  async findAll(tenantId: string, schoolLevelId: string, academicYearId?: string): Promise<Student[]> {
-    return this.studentsRepository.findAll(tenantId, schoolLevelId, academicYearId);
+  async findAll(
+    tenantId: string,
+    schoolLevelId: string,
+    pagination: PaginationDto,
+    academicYearId?: string,
+  ): Promise<PaginatedResponse<Student>> {
+    const [data, total] = await Promise.all([
+      this.studentsRepository.findAll(tenantId, schoolLevelId, pagination, academicYearId),
+      this.studentsRepository.count(tenantId, schoolLevelId, academicYearId),
+    ]);
+    return createPaginatedResponse(data, total, pagination);
   }
 
   async findOne(id: string, tenantId: string, schoolLevelId: string): Promise<Student> {
@@ -42,7 +58,11 @@ export class StudentsService {
   ): Promise<Student> {
     // Verify student belongs to tenant and school level
     await this.findOne(id, tenantId, schoolLevelId);
-    return this.studentsRepository.update(id, tenantId, schoolLevelId, updateStudentDto);
+    const updateData: any = { ...updateStudentDto };
+    if (updateStudentDto.dateOfBirth !== undefined) {
+      updateData.dateOfBirth = updateStudentDto.dateOfBirth ? toDate(updateStudentDto.dateOfBirth as any) : null;
+    }
+    return this.studentsRepository.update(id, tenantId, schoolLevelId, updateData);
   }
 
   async delete(id: string, tenantId: string, schoolLevelId: string): Promise<void> {

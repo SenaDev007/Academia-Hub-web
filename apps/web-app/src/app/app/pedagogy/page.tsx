@@ -7,7 +7,7 @@
 'use client';
 
 import { useState } from 'react';
-import { BookOpen, Users, Calendar, FileText, Book, Building2 } from 'lucide-react';
+import { BookOpen, Users, Calendar, FileText, Book, Building2, Package } from 'lucide-react';
 import {
   ModuleContainer,
 } from '@/components/modules/blueprint';
@@ -67,6 +67,13 @@ export default function PedagogyPage() {
       icon: 'book',
       description: 'Devoirs et notes pour les élèves',
     },
+    {
+      id: 'pedagogical-materials',
+      label: 'Matériel & Fournitures pédagogiques',
+      href: '/app/pedagogy/pedagogical-materials',
+      icon: 'package',
+      description: 'Gestion du matériel pédagogique et attributions aux enseignants',
+    },
   ];
 
   const getIcon = (iconName: string) => {
@@ -77,6 +84,7 @@ export default function PedagogyPage() {
       fileText: FileText,
       book: Book,
       building: Building2,
+      package: Package,
     };
     return icons[iconName] || BookOpen;
   };

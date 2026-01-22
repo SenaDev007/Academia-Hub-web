@@ -13,8 +13,8 @@ import { PayrollPdfService } from './services/payroll-pdf.service';
 import { HROrionService } from './services/hr-orion.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
-import { GetTenant } from '../common/decorators/get-tenant.decorator';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { GetTenant } from '../common/decorators/tenant.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @Controller('api/hr/payroll')
 @UseGuards(JwtAuthGuard, TenantGuard)

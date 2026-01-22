@@ -11,7 +11,7 @@
 import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { ReceiptNotificationService } from './receipt-notification.service';
 import { JwtAuthGuard } from '@/auth/guards/jwt-auth.guard';
-import { CurrentUser } from '@/auth/decorators/current-user.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 
 @Controller('api/receipts/notifications')

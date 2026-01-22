@@ -89,8 +89,8 @@ export class PayrollTaxService {
       payrollItem.payroll.startDate,
     );
 
-    // 5. Autres retenues (déjà dans deductions)
-    const otherDeductions = Number(payrollItem.deductions || 0);
+    // 5. Autres retenues
+    const otherDeductions = Number(payrollItem.otherDeductions || 0);
 
     // 6. Calculer le total des retenues
     const totalDeductions = cnssEmployeeShare + irppCalculation.amount + otherDeductions;

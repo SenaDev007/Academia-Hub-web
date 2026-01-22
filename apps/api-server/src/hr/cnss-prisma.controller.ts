@@ -8,7 +8,7 @@ import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nest
 import { CNSSPrismaService } from './cnss-prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
-import { GetTenant } from '../common/decorators/get-tenant.decorator';
+import { GetTenant } from '../common/decorators/tenant.decorator';
 
 @Controller('api/hr/cnss')
 @UseGuards(JwtAuthGuard, TenantGuard)

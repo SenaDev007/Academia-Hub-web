@@ -78,7 +78,7 @@ export class AdministrativeSealsService {
         _count: {
           select: {
             versions: true,
-            usages: true,
+            // usages n'est pas une relation directe, c'est via versions -> AdministrativeSealUsage
           },
         },
       },
@@ -586,5 +586,33 @@ export class AdministrativeSealsService {
    */
   async activateSeal(tenantId: string, sealId: string, userId: string) {
     return this.updateSeal(tenantId, sealId, { isActive: true }, userId);
+  }
+
+  /**
+   * Vérifie les cachets expirant dans les X prochains jours
+   */
+  async checkExpiringSeals(tenantId: string, days: number = 30) {
+    const expirationDate = new Date();
+    expirationDate.setDate(expirationDate.getDate() + days);
+
+    return this.prisma.administrativeSeal.findMany({
+      where: {
+        tenantId,
+        isActive: true,
+        validTo: {
+          lte: expirationDate,
+          gte: new Date(), // Pas encore expiré
+        },
+      },
+      include: {
+        academicYear: {
+          select: { id: true, name: true, label: true },
+        },
+        versions: {
+          take: 1,
+          orderBy: { versionNumber: 'desc' },
+        },
+      },
+    });
   }
 }

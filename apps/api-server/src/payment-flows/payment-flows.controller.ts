@@ -16,7 +16,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { UserRole } from '../users/entities/user.entity';
+// UserRole n'existe plus, utiliser des strings directement
 import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('payment-flows')
@@ -25,7 +25,7 @@ export class PaymentFlowsController {
   constructor(private readonly paymentFlowsService: PaymentFlowsService) {}
 
   @Post()
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   create(
     @Body() createDto: CreatePaymentFlowDto,
     @TenantId() tenantId: string,
@@ -35,7 +35,7 @@ export class PaymentFlowsController {
   }
 
   @Get()
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER')
   findAll(
     @TenantId() tenantId: string,
     @Body() filters?: { flowType?: PaymentFlowType; status?: string; studentId?: string },
@@ -49,7 +49,7 @@ export class PaymentFlowsController {
   }
 
   @Get(':id')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR, UserRole.TEACHER)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN', 'TEACHER')
   findOne(@Param('id') id: string, @TenantId() tenantId: string) {
     return this.paymentFlowsService.findOne(id, tenantId);
   }
@@ -67,7 +67,7 @@ export class PaymentFlowsController {
    * Gestion des comptes de paiement école
    */
   @Post('school-accounts')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   createSchoolAccount(
     @Body() createDto: CreateSchoolPaymentAccountDto,
     @TenantId() tenantId: string,
@@ -77,13 +77,13 @@ export class PaymentFlowsController {
   }
 
   @Get('school-accounts')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   findAllSchoolAccounts(@TenantId() tenantId: string) {
     return this.paymentFlowsService.findAllSchoolPaymentAccounts(tenantId);
   }
 
   @Post('school-accounts/:id/verify')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Roles('SUPER_DIRECTOR', 'ADMIN')
   verifySchoolAccount(
     @Param('id') id: string,
     @TenantId() tenantId: string,

@@ -50,8 +50,9 @@ export class TenantGuard implements CanActivate {
     // Option 3: From JWT payload (after authentication)
     // This is typically handled by an AuthGuard that decodes the JWT
     // and attaches user/tenant info to the request
-    if (request['user'] && request['user'].tenantId) {
-      return request['user'].tenantId;
+    const user = request['user'] as any;
+    if (user && user.tenantId) {
+      return user.tenantId;
     }
 
     return undefined;

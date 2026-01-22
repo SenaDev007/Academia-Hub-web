@@ -113,9 +113,12 @@ export class FinanceOrionService {
           include: {
             student: {
               include: {
-                parents: {
+                studentGuardians: {
                   where: {
                     isPrimary: true,
+                  },
+                  include: {
+                    guardian: true,
                   },
                   take: 1,
                 },
@@ -247,9 +250,12 @@ export class FinanceOrionService {
       include: {
         student: {
           include: {
-            parents: {
+            studentGuardians: {
               where: {
                 isPrimary: true,
+              },
+              include: {
+                guardian: true,
               },
               take: 1,
             },
@@ -270,7 +276,7 @@ export class FinanceOrionService {
           paymentCount: paymentsWithoutNotification.length,
           recentPayments: paymentsWithoutNotification.slice(0, 5).map((p) => ({
             paymentId: p.id,
-            studentName: `${p.student.firstName} ${p.student.lastName}`,
+            studentName: `${p.student?.firstName || ''} ${p.student?.lastName || ''}`,
             amount: p.amount,
             date: p.paymentDate,
           })),

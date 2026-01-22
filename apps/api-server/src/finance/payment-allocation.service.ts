@@ -177,7 +177,7 @@ export class PaymentAllocationService {
         });
 
         return {
-          studentFee,
+          studentFee: sf,
           orderIndex: firstUnpaidInstallment?.orderIndex || 999,
         };
       }).sort((a, b) => a.orderIndex - b.orderIndex);

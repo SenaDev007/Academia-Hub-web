@@ -38,6 +38,7 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Permissions } from '../auth/decorators/permissions.decorator';
 import { ModuleTypeRequired, ModuleTypeParam } from '../common/decorators/module-type.decorator';
 import { ModuleType } from '../modules/entities/module.entity';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('students')
 @UseGuards(
@@ -76,10 +77,12 @@ export class StudentsController {
     @TenantId() tenantId: string,
     @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement
     @ModuleTypeParam() moduleType: ModuleType, // Résolu automatiquement
+    @Query() pagination: PaginationDto,
+    @Query('academicYearId') academicYearId?: string,
   ) {
     // Isolation garantie : seuls les étudiants du niveau spécifié
     // Le contexte est automatiquement validé par ContextValidationGuard
-    return this.studentsService.findAll(tenantId, schoolLevelId);
+    return this.studentsService.findAll(tenantId, schoolLevelId, pagination, academicYearId);
   }
 
   @Get(':id')

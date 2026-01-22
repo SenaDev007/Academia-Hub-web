@@ -10,7 +10,7 @@
 
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 import { SmsService } from './sms.service';
 import * as crypto from 'crypto';
 

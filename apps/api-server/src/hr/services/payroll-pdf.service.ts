@@ -80,10 +80,11 @@ export class PayrollPdfService {
       const receiptNumber = await this.generateReceiptNumber(tenantId);
       salarySlip = await this.prisma.salarySlip.create({
         data: {
+          tenantId,
           payrollItemId,
           receiptNumber,
           period: payrollItem.payroll.month,
-          issuedBy: userId,
+          issuedBy: userId || undefined,
         },
       });
     }

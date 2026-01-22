@@ -149,13 +149,19 @@ export class PayrollPrismaService {
     const deductions = data.deductions || 0;
     const netSalary = baseSalary + overtimeAmount + bonuses - deductions;
 
+    const grossSalary = baseSalary + overtimeAmount + bonuses;
+    const totalDeductions = deductions; // ou calculer depuis cnssEmployee + irppAmount + otherDeductions
+    // Retirer deductions et tenantId de data s'ils existent (gérés séparément)
+    const { deductions: _, tenantId: __, ...restData } = data as any;
     const item = await this.prisma.payrollItem.create({
       data: {
-        ...data,
+        ...restData,
         baseSalary,
         overtimeAmount,
         bonuses,
-        deductions,
+        grossSalary,
+        otherDeductions: deductions,
+        totalDeductions,
         netSalary,
       },
     });
@@ -249,13 +255,18 @@ export class PayrollPrismaService {
     // Générer un numéro de reçu unique
     const receiptNumber = `SLIP-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
 
+    // SalarySlip - utiliser UncheckedCreateInput avec tenantId directement
+    const salarySlipData: any = {
+      tenantId,
+      payrollItemId,
+      receiptNumber,
+      issuedAt: new Date(),
+    };
+    if (issuedBy) {
+      salarySlipData.issuedBy = issuedBy;
+    }
     return this.prisma.salarySlip.create({
-      data: {
-        payrollItemId,
-        receiptNumber,
-        issuedBy,
-        issuedAt: new Date(),
-      },
+      data: salarySlipData,
     });
   }
 

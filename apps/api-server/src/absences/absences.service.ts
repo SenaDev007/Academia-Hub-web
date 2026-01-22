@@ -3,6 +3,7 @@ import { AbsencesRepository } from './absences.repository';
 import { Absence } from './entities/absence.entity';
 import { CreateAbsenceDto } from './dto/create-absence.dto';
 import { UpdateAbsenceDto } from './dto/update-absence.dto';
+import { toDate } from '../common/helpers/date.helper';
 
 @Injectable()
 export class AbsencesService {
@@ -11,6 +12,7 @@ export class AbsencesService {
   async create(createAbsenceDto: CreateAbsenceDto, tenantId: string, createdBy?: string): Promise<Absence> {
     return this.absencesRepository.create({
       ...createAbsenceDto,
+      date: toDate(createAbsenceDto.date as any) || new Date(),
       tenantId,
       createdBy,
     });
@@ -30,7 +32,11 @@ export class AbsencesService {
 
   async update(id: string, updateAbsenceDto: UpdateAbsenceDto, tenantId: string, justifiedBy?: string): Promise<Absence> {
     await this.findOne(id, tenantId);
-    return this.absencesRepository.update(id, tenantId, { ...updateAbsenceDto, justifiedBy });
+    const updateData: any = { ...updateAbsenceDto, justifiedBy };
+    if (updateAbsenceDto.date) {
+      updateData.date = toDate(updateAbsenceDto.date as any);
+    }
+    return this.absencesRepository.update(id, tenantId, updateData);
   }
 
   async delete(id: string, tenantId: string): Promise<void> {

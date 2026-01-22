@@ -56,14 +56,13 @@ export class PedagogicalNotificationService {
         where: {
           tenantId,
           role: { in: ['DIRECTOR', 'ADMIN'] },
-          isActive: true,
+          status: 'active',
         },
         select: {
           id: true,
           firstName: true,
           lastName: true,
           email: true,
-          phone: true,
         },
       });
 
@@ -108,37 +107,9 @@ export class PedagogicalNotificationService {
             },
           });
 
-          // Envoyer SMS si numéro disponible
-          if (director.phone) {
-            try {
-              await this.sendSMS(director.phone, message);
-              await this.prisma.pedagogicalDocumentNotification.update({
-                where: { id: notification.id },
-                data: {
-                  smsSent: true,
-                  smsSentAt: new Date(),
-                },
-              });
-            } catch (error) {
-              this.logger.error(`Failed to send SMS to ${director.phone}:`, error);
-            }
-          }
-
-          // Envoyer WhatsApp si numéro disponible
-          if (director.phone) {
-            try {
-              await this.sendWhatsApp(director.phone, message);
-              await this.prisma.pedagogicalDocumentNotification.update({
-                where: { id: notification.id },
-                data: {
-                  whatsappSent: true,
-                  whatsappSentAt: new Date(),
-                },
-              });
-            } catch (error) {
-              this.logger.error(`Failed to send WhatsApp to ${director.phone}:`, error);
-            }
-          }
+          // Note: User n'a pas de champ phone dans le schéma Prisma
+          // Les notifications SMS/WhatsApp doivent utiliser un autre mécanisme
+          // Pour l'instant, on envoie uniquement par email
 
           // Envoyer Email si email disponible
           if (director.email) {
@@ -359,7 +330,7 @@ export class PedagogicalNotificationService {
           where: {
             tenantId,
             role: { in: ['DIRECTOR', 'ADMIN'] },
-            isActive: true,
+            status: 'active',
           },
           select: { id: true },
         });
@@ -381,7 +352,6 @@ export class PedagogicalNotificationService {
           firstName: true,
           lastName: true,
           email: true,
-          phone: true,
         },
       });
 
@@ -407,21 +377,9 @@ export class PedagogicalNotificationService {
         },
       });
 
-      // Envoyer notifications (SMS/WhatsApp si configuré)
-      if (recipient.phone) {
-        try {
-          await this.sendWhatsApp(recipient.phone, message);
-          await this.prisma.pedagogicalDocumentNotification.update({
-            where: { id: notification.id },
-            data: {
-              whatsappSent: true,
-              whatsappSentAt: new Date(),
-            },
-          });
-        } catch (error) {
-          this.logger.error(`Failed to send WhatsApp notification:`, error);
-        }
-      }
+      // Note: User n'a pas de champ phone dans le schéma Prisma
+      // Les notifications SMS/WhatsApp doivent utiliser un autre mécanisme
+      // Pour l'instant, on envoie uniquement par email
 
       this.logger.log(`Sent comment notification for document ${documentId}`);
     } catch (error) {

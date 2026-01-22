@@ -6,22 +6,84 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getApiBaseUrlForRoutes } from '@/lib/utils/api-urls';
-import { login, LoginCredentials } from '@/services/auth.service';
 import { setServerSession } from '@/lib/auth/session';
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+  tenantSubdomain?: string;
+}
+
+interface BackendLoginResponse {
+  user: {
+    id: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    tenantId?: string;
+  };
+  accessToken: string;
+  refreshToken: string;
+}
 
 export async function POST(request: NextRequest) {
   try {
     const body: LoginCredentials = await request.json();
     
-    // Appeler le service d'authentification
-    const response = await login(body);
+    // Appeler le backend NestJS directement
+    const apiBaseUrl = getApiBaseUrlForRoutes();
+    // S'assurer qu'on n'a pas de double /api dans l'URL
+    const loginUrl = apiBaseUrl.endsWith('/api') 
+      ? `${apiBaseUrl}/auth/login`
+      : `${apiBaseUrl}/api/auth/login`;
     
-    // Créer la session
+    console.log('[Login API] Calling backend at:', loginUrl);
+    
+    // Créer un AbortController pour gérer le timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes
+    
+    const backendResponse = await fetch(loginUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: body.email,
+        password: body.password,
+      }),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+
+    if (!backendResponse.ok) {
+      const errorData = await backendResponse.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erreur lors de la connexion');
+    }
+
+    const backendData: BackendLoginResponse = await backendResponse.json();
+    
+    // Mapper la réponse du backend vers le format attendu par le frontend
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24h
+    const token = backendData.accessToken;
+    
+    // Créer un tenant par défaut si nécessaire (sera chargé depuis la DB plus tard)
+    const tenant = {
+      id: backendData.user.tenantId || '',
+      name: 'Mon École',
+      subdomain: body.tenantSubdomain || '',
+      subscriptionStatus: 'ACTIVE_SUBSCRIBED' as const,
+      createdAt: new Date().toISOString(),
+      trialEndsAt: null,
+      nextPaymentDueAt: null,
+    };
+
     const session = {
-      user: response.user,
-      tenant: response.tenant,
-      token: response.token,
-      expiresAt: response.expiresAt,
+      user: backendData.user,
+      tenant,
+      token,
+      expiresAt,
     };
     
     // Stocker la session dans les cookies
@@ -29,14 +91,27 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      user: response.user,
-      tenant: response.tenant,
+      user: backendData.user,
+      tenant,
     });
   } catch (error: any) {
+    console.error('[Login API] Error:', error);
+    
+    // Message d'erreur plus détaillé
+    let errorMessage = 'Erreur lors de la connexion';
+    
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+      errorMessage = 'Le serveur backend ne répond pas. Vérifiez qu\'il est démarré sur le port 3000.';
+    } else if (error.message) {
+      errorMessage = error.message;
+    } else if (error.cause) {
+      errorMessage = `Erreur de connexion: ${error.cause.message || 'Impossible de joindre le serveur backend'}`;
+    }
+    
     return NextResponse.json(
       { 
         success: false, 
-        message: error.response?.data?.message || 'Erreur lors de la connexion' 
+        message: errorMessage 
       },
       { status: 401 }
     );

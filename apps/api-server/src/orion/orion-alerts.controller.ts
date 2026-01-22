@@ -4,11 +4,11 @@
  * ============================================================================
  */
 
-import { Controller, Get, Post, Put, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Param, Query, Body, UseGuards } from '@nestjs/common';
 import { OrionAlertsService } from './services/orion-alerts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
-import { GetTenant } from '../common/decorators/get-tenant.decorator';
+import { GetTenant } from '../common/decorators/tenant.decorator';
 
 @Controller('api/orion/alerts')
 @UseGuards(JwtAuthGuard, TenantGuard)

@@ -26,3 +26,7 @@ export const Tenant = createParamDecorator(
   },
 );
 
+/**
+ * Alias pour Tenant (pour compatibilité)
+ */
+export const GetTenant = Tenant;

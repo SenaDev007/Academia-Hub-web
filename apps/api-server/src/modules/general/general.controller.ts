@@ -26,7 +26,7 @@ import { TenantId } from '../../common/decorators/tenant-id.decorator';
 import { AcademicYearId } from '../../common/decorators/academic-year-id.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { UserRole } from '../../users/entities/user.entity';
+// UserRole n'existe plus, utiliser le type string directement
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { AllowCrossLevel } from '../../common/decorators/allow-cross-level.decorator';
 
@@ -37,7 +37,7 @@ export class GeneralController {
   constructor(private readonly generalService: GeneralService) {}
 
   @Get('enrollment')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   getTotalEnrollment(
     @TenantId() tenantId: string,
     @AcademicYearId() academicYearId: string,
@@ -47,7 +47,7 @@ export class GeneralController {
   }
 
   @Get('revenue')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   getTotalRevenue(
     @TenantId() tenantId: string,
     @AcademicYearId() academicYearId: string,
@@ -65,7 +65,7 @@ export class GeneralController {
   }
 
   @Get('weighted-average')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   getWeightedAverage(
     @TenantId() tenantId: string,
     @AcademicYearId() academicYearId: string,
@@ -75,7 +75,7 @@ export class GeneralController {
   }
 
   @Get('consolidated-report')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.DIRECTOR)
+  @Roles('SUPER_DIRECTOR', 'DIRECTOR', 'ADMIN')
   getConsolidatedReport(
     @TenantId() tenantId: string,
     @AcademicYearId() academicYearId: string,

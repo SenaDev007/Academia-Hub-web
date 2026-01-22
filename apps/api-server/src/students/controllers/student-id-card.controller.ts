@@ -25,15 +25,14 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { Roles } from '../../auth/decorators/roles.decorator';
-import { GetTenant } from '../../common/decorators/get-tenant.decorator';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { GetTenant } from '../../common/decorators/tenant.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { StudentIdCardService } from '../services/student-id-card.service';
 
 @Controller('api/students/id-cards')
 @UseGuards(JwtAuthGuard, TenantGuard)
 export class StudentIdCardController {
   constructor(private readonly idCardService: StudentIdCardService) {}
-}
 
   /**
    * Génère une carte scolaire pour un élève

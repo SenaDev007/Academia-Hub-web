@@ -51,8 +51,9 @@ export class AcademicYearEnforcementGuard implements CanActivate {
     ]);
 
     const request = context.switchToHttp().getRequest<Request>();
-    const tenantId = request['tenantId'] || request['user']?.tenantId;
-    const userId = request['user']?.id;
+    const user = request['user'] as any;
+    const tenantId = request['tenantId'] || user?.tenantId;
+    const userId = user?.id;
 
     // RÈGLE 1 : academic_year_id est OBLIGATOIRE pour toutes les opérations métier
     const academicYearId = this.extractAcademicYearId(request);

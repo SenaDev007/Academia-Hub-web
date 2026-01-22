@@ -84,18 +84,14 @@ export function LoadingScreen({
       )}
     >
       <div className={cn(containerClass, 'text-center')}>
-        {/* Logo ou symbole Academia Hub */}
+        {/* Logo Academia Hub */}
         <div className="mb-8 flex justify-center">
           <div className="relative">
-            {/* Cercle animé */}
-            <div className="h-20 w-20 rounded-full border-4 border-blue-200"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-12 w-12 rounded-full bg-blue-600 animate-pulse"></div>
-            </div>
-            {/* Icône ou initiales */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-2xl font-bold text-white">AH</span>
-            </div>
+            <img 
+              src="/images/logo-Academia Hub.png" 
+              alt="Academia Hub" 
+              className="h-20 w-20 object-contain animate-pulse"
+            />
           </div>
         </div>
 

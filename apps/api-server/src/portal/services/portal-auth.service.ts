@@ -16,7 +16,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 import { PortalSessionService } from './portal-session.service';
 import {
   SchoolPortalLoginDto,
@@ -61,9 +61,17 @@ export class PortalAuthService {
         status: 'active',
       },
       include: {
-        roles: {
+        userRoles: {
           include: {
-            permissions: true,
+            role: {
+              include: {
+                rolePermissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -146,22 +154,36 @@ export class PortalAuthService {
       throw new UnauthorizedException('Établissement non trouvé ou inactif');
     }
 
-    // Trouver l'enseignant par identifiant
+    // Trouver l'enseignant par matricule
     const teacher = await this.prisma.teacher.findFirst({
       where: {
         tenantId: dto.tenantId,
-        OR: [
-          { employeeId: dto.teacherIdentifier },
-          { teacherCode: dto.teacherIdentifier },
-        ],
+        matricule: dto.teacherIdentifier,
+        status: 'active',
+      },
+    });
+
+    if (!teacher) {
+      throw new UnauthorizedException('Identifiant enseignant invalide');
+    }
+
+    // Trouver l'utilisateur associé par email
+    const user = await this.prisma.user.findFirst({
+      where: {
+        tenantId: dto.tenantId,
+        email: teacher.email || '',
         status: 'active',
       },
       include: {
-        user: {
+        userRoles: {
           include: {
-            roles: {
+            role: {
               include: {
-                permissions: true,
+                rolePermissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
               },
             },
           },
@@ -169,11 +191,9 @@ export class PortalAuthService {
       },
     });
 
-    if (!teacher || !teacher.user) {
-      throw new UnauthorizedException('Identifiant enseignant invalide');
+    if (!user) {
+      throw new UnauthorizedException('Utilisateur associé non trouvé');
     }
-
-    const user = teacher.user;
 
     // Vérifier le rôle
     if (user.role !== 'TEACHER') {
@@ -224,8 +244,7 @@ export class PortalAuthService {
       },
       teacher: {
         id: teacher.id,
-        employeeId: teacher.employeeId,
-        teacherCode: teacher.teacherCode,
+        matricule: teacher.matricule,
       },
       token,
       sessionId: session.id,
@@ -257,14 +276,20 @@ export class PortalAuthService {
         tenantId: dto.tenantId,
         phone: dto.phone,
       },
-      include: {
-        user: true,
-      },
     });
 
     if (!guardian) {
       throw new UnauthorizedException('Numéro de téléphone non trouvé');
     }
+
+    // Trouver l'utilisateur associé par email
+    const user = guardian.email ? await this.prisma.user.findFirst({
+      where: {
+        tenantId: dto.tenantId,
+        email: guardian.email,
+        status: 'active',
+      },
+    }) : null;
 
     // Si pas d'OTP fourni, générer et envoyer
     if (!dto.otp) {
@@ -292,11 +317,9 @@ export class PortalAuthService {
     }
 
     // Si l'OTP est valide, créer la session
-    if (!guardian.user) {
+    if (!user) {
       throw new UnauthorizedException('Compte parent non configuré');
     }
-
-    const user = guardian.user;
 
     // Créer une session de portail
     const session = await this.portalSessionService.createSession(

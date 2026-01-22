@@ -3,6 +3,7 @@ import { QuartersRepository } from './quarters.repository';
 import { Quarter } from './entities/quarter.entity';
 import { CreateQuarterDto } from './dto/create-quarter.dto';
 import { UpdateQuarterDto } from './dto/update-quarter.dto';
+import { toDate } from '../common/helpers/date.helper';
 
 @Injectable()
 export class QuartersService {
@@ -18,6 +19,8 @@ export class QuartersService {
     }
     return this.quartersRepository.create({
       ...createQuarterDto,
+      startDate: toDate(createQuarterDto.startDate as any) || new Date(),
+      endDate: toDate(createQuarterDto.endDate as any) || new Date(),
       tenantId,
       createdBy,
     });
@@ -50,7 +53,15 @@ export class QuartersService {
       }
     }
     
-    return this.quartersRepository.update(id, tenantId, updateQuarterDto);
+    const updateData: any = { ...updateQuarterDto };
+    if (updateQuarterDto.startDate) {
+      updateData.startDate = toDate(updateQuarterDto.startDate as any);
+    }
+    if (updateQuarterDto.endDate) {
+      updateData.endDate = toDate(updateQuarterDto.endDate as any);
+    }
+    
+    return this.quartersRepository.update(id, tenantId, updateData);
   }
 
   async delete(id: string, tenantId: string): Promise<void> {

@@ -50,9 +50,17 @@ export class MedicalService {
     });
     if (!record) throw new NotFoundException(`Medical record with ID ${recordId} not found`);
 
+    // Récupérer l'année scolaire active
+    const academicYear = await this.prisma.academicYear.findFirst({
+      where: { tenantId: record.tenantId, isActive: true },
+      orderBy: { startDate: 'desc' },
+    });
+    if (!academicYear) throw new NotFoundException('No active academic year found');
+
     return this.prisma.medicalVisit.create({
       data: {
         recordId,
+        academicYearId: academicYear.id,
         visitDate: new Date(data.visitDate),
         visitTime: data.visitTime,
         reason: data.reason,
@@ -62,7 +70,7 @@ export class MedicalService {
         temperature: data.temperature,
         bloodPressure: data.bloodPressure,
         notes: data.notes,
-        performedBy,
+        performedBy: performedBy || undefined,
       },
     });
   }

@@ -21,8 +21,8 @@ export class MeetingMinutesGenerationService {
   async generateFromTemplate(
     meetingId: string,
     tenantId: string,
-    templateId?: string,
     recordedBy: string,
+    templateId?: string,
   ) {
     // Récupérer la réunion avec toutes ses données
     const meeting = await this.prisma.meeting.findFirst({

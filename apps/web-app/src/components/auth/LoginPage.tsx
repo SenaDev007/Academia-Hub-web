@@ -4,20 +4,26 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { login, LoginCredentials } from '@/services/auth.service';
-import { GraduationCap, Loader, AlertCircle } from 'lucide-react';
+import { Loader, AlertCircle, Mail, Lock } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
     password: '',
   });
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Récupérer les paramètres de l'URL
+  const tenantParam = searchParams?.get('tenant');
+  const redirectPath = searchParams?.get('redirect') || '/app';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,56 +31,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // ============================================
-      // IDENTIFIANTS PROVISOIRES (TEST)
-      // ============================================
-      const testCredentials = [
-        { email: 'admin@test.com', password: 'admin123', role: 'DIRECTOR' },
-        { email: 'directeur@test.com', password: 'directeur123', role: 'DIRECTOR' },
-        { email: 'enseignant@test.com', password: 'enseignant123', role: 'TEACHER' },
-        { email: 'comptable@test.com', password: 'comptable123', role: 'ACCOUNTANT' },
-      ];
-
-      const testUser = testCredentials.find(
-        (tc) => tc.email === credentials.email && tc.password === credentials.password
-      );
-
-      if (testUser) {
-        // Connexion provisoire réussie - créer une session de test
-        const sessionData = {
-          user: {
-            id: `test-user-${Date.now()}`,
-            email: testUser.email,
-            firstName: 'Test',
-            lastName: 'User',
-            role: testUser.role,
-            tenantId: 'test-tenant-id',
-          },
-          token: 'test-token-' + Date.now(),
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        };
-
-        // Stocker dans sessionStorage
-        sessionStorage.setItem('academia_session', JSON.stringify(sessionData));
-        // Stocker aussi dans un cookie lisible côté serveur pour les Server Components
-        try {
-          document.cookie = `academia_test_session=${encodeURIComponent(
-            JSON.stringify(sessionData.user),
-          )}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
-        } catch (cookieError) {
-          console.warn('Unable to set test session cookie:', cookieError);
-        }
-        
-        // Rediriger vers le dashboard
-        window.location.href = '/app';
-        return;
-      }
-
-      // Si pas d'identifiants de test, essayer l'API normale
       // Extraire le sous-domaine depuis l'URL
       const host = window.location.host;
       const parts = host.split('.');
       const subdomain = parts.length > 2 && parts[0] !== 'localhost' ? parts[0] : undefined;
+      
+      // Utiliser tenantParam si disponible, sinon essayer subdomain
+      const effectiveTenantIdentifier = tenantParam || subdomain;
       
       // Appeler l'API route Next.js
       const response = await fetch('/api/auth/login', {
@@ -84,7 +47,7 @@ export default function LoginPage() {
         },
         body: JSON.stringify({
           ...credentials,
-          tenantSubdomain: subdomain,
+          tenantSubdomain: effectiveTenantIdentifier,
         }),
       });
 
@@ -95,8 +58,11 @@ export default function LoginPage() {
       }
 
       // Rediriger vers le dashboard normal pour les utilisateurs (tenants)
-      // Le middleware gérera la redirection vers le bon sous-domaine
-      window.location.href = '/app';
+      // Conserver le paramètre tenant si présent
+      const redirectUrl = tenantParam 
+        ? `${redirectPath}?tenant=${encodeURIComponent(tenantParam)}`
+        : redirectPath;
+      window.location.href = redirectUrl;
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la connexion');
     } finally {
@@ -105,98 +71,114 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="bg-white rounded-lg shadow-lg p-8">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-900 rounded-lg mb-4">
-            <GraduationCap className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-2xl font-bold text-blue-900">Academia Hub</h1>
-          <p className="text-sm text-graphite-700 mt-2">Connexion à votre compte</p>
-        </div>
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Decorative background elements */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-gold-500 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+      </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-sm text-red-800">{error}</p>
-          </div>
-        )}
-
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              required
-              value={credentials.email}
-              onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
-              placeholder="votre.email@etablissement.com"
-            />
+      <div className="w-full max-w-md relative z-10">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl p-8 md:p-10 border border-blue-100">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center mb-6">
+              <Image
+                src="/images/logo-Academia Hub.png"
+                alt="Academia Hub"
+                width={120}
+                height={120}
+                className="w-24 h-24 md:w-28 md:h-28 object-contain drop-shadow-lg"
+                priority
+              />
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-900 via-blue-700 to-blue-900 bg-clip-text text-transparent mb-2">
+              Academia Hub
+            </h1>
+            <p className="text-sm text-gray-600 mt-2">Connexion à votre espace sécurisé</p>
           </div>
 
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
-              Mot de passe
-            </label>
-            <input
-              type="password"
-              id="password"
-              required
-              value={credentials.password}
-              onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-900 focus:border-blue-900"
-              placeholder="••••••••"
-            />
-          </div>
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 bg-red-50 border-l-4 border-red-500 rounded-lg p-4 flex items-start space-x-3 shadow-sm animate-in slide-in-from-top-2">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-800">{error}</p>
+            </div>
+          )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white px-6 py-3 rounded-md font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <>
-                <Loader className="w-5 h-5 mr-2 animate-spin" />
-                Connexion...
-              </>
-            ) : (
-              'Se connecter'
-            )}
-          </button>
-        </form>
+          {/* Login Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-900 mb-2">
+                Adresse email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  required
+                  value={credentials.email}
+                  onChange={(e) => setCredentials({ ...credentials, email: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 placeholder-gray-400"
+                  placeholder="votre.email@etablissement.com"
+                />
+              </div>
+            </div>
 
-        {/* Identifiants provisoires (TEST) */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-xs font-semibold text-blue-900 mb-2">🔑 Identifiants provisoires (Test) :</p>
-          <div className="text-xs text-blue-800 space-y-1">
-            <p>• <strong>admin@test.com</strong> / admin123 (Directeur)</p>
-            <p>• <strong>directeur@test.com</strong> / directeur123 (Directeur)</p>
-            <p>• <strong>enseignant@test.com</strong> / enseignant123 (Enseignant)</p>
-            <p>• <strong>comptable@test.com</strong> / comptable123 (Comptable)</p>
-          </div>
-        </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-900 mb-2">
+                Mot de passe
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  type="password"
+                  id="password"
+                  required
+                  value={credentials.password}
+                  onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition-all duration-200 placeholder-gray-400"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
 
-        {/* Links */}
-        <div className="mt-6 text-center space-y-2">
-          <Link
-            href="/forgot-password"
-            className="text-sm text-crimson-600 hover:text-crimson-500"
-          >
-            Mot de passe oublié ?
-          </Link>
-          <p className="text-sm text-graphite-700">
-            Pas encore de compte ?{' '}
-            <Link href="/signup" className="text-crimson-600 hover:text-crimson-500 font-semibold">
-              Activer Academia Hub
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3.5 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              {isLoading ? (
+                <>
+                  <Loader className="w-5 h-5 mr-2 animate-spin" />
+                  Connexion en cours...
+                </>
+              ) : (
+                'Se connecter'
+              )}
+            </button>
+          </form>
+
+          {/* Links */}
+          <div className="mt-6 text-center space-y-3">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors inline-block"
+            >
+              Mot de passe oublié ?
             </Link>
-          </p>
+            <p className="text-sm text-gray-600">
+              Pas encore de compte ?{' '}
+              <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors">
+                Activer Academia Hub
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

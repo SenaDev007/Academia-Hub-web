@@ -23,7 +23,7 @@ const FEATURE_PRICING: Record<FeatureCode, { monthly: number; annual: number }> 
 @Injectable()
 export class TenantFeaturesService {
   constructor(
-    private readonly repository: TenantFeaturesRepository,
+    public readonly repository: TenantFeaturesRepository, // Public pour accès depuis controller
     private readonly auditLogsService: AuditLogsService,
     private readonly academicTracksService: AcademicTracksService,
     private readonly academicTracksRepository: AcademicTracksRepository,

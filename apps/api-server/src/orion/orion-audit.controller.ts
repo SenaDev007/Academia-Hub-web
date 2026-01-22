@@ -8,7 +8,7 @@ import { Controller, Get, Post, Body, Query, UseGuards, Req } from '@nestjs/comm
 import { OrionAuditService } from './services/orion-audit.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
-import { GetTenant } from '../common/decorators/get-tenant.decorator';
+import { GetTenant } from '../common/decorators/tenant.decorator';
 
 @Controller('api/orion/audit')
 @UseGuards(JwtAuthGuard, TenantGuard)

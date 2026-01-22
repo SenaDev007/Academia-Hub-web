@@ -53,7 +53,7 @@ export class TenantValidationGuard implements CanActivate {
     }
 
     // Vérifier que l'utilisateur appartient bien à ce tenant
-    const user = request['user'];
+    const user = request['user'] as any;
     if (user && user.tenantId && user.tenantId !== tenantId) {
       throw new UnauthorizedException(
         'User does not belong to the specified tenant'

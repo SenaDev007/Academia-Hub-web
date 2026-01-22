@@ -72,7 +72,8 @@ export class RequestContextService {
     await this.validateModule(tenantId, moduleType, schoolLevelId);
 
     // 7. Extraire user_id si disponible
-    const userId = request['user']?.id;
+    const user = request['user'] as any;
+    const userId = user?.id;
 
     return {
       tenantId,
@@ -103,8 +104,9 @@ export class RequestContextService {
     }
 
     // 3. Depuis le JWT payload (après authentification)
-    if (request['user'] && request['user'].tenantId) {
-      return request['user'].tenantId;
+    const user = request['user'] as any;
+    if (user && user.tenantId) {
+      return user.tenantId;
     }
 
     // 4. Depuis request.tenantId (déjà résolu par TenantGuard)

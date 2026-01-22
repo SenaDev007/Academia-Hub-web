@@ -3,6 +3,8 @@ import { ClassesRepository } from './classes.repository';
 import { Class } from './entities/class.entity';
 import { CreateClassDto } from './dto/create-class.dto';
 import { UpdateClassDto } from './dto/update-class.dto';
+import { PaginationDto, PaginatedResponse } from '../common/dto/pagination.dto';
+import { createPaginatedResponse } from '../common/helpers/pagination.helper';
 
 @Injectable()
 export class ClassesService {
@@ -16,8 +18,16 @@ export class ClassesService {
     });
   }
 
-  async findAll(tenantId: string, academicYearId?: string): Promise<Class[]> {
-    return this.classesRepository.findAll(tenantId, academicYearId);
+  async findAll(
+    tenantId: string,
+    pagination: PaginationDto,
+    academicYearId?: string,
+  ): Promise<PaginatedResponse<Class>> {
+    const [data, total] = await Promise.all([
+      this.classesRepository.findAll(tenantId, pagination, academicYearId),
+      this.classesRepository.count(tenantId, academicYearId),
+    ]);
+    return createPaginatedResponse(data, total, pagination);
   }
 
   async findOne(id: string, tenantId: string): Promise<Class> {

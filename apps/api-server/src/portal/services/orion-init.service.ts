@@ -9,7 +9,7 @@
  */
 
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 import { KPICalculationService } from '../../orion/services/kpi-calculation.service';
 import { OrionAlertsService } from '../../orion/services/orion-alerts.service';
 import { OrionDashboardService } from '../../orion/services/orion-dashboard.service';

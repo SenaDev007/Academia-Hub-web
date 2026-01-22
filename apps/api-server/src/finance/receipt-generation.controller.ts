@@ -22,6 +22,7 @@ import { RolesGuard } from '@/auth/guards/roles.guard';
 import { Roles } from '@/auth/decorators/roles.decorator';
 import { Public } from '@/auth/decorators/public.decorator';
 import { ReceiptGenerationService } from './receipt-generation.service';
+import { PrismaService } from '../database/prisma.service';
 import { Response } from 'express';
 import * as fs from 'fs/promises';
 import * as path from 'path';

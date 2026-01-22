@@ -32,6 +32,7 @@ import { SchoolLevelId } from '../common/decorators/school-level-id.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ModuleTypeRequired } from '../common/decorators/module-type.decorator';
 import { ModuleType } from '../modules/entities/module.entity';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('payments')
 @UseGuards(
@@ -58,6 +59,7 @@ export class PaymentsController {
   findAll(
     @TenantId() tenantId: string,
     @SchoolLevelId() schoolLevelId: string, // OBLIGATOIRE - Résolu automatiquement
+    @Query() pagination: PaginationDto,
     @Query('studentId') studentId?: string,
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
@@ -66,6 +68,7 @@ export class PaymentsController {
     return this.paymentsService.findAll(
       tenantId,
       schoolLevelId, // OBLIGATOIRE
+      pagination,
       studentId,
       status,
       startDate ? new Date(startDate) : undefined,

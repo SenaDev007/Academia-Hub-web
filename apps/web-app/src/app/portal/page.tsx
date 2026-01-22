@@ -12,7 +12,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Building2, GraduationCap, Users, Search, ArrowRight, Shield, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
+import { Building2, GraduationCap, Users, Search, ArrowRight, Shield, CheckCircle, Code2 } from 'lucide-react';
 import PremiumHeader from '@/components/layout/PremiumHeader';
 import SchoolSearch from '@/components/portal/SchoolSearch';
 import { useTenantRedirect } from '@/lib/hooks/useTenantRedirect';
@@ -78,6 +79,22 @@ export default function PortalPage() {
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Sélectionnez votre espace sécurisé Academia Hub
             </p>
+          </div>
+
+          {/* Bouton spécial pour développement et tests */}
+          <div className="mb-8 flex justify-center">
+            <Link
+              href="/login?tenant=default-tenant&redirect=/app"
+              prefetch={true}
+              className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 rounded-lg font-semibold hover:from-amber-600 hover:to-orange-600 transition-all duration-300 inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-105 border-2 border-amber-400 relative group"
+              title="Accès direct à l'application pour développement et tests"
+            >
+              <Code2 className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
+              <span>Mode Développement</span>
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse">
+                DEV
+              </span>
+            </Link>
           </div>
 
           {/* Portal Cards */}

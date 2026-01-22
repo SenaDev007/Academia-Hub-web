@@ -115,8 +115,9 @@ export class OrionDashboardService {
 
     // Calculer la tendance pour chaque KPI
     Object.entries(kpiGroups).forEach(([code, values]) => {
-      if (values.length >= 2) {
-        const sorted = values.sort((a, b) => 
+      const typedValues = values as any[];
+      if (typedValues.length >= 2) {
+        const sorted = typedValues.sort((a, b) => 
           new Date(a.computedAt).getTime() - new Date(b.computedAt).getTime()
         );
         const oldest = sorted[0].value;

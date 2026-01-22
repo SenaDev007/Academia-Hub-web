@@ -15,6 +15,7 @@ import { UpdateClassDto } from './dto/update-class.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Controller('classes')
 @UseGuards(JwtAuthGuard)
@@ -31,8 +32,12 @@ export class ClassesController {
   }
 
   @Get()
-  findAll(@TenantId() tenantId: string, @Query('academicYearId') academicYearId?: string) {
-    return this.classesService.findAll(tenantId, academicYearId);
+  findAll(
+    @TenantId() tenantId: string,
+    @Query() pagination: PaginationDto,
+    @Query('academicYearId') academicYearId?: string,
+  ) {
+    return this.classesService.findAll(tenantId, pagination, academicYearId);
   }
 
   @Get(':id')

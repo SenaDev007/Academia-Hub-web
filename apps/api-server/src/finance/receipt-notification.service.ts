@@ -75,9 +75,12 @@ export class ReceiptNotificationService {
               },
               take: 1,
             },
-            parents: {
+            studentGuardians: {
               where: {
                 isPrimary: true,
+              },
+              include: {
+                guardian: true,
               },
               take: 1,
             },
@@ -113,24 +116,32 @@ export class ReceiptNotificationService {
       return {};
     }
 
-    const parent = payment.student.parents?.[0];
+    const parent = payment.student.studentGuardians?.[0]?.guardian;
     if (!parent || !parent.phone) {
       this.logger.warn(`No primary parent phone found for student ${payment.studentId}`);
       return {};
     }
 
     const enrollment = payment.student.studentEnrollments?.[0];
-    const institution = payment.student.tenant.schools?.[0]?.name || payment.student.tenant.name;
+    const tenant = await this.prisma.tenant.findUnique({ where: { id: payment.student.tenantId } });
+    const schools = await this.prisma.school.findMany({ where: { tenantId: payment.student.tenantId } });
+    const institution = schools?.[0]?.name || tenant?.name || 'N/A';
     const studentName = `${payment.student.firstName} ${payment.student.lastName}`;
     const parentName = parent.firstName || 'Parent';
     const className = enrollment?.class?.name || 'N/A';
     const matricule = payment.student.identifier?.globalMatricule || 'N/A';
 
+    if (!payment.receipt) {
+      this.logger.warn(`No receipt found for payment ${paymentId}`);
+      return {};
+    }
+
     // Calculer le solde restant
-    const totalDue = payment.receipt.payment.paymentAllocations.reduce(
-      (sum, alloc) => sum.plus(alloc.studentFee.totalAmount),
+    const receiptPayment = payment.receipt.payment;
+    const totalDue = receiptPayment?.paymentAllocations?.reduce(
+      (sum: any, alloc: any) => sum.plus(alloc.studentFee?.totalAmount || 0),
       new Decimal(0),
-    );
+    ) || new Decimal(0);
     const totalPaid = new Decimal(payment.amount);
     const remainingBalance = totalDue.minus(totalPaid);
 
@@ -141,7 +152,7 @@ export class ReceiptNotificationService {
       parent_name: parentName,
       class_name: className,
       amount: payment.amount.toNumber(),
-      fee_type: this.getFeeTypeLabel(payment.receipt.payment.paymentAllocations),
+      fee_type: receiptPayment ? this.getFeeTypeLabel(receiptPayment.paymentAllocations || []) : 'N/A',
       payment_date: new Date(payment.paymentDate).toLocaleDateString('fr-FR'),
       receipt_number: payment.receipt.receiptNumber,
       remaining_balance: remainingBalance.toNumber(),

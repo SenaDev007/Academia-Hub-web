@@ -25,14 +25,14 @@ import { AcademicTrack, AcademicTrackCode } from '../../academic-tracks/entities
 import { TenantFeaturesService } from '../../tenant-features/tenant-features.service';
 import { FeatureCode } from '../../tenant-features/entities/tenant-feature.entity';
 
-interface BilingualPerformanceComparison {
+export interface BilingualPerformanceComparison {
   frAverage: number;
   enAverage: number;
   gap: number;
   gapPercentage: number;
 }
 
-interface TrackStatistics {
+export interface TrackStatistics {
   trackCode: AcademicTrackCode;
   totalStudents: number;
   totalExams: number;
@@ -41,7 +41,7 @@ interface TrackStatistics {
   classesCount: number;
 }
 
-interface BilingualAlert {
+export interface BilingualAlert {
   type: 'PEDAGOGICAL' | 'STRATEGIC' | 'FINANCIAL';
   severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   title: string;
@@ -114,8 +114,9 @@ export class BilingualAnalysisService {
     }
 
     // Compter les élèves
+    // StudentAcademicTrack (TypeORM) n'a pas tenantId directement, filtrer via academicTrack
     const totalStudents = await this.studentAcademicTrackRepository.count({
-      where: { tenantId, academicTrack: { id: track.id } },
+      where: { academicTrack: { id: track.id } },
     });
 
     // Compter les examens

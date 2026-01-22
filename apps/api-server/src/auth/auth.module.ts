@@ -5,9 +5,14 @@
  */
 
 import { Module } from '@nestjs/common';
+import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../database/prisma.service';
+import { UsersModule } from '../users/users.module';
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { LocalStrategy } from './strategies/local.strategy';
 import { OtpService } from './services/otp.service';
 import { DeviceTrackingService } from './services/device-tracking.service';
 import { DeviceSessionService } from './services/device-session.service';
@@ -20,6 +25,8 @@ import { RolesGuard } from './guards/roles.guard';
 
 @Module({
   imports: [
+    PassportModule,
+    UsersModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -33,6 +40,8 @@ import { RolesGuard } from './guards/roles.guard';
   ],
   providers: [
     PrismaService,
+    AuthService,
+    LocalStrategy,
     SmsService,
     OtpService,
     DeviceTrackingService,
@@ -41,8 +50,9 @@ import { RolesGuard } from './guards/roles.guard';
     JwtAuthGuard,
     RolesGuard,
   ],
-  controllers: [OtpController, AdminDevicesController],
+  controllers: [AuthController, OtpController, AdminDevicesController],
   exports: [
+    AuthService,
     SmsService,
     OtpService,
     DeviceTrackingService,

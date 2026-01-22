@@ -179,7 +179,7 @@ export class KpiObjectivesService {
             schoolLevelId: objective.schoolLevelId || null,
           },
           orderBy: {
-            calculatedAt: 'desc',
+            computedAt: 'desc',
           },
         });
 

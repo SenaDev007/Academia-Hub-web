@@ -164,7 +164,7 @@ export class ComplianceService {
       await this.exportRepository.update(exportId, {
         status: 'completed',
         filePath,
-        metadata: { exportedAt: new Date(), recordCount: Object.keys(exportData).length },
+        metadata: { exportedAt: new Date().toISOString(), recordCount: Object.keys(exportData).length } as any,
       });
     } catch (error) {
       await this.exportRepository.update(exportId, {

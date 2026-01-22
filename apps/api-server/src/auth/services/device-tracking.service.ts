@@ -8,7 +8,7 @@
  */
 
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../database/prisma.service';
 import * as crypto from 'crypto';
 
 export interface DeviceInfo {

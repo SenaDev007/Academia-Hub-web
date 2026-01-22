@@ -78,13 +78,11 @@ export function LoadingScreenMobile({
         {/* Logo compact pour mobile */}
         <div className="mb-6 flex justify-center">
           <div className="relative">
-            <div className="h-16 w-16 rounded-full border-4 border-blue-200"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-10 w-10 rounded-full bg-blue-600 animate-pulse"></div>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-lg font-bold text-white">AH</span>
-            </div>
+            <img 
+              src="/images/logo-Academia Hub.png" 
+              alt="Academia Hub" 
+              className="h-16 w-16 object-contain animate-pulse"
+            />
           </div>
         </div>
 

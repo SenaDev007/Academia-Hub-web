@@ -22,8 +22,8 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
-import { GetTenant } from '../../common/decorators/get-tenant.decorator';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { GetTenant } from '../../common/decorators/tenant.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { PedagogicalDocumentService } from '../services/pedagogical-document.service';
 import { PedagogicalWorkflowService } from '../services/pedagogical-workflow.service';
 import { PedagogicalNotificationService } from '../services/pedagogical-notification.service';

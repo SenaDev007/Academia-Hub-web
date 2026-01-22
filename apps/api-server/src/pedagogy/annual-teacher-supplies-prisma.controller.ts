@@ -1,0 +1,81 @@
+/**
+ * ============================================================================
+ * ANNUAL TEACHER SUPPLIES PRISMA CONTROLLER - MODULE 2
+ * ============================================================================
+ */
+
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { AnnualTeacherSuppliesPrismaService } from './annual-teacher-supplies-prisma.service';
+import { CreateAnnualTeacherSupplyDto } from './dto/create-annual-teacher-supply.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { TenantId } from '../common/decorators/tenant-id.decorator';
+import { PaginationDto } from '../common/dto/pagination.dto';
+
+@Controller('api/pedagogy/annual-teacher-supplies')
+@UseGuards(JwtAuthGuard)
+export class AnnualTeacherSuppliesPrismaController {
+  constructor(
+    private readonly annualTeacherSuppliesService: AnnualTeacherSuppliesPrismaService,
+  ) {}
+
+  @Post()
+  async create(
+    @TenantId() tenantId: string,
+    @Body()
+    createDto: CreateAnnualTeacherSupplyDto & { academicYearId: string },
+  ) {
+    return this.annualTeacherSuppliesService.create({
+      ...createDto,
+      tenantId,
+    });
+  }
+
+  @Get()
+  async findAll(
+    @TenantId() tenantId: string,
+    @Query('academicYearId') academicYearId: string,
+    @Query() pagination: PaginationDto,
+    @Query('teacherId') teacherId?: string,
+    @Query('materialId') materialId?: string,
+    @Query('schoolLevelId') schoolLevelId?: string,
+    @Query('classId') classId?: string,
+  ) {
+    return this.annualTeacherSuppliesService.findAll(
+      tenantId,
+      academicYearId,
+      pagination,
+      {
+        teacherId,
+        materialId,
+        schoolLevelId,
+        classId,
+      },
+    );
+  }
+
+  @Get('by-teacher/:teacherId')
+  async findByTeacher(
+    @Param('teacherId') teacherId: string,
+    @TenantId() tenantId: string,
+    @Query('academicYearId') academicYearId: string,
+  ) {
+    return this.annualTeacherSuppliesService.findByTeacher(
+      tenantId,
+      academicYearId,
+      teacherId,
+    );
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string, @TenantId() tenantId: string) {
+    return this.annualTeacherSuppliesService.findOne(id, tenantId);
+  }
+}
