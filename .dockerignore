@@ -1,0 +1,55 @@
+# ============================================================================
+# DOCKER IGNORE - Fichiers à exclure des builds Docker
+# ============================================================================
+
+# Node modules
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build outputs
+dist
+.next
+build
+out
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Logs
+logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# Documentation
+*.md
+docs
+
+# Tests
+coverage
+.nyc_output
+
+# Temporary files
+tmp
+temp
+*.tmp

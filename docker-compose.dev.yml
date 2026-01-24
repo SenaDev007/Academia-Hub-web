@@ -1,0 +1,141 @@
+version: '3.8'
+
+# ============================================================================
+# ACADEMIA HUB - DOCKER COMPOSE (DÉVELOPPEMENT)
+# ============================================================================
+# 
+# Orchestration automatique des services :
+# 1. PostgreSQL (démarre en premier)
+# 2. API Server (démarre après PostgreSQL)
+# 3. Frontend (démarre après API Server)
+# 
+# Usage:
+#   docker compose -f docker-compose.dev.yml up
+#   docker compose -f docker-compose.dev.yml up -d  (en arrière-plan)
+#   docker compose -f docker-compose.dev.yml down   (arrêter)
+#   
+#   Ou avec npm :
+#   npm run start:docker
+#   npm run start:docker:detached
+#   npm run stop:docker
+# 
+# ============================================================================
+
+services:
+  # ============================================================================
+  # 1. POSTGRESQL (DÉMARRE EN PREMIER)
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: academia-hub-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: academia_hub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Optionnel: Initialiser avec un script SQL
+      # - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - academia-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # 2. API SERVER (DÉMARRE APRÈS POSTGRESQL)
+  # ============================================================================
+  api-server:
+    build:
+      context: ./apps/api-server
+      dockerfile: Dockerfile.dev
+    container_name: academia-hub-api
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy  # ✅ Attend que PostgreSQL soit prêt
+    environment:
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/academia_hub
+      DIRECT_URL: postgresql://postgres:postgres@postgres:5432/academia_hub
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: academia_hub
+      DB_SSL: "false"
+      
+      # API Configuration
+      PORT: 3000
+      NODE_ENV: development
+      FRONTEND_URL: http://localhost:3001
+      
+      # JWT
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
+      JWT_EXPIRES_IN: 7d
+      
+      # Logging
+      LOG_SLOW_QUERIES: "true"
+    volumes:
+      - ./apps/api-server:/app
+      - /app/node_modules
+      - /app/dist
+    command: sh -c "npx prisma migrate deploy && npm run start:dev"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - academia-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # 3. FRONTEND (DÉMARRE APRÈS API SERVER)
+  # ============================================================================
+  frontend:
+    build:
+      context: ./apps/web-app
+      dockerfile: Dockerfile.dev
+    container_name: academia-hub-frontend
+    ports:
+      - "3001:3001"
+    depends_on:
+      api-server:
+        condition: service_healthy  # ✅ Attend que l'API soit prête
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:3000/api
+      NODE_ENV: development
+    volumes:
+      - ./apps/web-app:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    networks:
+      - academia-network
+    restart: unless-stopped
+
+# ============================================================================
+# VOLUMES (PERSISTANCE DES DONNÉES)
+# ============================================================================
+volumes:
+  postgres_data:
+    driver: local
+    name: academia-hub-postgres-data
+
+# ============================================================================
+# RÉSEAUX
+# ============================================================================
+networks:
+  academia-network:
+    driver: bridge
+    name: academia-hub-network
