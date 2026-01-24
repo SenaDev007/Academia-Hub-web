@@ -32,7 +32,7 @@ export interface Column<T> {
 
 export interface DataTableProps<T> {
   data: T[];
-  columns: Column<T>;
+  columns: Column<T>[];
   keyExtractor: (item: T) => string;
   emptyMessage?: string;
   loading?: boolean;

@@ -108,6 +108,9 @@ export function AlertCard({
           <button
             onClick={onDismiss}
             className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+            aria-label="Fermer l'alerte"
+            title="Fermer l'alerte"
+            type="button"
           >
             <XCircle className="w-4 h-4" />
           </button>

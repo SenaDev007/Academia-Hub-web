@@ -78,7 +78,7 @@ export class StrictPermissionGuard implements CanActivate {
     // Récupérer le rôle de l'utilisateur
     const userRole = request['userRole'] as UserRole || this.getUserRole(user);
     if (!userRole) {
-      await this.logAccessDenied(user, requiredModule, requiredAction, 'Role not defined');
+      await this.logAccessDenied(user, requiredModule, requiredAction, 'Role not defined', request);
       throw new ForbiddenException('User role not defined');
     }
 
@@ -97,6 +97,7 @@ export class StrictPermissionGuard implements CanActivate {
         requiredModule,
         requiredAction,
         `Role ${userRole} does not have ${requiredAction} permission on module ${requiredModule}`,
+        request, // ✅ Passer la requête pour récupérer tenantId, IP, User-Agent
       );
 
       const userId = (user as any).id || 'unknown';
@@ -133,19 +134,30 @@ export class StrictPermissionGuard implements CanActivate {
     module: Module,
     action: PermissionAction,
     reason: string,
+    request?: Request,
   ): Promise<void> {
     try {
-      await this.accessDeniedLogService.log({
+      // Récupérer tenantId depuis la requête ou l'utilisateur
+      const tenantId = request?.['tenantId'] || user?.tenantId || null;
+      
+      // Récupérer IP et User-Agent depuis la requête
+      const ipAddress = request?.ip || request?.headers['x-forwarded-for'] || null;
+      const userAgent = request?.headers['user-agent'] || null;
+
+      await this.accessDeniedLogService.log(
+        {
         userId: user.id,
         userEmail: user.email,
         userRole: user.role,
         module,
         action,
         reason,
-        ipAddress: null, // À récupérer depuis request si nécessaire
-        userAgent: null, // À récupérer depuis request si nécessaire
+          ipAddress: typeof ipAddress === 'string' ? ipAddress : null,
+          userAgent: typeof userAgent === 'string' ? userAgent : null,
         timestamp: new Date(),
-      });
+        },
+        tenantId, // ✅ Passer tenantId depuis le contexte
+      );
     } catch (error) {
       this.logger.error('Failed to log access denied', error);
     }

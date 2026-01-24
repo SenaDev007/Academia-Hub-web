@@ -24,6 +24,7 @@ import { GradesService } from '../../grades/grades.service';
 import { AbsencesService } from '../../absences/absences.service';
 import { SchoolLevelsService } from '../../school-levels/school-levels.service';
 import { AuditLogsService } from '../../audit-logs/audit-logs.service';
+import { PaginationDto } from '../../common/dto/pagination.dto';
 
 export interface LevelAggregation {
   levelId: string;
@@ -73,8 +74,19 @@ export class GeneralService {
     let total = 0;
 
     for (const level of activeLevels) {
-      const students = await this.studentsService.findAll(tenantId, level.id, academicYearId);
-      const count = students.length;
+      // ✅ Créer PaginationDto pour la requête
+      const pagination = new PaginationDto();
+      pagination.page = 1;
+      pagination.limit = 10000; // Limite élevée pour obtenir tous les étudiants
+      
+      const studentsResponse = await this.studentsService.findAll(
+        tenantId,
+        level.id,
+        pagination,
+        academicYearId,
+      );
+      // ✅ Accéder à data depuis PaginatedResponse
+      const count = studentsResponse.data.length;
       byLevel.push({
         levelId: level.id,
         levelName: level.name,
@@ -130,15 +142,22 @@ export class GeneralService {
     let total = 0;
 
     for (const level of activeLevels) {
-      const payments = await this.paymentsService.findAll(
+      // ✅ Créer PaginationDto pour la requête
+      const pagination = new PaginationDto();
+      pagination.page = 1;
+      pagination.limit = 10000; // Limite élevée pour obtenir tous les paiements
+      
+      const paymentsResponse = await this.paymentsService.findAll(
         tenantId,
         level.id,
+        pagination,
         undefined, // studentId
         'completed', // status
         startDate,
         endDate,
       );
-      const revenue = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+      // ✅ Accéder à data depuis PaginatedResponse
+      const revenue = paymentsResponse.data.reduce((sum, p) => sum + Number(p.amount || 0), 0);
       byLevel.push({
         levelId: level.id,
         levelName: level.name,
@@ -215,9 +234,20 @@ export class GeneralService {
         undefined, // quarterId
         undefined, // academicTrackId
       );
-      const students = await this.studentsService.findAll(tenantId, level.id, academicYearId);
+      // ✅ Créer PaginationDto pour la requête
+      const pagination = new PaginationDto();
+      pagination.page = 1;
+      pagination.limit = 10000; // Limite élevée pour obtenir tous les étudiants
       
-      const studentCount = students.length;
+      const studentsResponse = await this.studentsService.findAll(
+        tenantId,
+        level.id,
+        pagination,
+        academicYearId,
+      );
+      
+      // ✅ Accéder à data depuis PaginatedResponse
+      const studentCount = studentsResponse.data.length;
       const average = grades.length > 0
         ? grades.reduce((sum, g) => sum + Number(g.score || 0), 0) / grades.length
         : 0;

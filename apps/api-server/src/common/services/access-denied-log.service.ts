@@ -34,15 +34,25 @@ export class AccessDeniedLogService {
   /**
    * Trace un refus d'accès
    */
-  async log(logData: AccessDeniedLog): Promise<void> {
+  async log(logData: AccessDeniedLog, tenantId?: string): Promise<void> {
     try {
+      // tenantId est obligatoire dans le schéma Prisma
+      // Si non fourni, on ne peut pas logger (mais on ne fait pas échouer la requête)
+      if (!tenantId) {
+        this.logger.warn('Cannot log access denied: tenantId is required but not provided');
+        return;
+      }
+
       // Créer un log dans la table AuditLog avec un type spécial
       await this.prisma.auditLog.create({
         data: {
+          tenantId, // ✅ Obligatoire - récupéré depuis le contexte
           userId: logData.userId,
           action: 'ACCESS_DENIED',
           resource: logData.module,
           resourceId: null,
+          tableName: 'audit_logs', // ✅ Obligatoire selon le schéma Prisma
+          recordId: null,
           changes: {
             reason: logData.reason,
             requestedAction: logData.action,
@@ -51,7 +61,6 @@ export class AccessDeniedLogService {
           },
           ipAddress: logData.ipAddress || null,
           userAgent: logData.userAgent || null,
-          tenantId: null, // À récupérer depuis le contexte si disponible
         },
       });
 

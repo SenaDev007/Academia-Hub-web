@@ -37,18 +37,20 @@ export class StudentsRepository {
       skip: pagination.skip,
       take: pagination.take,
       // Optimisation: ne charger que les champs nécessaires
+      // ✅ Supprimer les propriétés qui n'existent pas dans le modèle Prisma
       select: [
         'id',
-        'fullName',
         'firstName',
         'lastName',
         'dateOfBirth',
         'gender',
-        'status',
         'tenantId',
         'schoolLevelId',
-        'academicYearId',
         'createdAt',
+        // Note: fullName, status, academicYearId n'existent pas dans le modèle Student Prisma
+        // fullName doit être calculé depuis firstName + lastName
+        // status est géré via StudentEnrollment
+        // academicYearId est dans StudentEnrollment, pas directement dans Student
       ],
     });
   }
