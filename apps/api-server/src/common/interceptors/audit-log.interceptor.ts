@@ -56,6 +56,11 @@ export class AuditLogInterceptor implements NestInterceptor {
     const user = request['user'];
     const tenantId = request['tenantId'];
 
+    // Exclure PLATFORM_OWNER des audits (dev only)
+    if (request['skipAudit']) {
+      return next.handle();
+    }
+
     // Déterminer si cette action doit être loggée
     const shouldLog = this.shouldLogAction(method, url);
 

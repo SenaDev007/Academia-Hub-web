@@ -26,16 +26,30 @@ import { MaterialContextGuard } from './guards/material-context.guard';
 import { MaterialRbacGuard } from './guards/material-rbac.guard';
 import { UseInterceptors } from '@nestjs/common';
 import { MaterialAuditInterceptor } from './interceptors/material-audit.interceptor';
+import { PortalAccessGuard } from '../common/guards/portal-access.guard';
+import { ModulePermissionGuard } from '../common/guards/module-permission.guard';
+import { RequiredModule } from '../common/decorators/required-module.decorator';
+import { RequiredPermission } from '../common/decorators/required-permission.decorator';
+import { Module } from '../common/enums/module.enum';
+import { PermissionAction } from '../common/enums/permission-action.enum';
 
 @Controller('api/pedagogy/pedagogical-materials')
-@UseGuards(JwtAuthGuard, MaterialContextGuard, MaterialRbacGuard)
+@UseGuards(
+  JwtAuthGuard,
+  PortalAccessGuard, // Vérifie le portail autorisé
+  MaterialContextGuard,
+  MaterialRbacGuard,
+  ModulePermissionGuard, // Vérifie les permissions par module
+)
 @UseInterceptors(MaterialAuditInterceptor)
+@RequiredModule(Module.MATERIEL_PEDAGOGIQUE) // Module MATERIEL_PEDAGOGIQUE requis
 export class PedagogicalMaterialsPrismaController {
   constructor(
     private readonly pedagogicalMaterialsService: PedagogicalMaterialsPrismaService,
   ) {}
 
   @Post()
+  @RequiredPermission(PermissionAction.WRITE)
   async create(
     @TenantId() tenantId: string,
     @Body() createDto: CreatePedagogicalMaterialDto,
@@ -47,6 +61,7 @@ export class PedagogicalMaterialsPrismaController {
   }
 
   @Get()
+  @RequiredPermission(PermissionAction.READ)
   async findAll(
     @TenantId() tenantId: string,
     @Query() pagination: PaginationDto,
@@ -80,6 +95,7 @@ export class PedagogicalMaterialsPrismaController {
   }
 
   @Delete(':id')
+  @RequiredPermission(PermissionAction.MANAGE)
   async remove(@Param('id') id: string, @TenantId() tenantId: string) {
     return this.pedagogicalMaterialsService.remove(id, tenantId);
   }

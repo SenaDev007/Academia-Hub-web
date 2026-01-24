@@ -15,9 +15,14 @@ import { MaterialStocksPrismaService } from './material-stocks-prisma.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { MaterialContextGuard } from './guards/material-context.guard';
+import { MaterialRbacGuard } from './guards/material-rbac.guard';
+import { UseInterceptors } from '@nestjs/common';
+import { MaterialAuditInterceptor } from './interceptors/material-audit.interceptor';
 
 @Controller('api/pedagogy/material-stocks')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, MaterialContextGuard, MaterialRbacGuard)
+@UseInterceptors(MaterialAuditInterceptor)
 export class MaterialStocksPrismaController {
   constructor(private readonly materialStocksService: MaterialStocksPrismaService) {}
 

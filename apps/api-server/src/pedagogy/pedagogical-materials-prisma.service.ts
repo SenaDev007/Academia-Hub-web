@@ -105,8 +105,8 @@ export class PedagogicalMaterialsPrismaService {
           },
         },
         orderBy: [{ code: 'asc' }, { name: 'asc' }],
-        skip: pagination.offset,
-        take: pagination.limit,
+        skip: pagination.skip,
+        take: pagination.take,
       }),
       this.prisma.pedagogicalMaterial.count({ where }),
     ]);

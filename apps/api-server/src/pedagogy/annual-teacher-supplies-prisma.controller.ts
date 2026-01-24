@@ -18,9 +18,14 @@ import { CreateAnnualTeacherSupplyDto } from './dto/create-annual-teacher-supply
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { MaterialContextGuard } from './guards/material-context.guard';
+import { MaterialRbacGuard } from './guards/material-rbac.guard';
+import { UseInterceptors } from '@nestjs/common';
+import { MaterialAuditInterceptor } from './interceptors/material-audit.interceptor';
 
 @Controller('api/pedagogy/annual-teacher-supplies')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, MaterialContextGuard, MaterialRbacGuard)
+@UseInterceptors(MaterialAuditInterceptor)
 export class AnnualTeacherSuppliesPrismaController {
   constructor(
     private readonly annualTeacherSuppliesService: AnnualTeacherSuppliesPrismaService,

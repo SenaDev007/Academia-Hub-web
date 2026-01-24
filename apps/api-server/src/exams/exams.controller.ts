@@ -15,13 +15,21 @@ import { UpdateExamDto } from './dto/update-exam.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PortalAccessGuard } from '../common/guards/portal-access.guard';
+import { ModulePermissionGuard } from '../common/guards/module-permission.guard';
+import { RequiredModule } from '../common/decorators/required-module.decorator';
+import { RequiredPermission } from '../common/decorators/required-permission.decorator';
+import { Module } from '../common/enums/module.enum';
+import { PermissionAction } from '../common/enums/permission-action.enum';
 
 @Controller('exams')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PortalAccessGuard, ModulePermissionGuard)
+@RequiredModule(Module.EXAMENS)
 export class ExamsController {
   constructor(private readonly examsService: ExamsService) {}
 
   @Post()
+  @RequiredPermission(PermissionAction.WRITE)
   create(
     @Body() createExamDto: CreateExamDto,
     @TenantId() tenantId: string,
@@ -31,6 +39,7 @@ export class ExamsController {
   }
 
   @Get()
+  @RequiredPermission(PermissionAction.READ)
   findAll(
     @TenantId() tenantId: string,
     @Query('classId') classId?: string,

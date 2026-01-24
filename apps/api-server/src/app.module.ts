@@ -52,6 +52,8 @@ import { ModulesModule } from './modules/modules.module';
 import { ContextModule } from './common/context/context.module';
 import { SynthesisModule } from './modules/synthesis/synthesis.module';
 import { SyncModule } from './sync/sync.module';
+import { CommonModule } from './common/common.module';
+import { SecurityModule } from './security/security.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { TenantValidationGuard } from './common/guards/tenant-validation.guard';
 import { TenantIsolationGuard } from './common/guards/tenant-isolation.guard';
@@ -192,6 +194,12 @@ import { PerformanceLoggingInterceptor } from './common/interceptors/performance
     
     // Context module (DOIT être après ModulesModule, SchoolLevelsModule, TenantsModule)
     ContextModule,
+    
+    // Common module (Permissions, services communs)
+    CommonModule,
+    
+    // Security module (PLATFORM_OWNER, dev only)
+    SecurityModule,
     
     // Module-specific calculation modules
     // Note: Ces modules fournissent des endpoints de calcul par module

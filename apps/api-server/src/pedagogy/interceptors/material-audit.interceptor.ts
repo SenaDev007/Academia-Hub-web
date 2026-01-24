@@ -55,15 +55,16 @@ export class MaterialAuditInterceptor implements NestInterceptor {
                 userId: materialContext.userId,
                 action: operation,
                 resource: this.getResourceType(url),
+                resourceId: resourceId,
                 recordId: resourceId,
                 tableName: this.getTableName(url),
-                metadata: {
+                changes: {
                   url,
                   method,
                   academicYearId: materialContext.academicYearId,
                   userRole: materialContext.userRole,
                   timestamp: new Date().toISOString(),
-                },
+                } as any,
               },
             });
 

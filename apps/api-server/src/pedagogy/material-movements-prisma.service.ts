@@ -48,7 +48,7 @@ export class MaterialMovementsPrismaService {
         tenantId: data.tenantId,
         academicYearId: data.academicYearId,
         materialId: data.materialId,
-        movementType: data.movementType,
+        movementType: data.movementType as string, // Prisma attend string
         quantity: data.quantity,
         reference: data.reference,
         notes: data.notes,
@@ -234,8 +234,8 @@ export class MaterialMovementsPrismaService {
           },
         },
         orderBy: { createdAt: 'desc' },
-        skip: pagination.offset,
-        take: pagination.limit,
+        skip: pagination.skip,
+        take: pagination.take,
       }),
       this.prisma.materialMovement.count({ where }),
     ]);

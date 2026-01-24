@@ -39,10 +39,12 @@ export class TeacherMaterialAssignmentsPrismaController {
     @TenantId() tenantId: string,
     @Body()
     createDto: CreateTeacherMaterialAssignmentDto & { academicYearId: string },
+    @CurrentUser() user: any,
   ) {
     return this.teacherMaterialAssignmentsService.create({
       ...createDto,
       tenantId,
+      performedById: user.id, // Pour le MaterialMovement
     });
   }
 

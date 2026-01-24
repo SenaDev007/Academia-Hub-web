@@ -26,6 +26,12 @@ import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ContextValidationGuard } from '../common/guards/context-validation.guard';
 import { ModuleAccessGuard } from '../common/guards/module-access.guard';
+import { PortalAccessGuard } from '../common/guards/portal-access.guard';
+import { ModulePermissionGuard } from '../common/guards/module-permission.guard';
+import { RequiredModule } from '../common/decorators/required-module.decorator';
+import { RequiredPermission } from '../common/decorators/required-permission.decorator';
+import { Module } from '../common/enums/module.enum';
+import { PermissionAction } from '../common/enums/permission-action.enum';
 import { AuditLogInterceptor } from '../common/interceptors/audit-log.interceptor';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { SchoolLevelId } from '../common/decorators/school-level-id.decorator';
@@ -37,11 +43,14 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('payments')
 @UseGuards(
   JwtAuthGuard,
+  PortalAccessGuard, // Vérifie le portail autorisé
   ContextValidationGuard, // Valide tenant + school_level + module
+  ModulePermissionGuard, // Vérifie les permissions par module
   ModuleAccessGuard, // Vérifie que le module FINANCES est activé
 )
 @UseInterceptors(AuditLogInterceptor)
-@ModuleTypeRequired(ModuleType.FINANCES) // Module FINANCES requis
+@RequiredModule(Module.FINANCES) // Module FINANCES requis (nouveau système)
+@ModuleTypeRequired(ModuleType.FINANCES) // Module FINANCES requis (ancien système)
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 

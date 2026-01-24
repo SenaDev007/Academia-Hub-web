@@ -15,13 +15,21 @@ import { UpdateGradeDto } from './dto/update-grade.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { PortalAccessGuard } from '../common/guards/portal-access.guard';
+import { ModulePermissionGuard } from '../common/guards/module-permission.guard';
+import { RequiredModule } from '../common/decorators/required-module.decorator';
+import { RequiredPermission } from '../common/decorators/required-permission.decorator';
+import { Module } from '../common/enums/module.enum';
+import { PermissionAction } from '../common/enums/permission-action.enum';
 
 @Controller('grades')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PortalAccessGuard, ModulePermissionGuard)
+@RequiredModule(Module.EXAMENS) // Les notes font partie du module EXAMENS
 export class GradesController {
   constructor(private readonly gradesService: GradesService) {}
 
   @Post()
+  @RequiredPermission(PermissionAction.WRITE) // Seuls enseignants/directeurs peuvent saisir
   create(
     @Body() createGradeDto: CreateGradeDto,
     @TenantId() tenantId: string,
@@ -31,6 +39,7 @@ export class GradesController {
   }
 
   @Get()
+  @RequiredPermission(PermissionAction.READ)
   findAll(
     @TenantId() tenantId: string,
     @Query('studentId') studentId?: string,

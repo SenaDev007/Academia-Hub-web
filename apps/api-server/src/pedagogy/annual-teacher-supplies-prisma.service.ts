@@ -160,8 +160,8 @@ export class AnnualTeacherSuppliesPrismaService {
           { teacher: { lastName: 'asc' } },
           { material: { code: 'asc' } },
         ],
-        skip: pagination.offset,
-        take: pagination.limit,
+        skip: pagination.skip,
+        take: pagination.take,
       }),
       this.prisma.annualTeacherSupply.count({ where }),
     ]);

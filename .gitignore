@@ -47,6 +47,4 @@ coverage/
 # Misc
 *.pem
 .cache/
-nul
-**/nul
 

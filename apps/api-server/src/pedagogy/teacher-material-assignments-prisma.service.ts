@@ -13,10 +13,14 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateTeacherMaterialAssignmentDto } from './dto/create-teacher-material-assignment.dto';
 import { PaginationDto, PaginatedResponse } from '../common/dto/pagination.dto';
 import { createPaginatedResponse } from '../common/helpers/pagination.helper';
+import { MaterialMovementsPrismaService } from './material-movements-prisma.service';
 
 @Injectable()
 export class TeacherMaterialAssignmentsPrismaService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly materialMovementsService: MaterialMovementsPrismaService,
+  ) {}
 
   /**
    * Crée une attribution de matériel à un enseignant
@@ -25,6 +29,7 @@ export class TeacherMaterialAssignmentsPrismaService {
     data: CreateTeacherMaterialAssignmentDto & {
       tenantId: string;
       academicYearId: string;
+      performedById?: string;
     },
   ) {
     // Vérifier que le matériel existe
@@ -129,23 +134,22 @@ export class TeacherMaterialAssignmentsPrismaService {
       },
     });
 
-    // R3: Créer un mouvement de type ASSIGNMENT (obligatoire pour traçabilité)
-    // Le mouvement mettra à jour le stock automatiquement
-    await this.prisma.materialMovement.create({
-      data: {
+    // R3: Créer un mouvement de type ASSIGNMENT via le service (obligatoire pour traçabilité)
+    // Le service MaterialMovements mettra à jour le stock automatiquement
+    if (data.performedById) {
+      await this.materialMovementsService.create({
         tenantId: data.tenantId,
         academicYearId: data.academicYearId,
         materialId: data.materialId,
-        movementType: 'ASSIGNMENT',
+        movementType: 'ASSIGNMENT' as any, // Enum MaterialMovementType
         quantity: data.quantity,
         reference: `ASSIGN-${assignment.id}`,
         notes: `Assignment to teacher ${teacher.firstName} ${teacher.lastName}`,
-        performedById: data.tenantId, // Sera remplacé par le guard
-      },
-    });
-
-    // R3: Le stock sera mis à jour automatiquement par le service MaterialMovements
-    // via updateStockAfterMovement
+        performedById: data.performedById,
+        schoolLevelId: data.schoolLevelId,
+        classId: data.classId,
+      });
+    }
 
     return assignment;
   }
@@ -213,8 +217,8 @@ export class TeacherMaterialAssignmentsPrismaService {
           },
         },
         orderBy: { createdAt: 'desc' },
-        skip: pagination.offset,
-        take: pagination.limit,
+        skip: pagination.skip,
+        take: pagination.take,
       }),
       this.prisma.teacherMaterialAssignment.count({ where }),
     ]);

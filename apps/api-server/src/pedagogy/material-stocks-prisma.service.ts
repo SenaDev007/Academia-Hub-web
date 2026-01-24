@@ -73,8 +73,8 @@ export class MaterialStocksPrismaService {
           { material: { code: 'asc' } },
           { schoolLevel: { order: 'asc' } },
         ],
-        skip: pagination.offset,
-        take: pagination.limit,
+        skip: pagination.skip,
+        take: pagination.take,
       }),
       this.prisma.materialStock.count({ where }),
     ]);

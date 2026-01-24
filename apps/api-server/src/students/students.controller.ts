@@ -29,6 +29,12 @@ import { PermissionsGuard } from '../auth/guards/permissions.guard';
 import { ModuleAccessGuard } from '../common/guards/module-access.guard';
 import { TenantValidationGuard } from '../common/guards/tenant-validation.guard';
 import { TenantIsolationGuard } from '../common/guards/tenant-isolation.guard';
+import { PortalAccessGuard } from '../common/guards/portal-access.guard';
+import { ModulePermissionGuard } from '../common/guards/module-permission.guard';
+import { RequiredModule } from '../common/decorators/required-module.decorator';
+import { RequiredPermission } from '../common/decorators/required-permission.decorator';
+import { Module } from '../common/enums/module.enum';
+import { PermissionAction } from '../common/enums/permission-action.enum';
 import { ModuleIsolationInterceptor } from '../common/interceptors/module-isolation.interceptor';
 import { AuditLogInterceptor } from '../common/interceptors/audit-log.interceptor';
 import { TenantId } from '../common/decorators/tenant-id.decorator';
@@ -43,8 +49,10 @@ import { PaginationDto } from '../common/dto/pagination.dto';
 @Controller('students')
 @UseGuards(
   JwtAuthGuard,
+  PortalAccessGuard, // Vérifie le portail autorisé
   TenantValidationGuard,
   TenantIsolationGuard,
+  ModulePermissionGuard, // Vérifie les permissions par module
   RolesGuard,
   PermissionsGuard,
   ModuleAccessGuard, // Protection par module
@@ -53,11 +61,13 @@ import { PaginationDto } from '../common/dto/pagination.dto';
   AuditLogInterceptor,
   ModuleIsolationInterceptor, // Isolation par niveau
 )
-@ModuleTypeRequired(ModuleType.SCOLARITE) // Module SCOLARITE requis
+@RequiredModule(Module.ELEVES) // Module ELEVES requis (nouveau système)
+@ModuleTypeRequired(ModuleType.SCOLARITE) // Module SCOLARITE requis (ancien système)
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
   @Post()
+  @RequiredPermission(PermissionAction.WRITE) // Nouveau système
   @Roles('admin', 'director', 'teacher')
   @Permissions('students.create', 'students.manage')
   create(
@@ -72,6 +82,7 @@ export class StudentsController {
   }
 
   @Get()
+  @RequiredPermission(PermissionAction.READ) // Nouveau système (par défaut READ)
   @Permissions('students.read', 'students.manage')
   findAll(
     @TenantId() tenantId: string,
@@ -109,6 +120,7 @@ export class StudentsController {
   }
 
   @Delete(':id')
+  @RequiredPermission(PermissionAction.MANAGE) // Suppression = MANAGE
   @Roles('admin', 'director')
   @Permissions('students.delete', 'students.manage')
   remove(
