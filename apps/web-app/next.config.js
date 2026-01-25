@@ -11,16 +11,36 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Optimisation des images
+  // ✅ Optimisation des images
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
+    // ✅ Optimisation de performance
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Compression et optimisation
+  // ✅ Compression et optimisation
   compress: true,
+  
+  // ✅ Optimisation de performance
+  poweredByHeader: false, // Masquer X-Powered-By
+  generateEtags: true, // ETags pour le cache
+  
+  // ✅ Optimisation des bundles
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@headlessui/react'], // ✅ Tree-shaking optimisé
+  },
+  
+  // ✅ Optimisation de la compilation
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production' ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
 
   // Multi-tenant: Support des sous-domaines
   async headers() {

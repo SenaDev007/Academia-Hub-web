@@ -18,7 +18,9 @@
 
 Vous avez **3 options** pour démarrer Academia Hub :
 
-### Option 1 : Script Orchestré (Recommandé) ⭐
+> 💡 **Note** : Si vous n'utilisez pas Docker, utilisez l'**Option 1** (Script Orchestré). C'est la méthode la plus simple et ne nécessite pas Docker.
+
+### Option 1 : Script Orchestré (Recommandé - Sans Docker) ⭐
 
 **Linux/Mac** :
 ```bash

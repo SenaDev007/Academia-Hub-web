@@ -18,12 +18,10 @@
     "start:dev:win": "start-dev.bat",
     "start:api": "cd apps/api-server && npm run start:dev",
     "start:frontend": "cd apps/web-app && npm run dev",
-    "start:docker": "docker compose -f docker-compose.dev.yml up",
-    "start:docker:detached": "docker compose -f docker-compose.dev.yml up -d",
-    "stop:docker": "docker compose -f docker-compose.dev.yml down",
-    "logs:docker": "docker compose -f docker-compose.dev.yml logs -f",
-    "docker:ps": "docker compose -f docker-compose.dev.yml ps",
-    "docker:build": "docker compose -f docker-compose.dev.yml build"
+    "start:docker": "docker-compose -f docker-compose.dev.yml up",
+    "start:docker:detached": "docker-compose -f docker-compose.dev.yml up -d",
+    "stop:docker": "docker-compose -f docker-compose.dev.yml down",
+    "logs:docker": "docker-compose -f docker-compose.dev.yml logs -f"
   },
   "dependencies": {
     "@headlessui/react": "^2.1.2",

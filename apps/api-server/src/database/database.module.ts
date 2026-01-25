@@ -16,8 +16,8 @@ import { PrismaService } from './prisma.service';
         password: configService.get<string>('DB_PASSWORD', 'postgres'),
         database: configService.get<string>('DB_DATABASE', 'academia_hub'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-        synchronize: configService.get<string>('NODE_ENV') !== 'production', // false in production
-        logging: configService.get<string>('NODE_ENV') === 'development',
+        synchronize: false, // ✅ Désactivé pour performance (utiliser Prisma migrations)
+        logging: false, // ✅ Désactivé pour performance (utiliser Prisma logging si besoin)
         ssl: configService.get<string>('DB_SSL') === 'true' ? { rejectUnauthorized: false } : false,
       }),
       inject: [ConfigService],

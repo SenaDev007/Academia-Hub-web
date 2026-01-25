@@ -5,7 +5,11 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": false,
-    "tsConfigPath": "tsconfig.json"
+    "tsConfigPath": "tsconfig.json",
+    "watchAssets": true,
+    "assets": ["**/*.json", "**/*.hbs"],
+    "builder": "swc",
+    "typeCheck": false
   }
 }
 

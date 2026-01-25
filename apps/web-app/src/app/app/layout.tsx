@@ -9,11 +9,19 @@
  */
 
 import { redirect } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { getServerSession } from '@/lib/auth/session';
-import PilotageLayout from '@/components/pilotage/PilotageLayout';
 import { ModalProvider } from '@/components/modules/blueprint/modals/ModalProvider';
 import AppLayoutClient from './layout-client';
 import type { User, Tenant } from '@/types';
+
+// ✅ Lazy load du layout lourd pour améliorer le temps de chargement initial
+const PilotageLayout = dynamic(
+  () => import('@/components/pilotage/PilotageLayout'),
+  {
+    ssr: true, // ✅ Garder SSR pour le SEO
+  }
+);
 
 export default async function AppLayout({
   children,

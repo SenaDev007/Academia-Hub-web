@@ -10,14 +10,9 @@ version: '3.8'
 # 3. Frontend (démarre après API Server)
 # 
 # Usage:
-#   docker compose -f docker-compose.dev.yml up
-#   docker compose -f docker-compose.dev.yml up -d  (en arrière-plan)
-#   docker compose -f docker-compose.dev.yml down   (arrêter)
-#   
-#   Ou avec npm :
-#   npm run start:docker
-#   npm run start:docker:detached
-#   npm run stop:docker
+#   docker-compose -f docker-compose.dev.yml up
+#   docker-compose -f docker-compose.dev.yml up -d  (en arrière-plan)
+#   docker-compose -f docker-compose.dev.yml down   (arrêter)
 # 
 # ============================================================================
 

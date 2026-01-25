@@ -38,57 +38,38 @@ docker-compose --version
 
 ## 🚀 Démarrage Rapide
 
-> **Note** : Les versions récentes de Docker utilisent `docker compose` (sans tiret) au lieu de `docker-compose`.  
-> Les scripts npm utilisent la nouvelle syntaxe automatiquement.
-
 ### 1. Démarrer tous les services
 
 ```bash
-# Avec npm (recommandé)
-npm run start:docker
-
-# Ou directement
-docker compose -f docker-compose.dev.yml up
+docker-compose -f docker-compose.dev.yml up
 ```
 
 ### 2. Démarrer en arrière-plan
 
 ```bash
-# Avec npm (recommandé)
-npm run start:docker:detached
-
-# Ou directement
-docker compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.dev.yml up -d
 ```
 
 ### 3. Voir les logs
 
 ```bash
-# Avec npm (recommandé)
-npm run logs:docker
-
-# Ou directement
 # Tous les services
-docker compose -f docker-compose.dev.yml logs -f
+docker-compose -f docker-compose.dev.yml logs -f
 
 # Un service spécifique
-docker compose -f docker-compose.dev.yml logs -f api-server
-docker compose -f docker-compose.dev.yml logs -f frontend
-docker compose -f docker-compose.dev.yml logs -f postgres
+docker-compose -f docker-compose.dev.yml logs -f api-server
+docker-compose -f docker-compose.dev.yml logs -f frontend
+docker-compose -f docker-compose.dev.yml logs -f postgres
 ```
 
 ### 4. Arrêter les services
 
 ```bash
-# Avec npm (recommandé)
-npm run stop:docker
-
-# Ou directement
 # Arrêter (garder les données)
-docker compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.dev.yml down
 
 # Arrêter et supprimer les volumes (⚠️ supprime les données)
-docker compose -f docker-compose.dev.yml down -v
+docker-compose -f docker-compose.dev.yml down -v
 ```
 
 ---
@@ -108,48 +89,40 @@ docker compose -f docker-compose.dev.yml down -v
 ### Vérifier l'état des services
 
 ```bash
-# Avec npm
-npm run docker:ps
-
-# Ou directement
-docker compose -f docker-compose.dev.yml ps
+docker-compose -f docker-compose.dev.yml ps
 ```
 
 ### Redémarrer un service
 
 ```bash
-docker compose -f docker-compose.dev.yml restart api-server
-docker compose -f docker-compose.dev.yml restart frontend
+docker-compose -f docker-compose.dev.yml restart api-server
+docker-compose -f docker-compose.dev.yml restart frontend
 ```
 
 ### Reconstruire les images
 
 ```bash
-# Avec npm
-npm run docker:build
-
-# Ou directement
 # Reconstruire toutes les images
-docker compose -f docker-compose.dev.yml build
+docker-compose -f docker-compose.dev.yml build
 
 # Reconstruire un service spécifique
-docker compose -f docker-compose.dev.yml build api-server
+docker-compose -f docker-compose.dev.yml build api-server
 ```
 
 ### Accéder au shell d'un conteneur
 
 ```bash
 # API Server
-docker compose -f docker-compose.dev.yml exec api-server sh
+docker-compose -f docker-compose.dev.yml exec api-server sh
 
 # PostgreSQL
-docker compose -f docker-compose.dev.yml exec postgres psql -U postgres -d academia_hub
+docker-compose -f docker-compose.dev.yml exec postgres psql -U postgres -d academia_hub
 ```
 
 ### Appliquer les migrations Prisma
 
 ```bash
-docker compose -f docker-compose.dev.yml exec api-server npx prisma migrate deploy
+docker-compose -f docker-compose.dev.yml exec api-server npx prisma migrate deploy
 ```
 
 ### Générer le client Prisma

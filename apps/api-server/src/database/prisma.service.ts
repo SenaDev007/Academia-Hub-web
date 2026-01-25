@@ -14,9 +14,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   constructor(private configService?: ConfigService) {
     super({
-      log: process.env.NODE_ENV === 'development' 
+      log: process.env.NODE_ENV === 'development' && process.env.PRISMA_LOG === 'true'
         ? ['query', 'error', 'warn'] 
-        : ['error'],
+        : ['error'], // ✅ Réduire les logs Prisma pour accélérer
       errorFormat: 'pretty',
     });
 
@@ -40,8 +40,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   async onModuleInit() {
     try {
       // ✅ Tenter la connexion
-      await this.$connect();
-      this.logger.log('✅ Prisma connected with connection pooling');
+    await this.$connect();
+    this.logger.log('✅ Prisma connected with connection pooling');
       
       // ✅ Vérifier la connexion avec un test
       await this.$queryRaw`SELECT 1`;
